@@ -27,14 +27,14 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
 });
 
 // BARANG API (admin)
-$routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
-    $routes->get('barang', 'Api\BarangApi::index');
-    $routes->post('barang/import', 'Api\BarangApi::import');
-    $routes->get('barang/export', 'Api\BarangApi::export');
-    $routes->post('barang/create', 'Api\BarangApi::create');
-    $routes->get('barang/(:num)', 'Api\BarangApi::show/$1');
-    $routes->put('barang/(:num)', 'Api\BarangApi::update/$1');
-    $routes->delete('barang/(:num)', 'Api\BarangApi::delete/$1');
+$routes->group('api/v1', static function ($routes) {
+    $routes->get('barang', 'Api\BarangApi::index', ['filter' => 'auth']);
+    $routes->post('barang/import', 'Api\BarangApi::import', ['filter' => 'authadmin']);
+    $routes->get('barang/export', 'Api\BarangApi::export', ['filter' => 'authadmin']);
+    $routes->post('barang/create', 'Api\BarangApi::create', ['filter' => 'authadmin']);
+    $routes->get('barang/(:num)', 'Api\BarangApi::show/$1', ['filter' => 'auth']);
+    $routes->put('barang/(:num)', 'Api\BarangApi::update/$1', ['filter' => 'authadmin']);
+    $routes->delete('barang/(:num)', 'Api\BarangApi::delete/$1', ['filter' => 'authadmin']);
 });
 
 // STATS API (admin)
@@ -47,23 +47,21 @@ $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
 
 // PEMINJAMAN API
 $routes->group('api/v1', static function ($routes) {
-    $routes->get('peminjaman', 'Api\PeminjamanApi::index', ['filter' => 'authadmin']);
+    $routes->get('peminjaman', 'Api\PeminjamanApi::index', ['filter' => 'auth']);
     $routes->post('peminjaman', 'Api\PeminjamanApi::create', ['filter' => 'authmobile']);
-    $routes->get('peminjaman/(:num)', 'Api\PeminjamanApi::show/$1', ['filter' => 'authadmin']);
+    $routes->get('peminjaman/(:num)', 'Api\PeminjamanApi::show/$1', ['filter' => 'auth']);
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
 });
 
 // STORAGES API (admin)
-$routes->group('api/v1', [
-    'namespace' => 'App\Controllers\Api',
-    'filter' => 'authadmin',
+$routes->group('api/v1', ['namespace' => 'App\Controllers\Api',
 ], static function ($routes) {
-    $routes->get('storages', 'StorageControllerApi::index');
-    $routes->post('storages', 'StorageControllerApi::store');
-    $routes->get('storages/(:num)', 'StorageControllerApi::show/$1');
-    $routes->put('storages/(:num)', 'StorageControllerApi::update/$1');
-    $routes->delete('storages/(:num)', 'StorageControllerApi::delete/$1');
-    $routes->get('storages/presets/storage-location-desc', 'StorageControllerApi::presetStorLocDesc');
+    $routes->get('storages', 'StorageControllerApi::index', ['filter' => 'auth']);
+    $routes->post('storages', 'StorageControllerApi::store', ['filter' => 'authadmin']);
+    $routes->get('storages/(:num)', 'StorageControllerApi::show/$1', ['filter' => 'auth']);
+    $routes->put('storages/(:num)', 'StorageControllerApi::update/$1', ['filter' => 'authadmin']);
+    $routes->delete('storages/(:num)', 'StorageControllerApi::delete/$1', ['filter' => 'authadmin']);
+    $routes->get('storages/presets/storage-location-desc', 'StorageControllerApi::presetStorLocDesc', ['filter' => 'auth']);
 });
 
 // STOCK OPNAME API (admin)
