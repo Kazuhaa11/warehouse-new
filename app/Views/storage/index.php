@@ -57,7 +57,6 @@
 </div>
 
 <?php
-// Komponen modal kamu sendiri; pastikan di dalamnya form punya id $formId
 echo view('components/modal/modal-form', [
   'modalId' => 'modalStorage',
   'formId' => 'modalStorageForm',
@@ -68,7 +67,6 @@ echo view('components/modal/modal-form', [
   'size' => 'lg',
   'split' => 6,
   'fields' => [
-    // kiri
     [
       'name' => 'plant',
       'label' => 'Plant',
@@ -97,7 +95,6 @@ echo view('components/modal/modal-form', [
     ],
     ['name' => 'zone', 'label' => 'Zone', 'type' => 'text', 'placeholder' => 'cth: Z-1'],
     ['name' => 'rack', 'label' => 'Rack', 'type' => 'text', 'placeholder' => 'cth: R-01'],
-    // kanan
     ['name' => 'bin', 'label' => 'Bin', 'type' => 'text', 'placeholder' => 'cth: B-05'],
     ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'placeholder' => 'Nama lokasi (opsional)'],
     ['name' => 'note', 'label' => 'Note', 'type' => 'textarea', 'placeholder' => 'Catatan'],
@@ -107,17 +104,15 @@ echo view('components/modal/modal-form', [
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('js/api.js') ?>"></script>
 <script>
   (function () {
-    const API = '<?= base_url('api/v1/storages') ?>';
+    const API_Storages = '<?= base_url('api/v1/storages') ?>';
     let page = 1, per_page = 50;
 
     const $rows = document.getElementById('rows');
     const $pager = document.getElementById('pager');
     const $filter = document.getElementById('filterForm');
 
-    // modal refs
     const modalEl = document.getElementById('modalStorage');
     const formId = 'modalStorageForm';
     const form = document.getElementById(formId);
@@ -125,7 +120,6 @@ echo view('components/modal/modal-form', [
 
     let mode = 'create'; let editId = null;
 
-    // ===== List =====
     const qs = (form) => {
       const p = new URLSearchParams(new FormData(form));
       p.set('page', page); p.set('per_page', per_page);
@@ -135,7 +129,7 @@ echo view('components/modal/modal-form', [
     async function load() {
       $rows.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Memuat data...</td></tr>`;
       try {
-        const json = await apiFetch(`${API}?${qs($filter)}`);
+        const json = await apiFetch(`${API_Storages}?${qs($filter)}`);
         if (!json.success) throw new Error(json?.error?.message || 'Gagal load');
         renderRows(json.data || []);
         renderPager(json.meta || { page: 1, total_pages: 1 });
@@ -184,14 +178,12 @@ echo view('components/modal/modal-form', [
       }
     }
 
-    // Filter
     $filter.addEventListener('submit', e => { e.preventDefault(); page = 1; load(); });
 
-    // Add/Edit/Delete
     document.getElementById('btnAdd').addEventListener('click', () => {
       mode = 'create'; editId = null;
       form.reset();
-      form.dataset.api = API;           
+      form.dataset.api = API_Storages;           
       form.dataset.method = 'POST';
       bootstrap.Modal.getOrCreateInstance(modalEl).show();
     });
@@ -203,7 +195,7 @@ echo view('components/modal/modal-form', [
       if (btnDel) {
         if (!confirm('Nonaktifkan data ini?')) return;
         try {
-          const j = await apiFetch(`${API}/${btnDel.dataset.del}`, { method: 'DELETE' });
+          const j = await apiFetch(`${API_Storages}/${btnDel.dataset.del}`, { method: 'DELETE' });
           if (j.success) load(); else alert(j?.error?.message || 'Gagal menghapus');
         } catch (err) {
           alert(err.message);
@@ -215,16 +207,16 @@ echo view('components/modal/modal-form', [
         mode = 'edit';
         editId = btnEdit.dataset.edit;
         try {
-          const j = await apiFetch(`${API}/${editId}`);
+          const j = await apiFetch(`${API_Storages}/${editId}`);
           if (!j.success) throw new Error(j?.error?.message || 'Gagal load detail');
 
           const d = j.data || {};
-          form.dataset.api = `${API}/${editId}`;
+          form.dataset.api = `${API_Storages}/${editId}`;
           form.dataset.method = 'PUT';
 
           F('plant').value = d.plant ?? '';
           F('storage_location').value = d.storage_location ?? '';
-          await loadStorLocDescOptions(); // isi opsi sesuai plant+SL
+          await loadStorLocDescOptions();
           const sel = F('storage_location_desc');
           const cur = d.storage_location_desc ?? '';
           if (cur && !Array.from(sel.options).some(o => o.value === cur)) {
@@ -282,15 +274,12 @@ echo view('components/modal/modal-form', [
       const el = F(n); if (el) el.addEventListener('change', loadStorLocDescOptions);
     });
 
-    // setelah submit sukses via modal-form.js -> reload list
     window.addEventListener('modal:success', (ev) => {
       if (ev.detail?.modalId === 'modalStorage') load();
     });
 
-    // utils
     function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
 
-    // init
     load();
   })();
 </script>

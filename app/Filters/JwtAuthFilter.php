@@ -13,15 +13,12 @@ class JwtAuthFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        // 1) Ambil dari header
         $authHeader = $request->getHeaderLine('Authorization');
 
-        // 2) Fallback: ambil dari superglobal yang sebelumnya diisi bridge
         if ($authHeader === '' && isset($_SERVER['HTTP_AUTHORIZATION'])) {
             $authHeader = (string) $_SERVER['HTTP_AUTHORIZATION'];
         }
 
-        // 3) Fallback tambahan: langsung dari cookie untuk jaga-jaga
         if ($authHeader === '') {
             $cookieToken = method_exists($request, 'getCookie')
                 ? $request->getCookie('access_token')
@@ -45,7 +42,6 @@ class JwtAuthFilter implements FilterInterface
                 return service('response')->setJSON(['message' => 'Invalid token subject'])->setStatusCode(401);
             }
 
-            // Muat user aktual dari DB (ambil role terbaru)
             $idModel = new UserIdentityModel();
             $identity = $idModel->where('type', 'email_password')
                 ->where('user_id', $sub)
@@ -69,6 +65,6 @@ class JwtAuthFilter implements FilterInterface
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        // no-op
+
     }
 }

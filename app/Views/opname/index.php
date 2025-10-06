@@ -1,4 +1,4 @@
-<?php /** @var CodeIgniter\View\View $this */ ?>
+<?php ?>
 <?= $this->extend('layouts/sbadmin_local') ?>
 
 <?= $this->section('content') ?>
@@ -48,7 +48,6 @@
   </div>
 </div>
 
-<!-- ===== Modal: Buat Sesi Stock Opname ===== -->
 <?= view('components/modal/modal-form', [
   'modalId' => 'modalOpname',
   'formId' => 'modalOpnameForm',
@@ -190,6 +189,5 @@
   document.addEventListener('DOMContentLoaded', loadSessions);
 </script>
 
-<!-- Komponen JS modal generik -->
 <script src="<?= base_url('sbadmin/js/modal-form.js') ?>"></script>
 <?= $this->endSection() ?>

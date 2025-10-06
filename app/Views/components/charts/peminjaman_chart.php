@@ -1,4 +1,4 @@
-<?php /** Peminjaman Storage Chart */ ?>
+<?php  ?>
 <div class="card mb-4">
   <div class="card-header"><i class="fas fa-chart-bar me-2"></i> Peminjaman Storage (6 Bulan)</div>
   <div class="card-body">

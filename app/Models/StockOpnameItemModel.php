@@ -38,7 +38,7 @@ class StockOpnameItemModel extends Model
     public function bySession(int $sessionId): array
     {
         return $this->where('session_id', $sessionId)
-            ->orderBy('diff_qty', 'DESC') // generated kolom
+            ->orderBy('diff_qty', 'DESC') 
             ->findAll();
     }
 }

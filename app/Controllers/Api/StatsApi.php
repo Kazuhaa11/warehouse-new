@@ -9,9 +9,7 @@ class StatsApi extends BaseApiController
 
         $data = [
             'material_total' => $this->countTable($db, 'barang'),
-            // header peminjaman (kalau belum ada tabelnya, akan 0 tanpa error)
             'peminjaman_total' => $this->countFirstExisting($db, ['peminjaman', 'peminjaman_header']),
-            // sesi stock opname (fallback beberapa nama umum)
             'stock_opname_total' => $this->countFirstExisting($db, ['stock_opname', 'stock_opname_sessions', 'so_sessions']),
         ];
 

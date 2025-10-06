@@ -16,7 +16,6 @@ if (!function_exists('headerMap')) {
     function headerMap(): array
     {
         return [
-            // qty system
             'unrestricted' => 'system_qty_unrestricted',
             'qtyunrestricted' => 'system_qty_unrestricted',
             'unrestrictedstock' => 'system_qty_unrestricted',
@@ -30,13 +29,11 @@ if (!function_exists('headerMap')) {
             'blocked' => 'system_qty_blocked',
             'blockedstock' => 'system_qty_blocked',
 
-            // counted
             'counted' => 'counted_qty',
             'countedqty' => 'counted_qty',
             'count' => 'counted_qty',
             'qtycounted' => 'counted_qty',
 
-            // master keys
             'material' => 'material',
             'materialcode' => 'material',
             'matnr' => 'material',
@@ -45,13 +42,11 @@ if (!function_exists('headerMap')) {
             'sloc' => 'storage_location',
             'storloc' => 'storage_location',
 
-            // material description -> masuk ke note
             'materialdescription' => '__material_description',
             'maktx' => '__material_description',
             'description' => '__material_description',
             'desc' => '__material_description',
 
-            // catatan
             'note' => 'note',
             'remark' => 'note',
             'remarks' => 'note',
@@ -60,12 +55,12 @@ if (!function_exists('headerMap')) {
 }
 
 /**
- * Ambil nilai kolom dari row (array indexed) berdasarkan peta header->index dan key internal yang diinginkan.
+ * 
  *
- * @param array $row  Baris data dari XLSX/CSV (numeric keys).
- * @param array $map  Peta [normHeader => columnIndex].
- * @param string $wantKey  Key internal (mis. 'system_qty_unrestricted', 'material', '__material_description', dst).
- * @param mixed $default  Nilai default bila tidak ditemukan.
+ * @param array $row  Baris 
+ * @param array $map  Peta 
+ * @param string $wantKey 
+ * @param mixed $default  
  */
 if (!function_exists('getValByHeader')) {
     function getValByHeader(array $row, array $map, string $wantKey, $default = null)
@@ -83,10 +78,10 @@ if (!function_exists('getValByHeader')) {
 
 /**
  *
- * @param array               $data        input (material, storage_location, barang_id)
- * @param string              $barangTable nama tabel barang (default 'barang')
- * @param BaseConnection|null $db          optional DB connection
- * @return array [u, tt, b, material, storage_location, barang_id]
+ * @param array               
+ * @param string              
+ * @param BaseConnection|null 
+ * @return array 
  */
 function resolveSystemQty(array $data, string $barangTable = 'barang', BaseConnection $db = null): array
 {

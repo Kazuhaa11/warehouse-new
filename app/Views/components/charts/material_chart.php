@@ -1,4 +1,4 @@
-<?php /** Material Chart (6 bulan) */ ?>
+<?php ?>
 <div class="card mb-4">
     <div class="card-header"><i class="fas fa-chart-line me-2"></i> Tren Material (6 Bulan)</div>
     <div class="card-body">
@@ -8,7 +8,6 @@
 
 <script>
     (function () {
-        // load Chart.js kalau belum ada
         function loadChartJs(cb) {
             if (window.Chart) return cb();
             if (window.__chartjs_loading__) return document.addEventListener('chartjs:ready', cb, { once: true });
@@ -34,7 +33,6 @@
                             data: d.series || [],
                             tension: 0.25,
                             fill: false,
-                            // biarkan Chart.js pilih warna default (SB Admin friendly)
                         }]
                     },
                     options: {

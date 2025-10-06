@@ -3,18 +3,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-/**
- * Resolver user & role yang kompatibel dengan beberapa skema:
- * - Tabel identitas: auth_identities (type='email_password')
- *   - name   = username
- *   - secret = email
- *   - secret2= password_hash
- * - Role prioritas:
- *   1) users.role (jika ada)
- *   2) auth_groups_users.`group` (jika ada)
- *   3) join auth_groups_users -> auth_groups.name
- *   4) default: 'mobile'
- */
+
 class UserIdentityModel extends Model
 {
     protected $table = 'auth_identities';
@@ -25,8 +14,8 @@ class UserIdentityModel extends Model
     {
         $row = $this->where('type', 'email_password')
             ->groupStart()
-            ->where('secret', $identity)   // email
-            ->orWhere('name', $identity)   // username
+            ->where('secret', $identity)   
+            ->orWhere('name', $identity)   
             ->groupEnd()
             ->orderBy('id', 'DESC')
             ->first();
@@ -38,7 +27,6 @@ class UserIdentityModel extends Model
         $db = $this->db;
         $role = null;
 
-        // 1) users.role (jika tabel & kolom ada)
         try {
             if ($db->tableExists('users')) {
                 $u = $db->table('users')
@@ -52,14 +40,12 @@ class UserIdentityModel extends Model
                 }
             }
         } catch (\Throwable $e) {
-            // ignore
         }
 
-        // 2) auth_groups_users.`group` (schema A)
         if ($role === null && $db->tableExists('auth_groups_users')) {
             try {
                 $agu = $db->table('auth_groups_users')
-                    ->select('`group`') // backtick karena reserved
+                    ->select('`group`') 
                     ->where('user_id', $userId)
                     ->orderBy('id', 'DESC')
                     ->limit(1)
@@ -69,11 +55,9 @@ class UserIdentityModel extends Model
                     $role = $agu['group'];
                 }
             } catch (\Throwable $e) {
-                // ignore
             }
         }
 
-        // 3) join ke auth_groups.name (schema B)
         if ($role === null && $db->tableExists('auth_groups_users') && $db->tableExists('auth_groups')) {
             try {
                 $jg = $db->table('auth_groups_users agu')
@@ -88,11 +72,9 @@ class UserIdentityModel extends Model
                     $role = $jg['gname'];
                 }
             } catch (\Throwable $e) {
-                // ignore
             }
         }
 
-        // 4) fallback
         if ($role === null || $role === '') {
             $role = 'mobile';
         }
@@ -100,9 +82,6 @@ class UserIdentityModel extends Model
         return strtolower((string) $role);
     }
 
-    /**
-     * Build user payload untuk app (id, email, username, role)
-     */
     public function buildUserFromIdentity(array $identity): array
     {
         $userId = (int) $identity['user_id'];

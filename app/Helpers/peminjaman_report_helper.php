@@ -6,11 +6,11 @@ use CodeIgniter\Config\Services;
 
 if (!function_exists('peminjaman_report_build_html')) {
     /**
-     * Build HTML untuk laporan peminjaman
+     * 
      *
-     * @param array $headers       Array header peminjaman (hasil query join)
-     * @param array $itemsByHeader Map peminjaman_id => list item
-     * @param array $filters       mode, fromDate, toDate, month, year, plant, sortBy, sortDir
+     * @param array $headers       
+     * @param array $itemsByHeader 
+     * @param array $filters       
      */
     function peminjaman_report_build_html(array $headers, array $itemsByHeader, array $filters): string
     {
@@ -107,11 +107,11 @@ if (!function_exists('peminjaman_report_build_html')) {
 
 if (!function_exists('peminjaman_report_send_pdf')) {
     /**
-     * Kirim PDF ke browser
+     * 
      *
      * @param string $html
      * @param string $filename
-     * @param bool   $inline   true=inline (view di tab), false=attachment (download)
+     * @param bool   $inline   
      */
     function peminjaman_report_send_pdf(string $html, string $filename = 'laporan.pdf', bool $inline = true)
     {

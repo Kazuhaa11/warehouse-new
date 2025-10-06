@@ -13,7 +13,6 @@ class PeminjamanApi extends BaseApiController
         $this->db = Database::connect();
     }
 
-    /* ===== Generator nomor: PJ-YYYYMMDD-001 (reset per hari), kolom no_nota ===== */
     private function generateNumber(): string
     {
         $prefix = 'PJ-' . date('Ymd') . '-';
@@ -30,7 +29,6 @@ class PeminjamanApi extends BaseApiController
         return $prefix . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
     }
 
-    /** GET /api/v1/peminjaman?q=&plant=&page=&per_page= */
     public function index()
     {
         $q = trim((string) $this->request->getGet('q'));
@@ -38,7 +36,6 @@ class PeminjamanApi extends BaseApiController
         $page = max(1, (int) ($this->request->getGet('page') ?? 1));
         $perPage = min(200, max(1, (int) ($this->request->getGet('per_page') ?? 50)));
 
-        // Join ke items + barang + users agar bisa filter/tampilkan plant & peminjam
         $b = $this->db->table('peminjaman p')
             ->select("
                 p.id,
@@ -62,10 +59,9 @@ class PeminjamanApi extends BaseApiController
                 ->groupEnd();
         }
         if ($plant !== '') {
-            $b->where('b.plant', $plant); // filter di level barang
+            $b->where('b.plant', $plant); 
         }
 
-        // total distinct header
         $count = clone $b;
         $total = (int) ($count->select('COUNT(DISTINCT p.id) AS c', false)->get()->getRow('c') ?? 0);
 
@@ -82,12 +78,10 @@ class PeminjamanApi extends BaseApiController
         ]);
     }
 
-    /** GET /api/v1/peminjaman/{id} */
     public function show($id)
     {
         $id = (int) $id;
 
-        // header + username peminjam
         $row = $this->db->table('peminjaman p')
             ->select('
                 p.id,
@@ -110,7 +104,6 @@ class PeminjamanApi extends BaseApiController
             return $this->failMsg('Data tidak ditemukan', 404);
         }
 
-        // ringkasan plants (optional, untuk konsistensi tampilan detail)
         $plants = $this->db->table('peminjaman_items pi')
             ->select('GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR ",") AS plants', false)
             ->join('barang b', 'b.id = pi.barang_id', 'left')
@@ -118,7 +111,6 @@ class PeminjamanApi extends BaseApiController
             ->get()->getRowArray();
         $row['plants'] = $plants['plants'] ?? null;
 
-        // detail items (kalau mau ditampilkan di show)
         $items = $this->db->table('peminjaman_items pi')
             ->select('pi.id, pi.barang_id, pi.material, pi.requested_qty AS qty, pi.uom, pi.storage_location')
             ->where('pi.peminjaman_id', $id)
@@ -127,11 +119,9 @@ class PeminjamanApi extends BaseApiController
         return $this->ok(['header' => $row, 'items' => $items]);
     }
 
-    /** POST /api/v1/peminjaman  (JSON: tanggal, due_date?, plant?, note?, items[]) */
     public function create()
     {
         try {
-            // ==== Validasi auth & role ====
             $user = auth()->user();
             if (!$user) {
                 return $this->failMsg('Unauthorized', 401);
@@ -139,12 +129,11 @@ class PeminjamanApi extends BaseApiController
             if (($user->role ?? null) !== 'mobile') {
                 return $this->failMsg('Hanya user dengan role "mobile" yang boleh membuat peminjaman', 403);
             }
-            $peminjamId = (int) $user->id; // selalu ambil dari login, tidak boleh override
+            $peminjamId = (int) $user->id; 
 
-            // ==== Payload ====
             $p = $this->request->getJSON(true) ?? [];
             $tanggal = $p['tanggal'] ?? $p['borrow_date'] ?? date('Y-m-d');
-            $dueDate = $p['due_date'] ?? null; // opsional (YYYY-MM-DD)
+            $dueDate = $p['due_date'] ?? null; 
             $plant = $p['plant'] ?? null;
             $note = $p['keterangan'] ?? $p['note'] ?? null;
             $items = is_array($p['items'] ?? null) ? $p['items'] : [];
@@ -159,10 +148,8 @@ class PeminjamanApi extends BaseApiController
                 return $this->failMsg('Plant hanya 1200 atau 1300');
             }
 
-            // ==== Mulai transaksi ====
             $this->db->transStart();
 
-            // Header
             $no = $this->generateNumber();
             $dataHeader = [
                 'no_nota' => $no,
@@ -179,7 +166,6 @@ class PeminjamanApi extends BaseApiController
             }
             $peminjamanIdNew = (int) $this->db->insertID();
 
-            // Detail items
             if (!empty($items)) {
                 $rows = [];
                 foreach ($items as $i => $it) {
@@ -232,7 +218,6 @@ class PeminjamanApi extends BaseApiController
                 return $this->failMsg('Transaksi gagal');
             }
 
-            // Response header + items (ikutkan username peminjam)
             $header = $this->db->table('peminjaman p')
                 ->select('
                     p.id,
@@ -281,7 +266,6 @@ class PeminjamanApi extends BaseApiController
         }
 
         if (!empty($scan)) {
-            // asumsikan scan berisi kode material; jika QR mengandung payload lain, map dulu di mobile
             $row = $builder->where('material', $scan)->get()->getRowArray();
             if ($row) {
                 return $row;
@@ -291,7 +275,6 @@ class PeminjamanApi extends BaseApiController
         return null;
     }
 
-    /* ===== Status helpers ===== */
     private function setStatus(int $id, string $status)
     {
         $allowed = ['draft', 'submitted', 'approved', 'rejected', 'loaned', 'returned', 'lost'];
@@ -392,7 +375,6 @@ class PeminjamanApi extends BaseApiController
 
             $headers = $b->groupBy('p.id')->get()->getResultArray();
 
-            // detail
             $itemsByHeader = [];
             if ($headers) {
                 $ids = array_column($headers, 'id');

@@ -10,19 +10,16 @@ class StatsChartsApi extends BaseApiController
 
     public function peminjaman()
     {
-        // coba beberapa kandidat nama tabel header peminjaman
         $candidates = ['peminjaman', 'peminjaman_header'];
         return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 6));
     }
 
     public function stockOpname()
     {
-        // coba beberapa kandidat nama tabel sesi stock opname
         $candidates = ['stock_opname', 'stock_opname_sessions', 'so_sessions'];
         return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 6));
     }
 
-    // === Helpers ===
     private function monthlySeriesFirstExisting(array $candidates, string $dateCol, int $months): array
     {
         $db = \Config\Database::connect();
@@ -38,9 +35,8 @@ class StatsChartsApi extends BaseApiController
     {
         $db = \Config\Database::connect();
 
-        // buat daftar bulan (label) dari paling lama ke terbaru
         $labels = [];
-        $start = new \DateTime('first day of -' . ($months - 1) . ' month'); // 6 bulan ke belakang
+        $start = new \DateTime('first day of -' . ($months - 1) . ' month'); 
         for ($i = 0; $i < $months; $i++) {
             $labels[] = $start->format('Y-m');
             $start->modify('+1 month');
@@ -50,11 +46,9 @@ class StatsChartsApi extends BaseApiController
             return $this->emptySeries($months);
         }
 
-        // ambil agregat per bulan
         $prefix = $db->getPrefix();
         $tbl = $prefix . $table;
 
-        // ambil dari awal bulan pertama
         $firstMonth = $labels[0] . '-01';
 
         $sql = "
@@ -75,16 +69,15 @@ class StatsChartsApi extends BaseApiController
             $series[] = $map[$ym] ?? 0;
         }
 
-        // label human-readable (mis. Apr 2025)
         $labelsPretty = array_map(static function ($ym) {
             $dt = \DateTime::createFromFormat('Y-m', $ym);
             return $dt ? $dt->format('M Y') : $ym;
         }, $labels);
 
         return [
-            'labels' => $labelsPretty,  // ["Apr 2025", ...]
-            'series' => $series,        // [10, 7, ...]
-            'raw_labels' => $labels,        // ["2025-04", ...]
+            'labels' => $labelsPretty,  
+            'series' => $series,       
+            'raw_labels' => $labels,        
             'table' => $table,
             'months' => $months,
         ];

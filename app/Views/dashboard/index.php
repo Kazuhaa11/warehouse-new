@@ -2,7 +2,6 @@
 
 <?= $this->section('content') ?>
 <div class="row g-3">
-    <!-- Total Material -->
     <div class="col-xl-3 col-md-6">
         <div class="card bg-primary text-white mb-4">
             <div class="card-body">Total Material</div>
@@ -13,7 +12,6 @@
         </div>
     </div>
 
-    <!-- Peminjaman Storage -->
     <div class="col-xl-3 col-md-6">
         <div class="card bg-success text-white mb-4">
             <div class="card-body">Peminjaman Storage</div>
@@ -24,7 +22,6 @@
         </div>
     </div>
 
-    <!-- Stock Opname -->
     <div class="col-xl-3 col-md-6">
         <div class="card bg-warning text-white mb-4">
             <div class="card-body">Stock Opname</div>

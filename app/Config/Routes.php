@@ -3,19 +3,16 @@
 use CodeIgniter\Router\RouteCollection;
 /** @var RouteCollection $routes */
 
-// Landing: login page
 $routes->get('/', 'Api\AuthApiController::loginPage');
 
 // AUTH API
 $routes->group('api/v1/auth', ['namespace' => 'App\Controllers\Api'], static function ($r) {
     $r->post('login', 'AuthApiController::login');
     $r->post('refresh', 'AuthApiController::refresh');
-    // gunakan alias gabungan 'auth' (jwtcookie + jwt)
     $r->post('logout', 'AuthApiController::logout', ['filter' => 'auth']);
     $r->get('me', 'AuthApiController::me', ['filter' => 'auth']);
 });
 
-// ADMIN PAGES (HTML) → butuh admin
 $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('barang', 'BarangController::index');
@@ -26,7 +23,6 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('import-export', 'ImportExportController::index');
 });
 
-// BARANG API (admin)
 $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('barang', 'Api\BarangApi::index');
     $routes->post('barang/import', 'Api\BarangApi::import');
@@ -37,7 +33,6 @@ $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
     $routes->delete('barang/(:num)', 'Api\BarangApi::delete/$1');
 });
 
-// STATS API (admin)
 $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('stats/dashboard', 'Api\StatsApi::dashboard');
     $routes->get('stats/material', 'Api\StatsChartsApi::material');
@@ -45,7 +40,6 @@ $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('stats/stock-opname', 'Api\StatsChartsApi::stockOpname');
 });
 
-// PEMINJAMAN API
 $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman', 'Api\PeminjamanApi::index', ['filter' => 'authadmin']);
     $routes->post('peminjaman', 'Api\PeminjamanApi::create', ['filter' => 'authmobile']);
@@ -53,7 +47,6 @@ $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
 });
 
-// STORAGES API (admin)
 $routes->group('api/v1', [
     'namespace' => 'App\Controllers\Api',
     'filter' => 'authadmin',
@@ -66,7 +59,6 @@ $routes->group('api/v1', [
     $routes->get('storages/presets/storage-location-desc', 'StorageControllerApi::presetStorLocDesc');
 });
 
-// STOCK OPNAME API (admin)
 $routes->group('api/v1/stock-opname', [
     'namespace' => 'App\Controllers\Api',
     'filter' => 'authadmin',

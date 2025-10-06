@@ -295,7 +295,6 @@ class StockOpnameController extends BaseController
             [$headers, $rows] = $excel->exportRows((int) $id);
             $ss = $excel->makeSpreadsheet($headers, $rows);
 
-            // simpan ke file dulu, lalu download (aman dari korup)
             @is_dir(WRITEPATH . 'exports') || @mkdir(WRITEPATH . 'exports', 0775, true);
             $file = WRITEPATH . 'exports/StockOpname_' . (int) $id . '_' . date('Ymd_His') . '.xlsx';
 

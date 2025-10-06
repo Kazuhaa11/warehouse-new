@@ -67,7 +67,6 @@ class AuthApiController extends BaseController
             ];
             $jwt = (new JwtService())->issue($claims, $this->accessTTL);
 
-            // refresh token (rotating, hashed di DB)
             $refreshPlain = bin2hex(random_bytes(32));
             $refreshHash = password_hash($refreshPlain, PASSWORD_BCRYPT);
             $expiresAt = date('Y-m-d H:i:s', time() + $this->refreshTTL);
@@ -145,7 +144,6 @@ class AuthApiController extends BaseController
             return $this->failUnauthorized('Refresh token tidak valid / kadaluarsa.');
         }
 
-        // rotate
         $m->revokeById((int) $match['id']);
 
         $uid = (int) $match['user_id'];
@@ -163,7 +161,6 @@ class AuthApiController extends BaseController
             'sub' => $user['id'],
             'email' => $user['email'] ?? null,
             'role' => $user['role'] ?? 'mobile',
-            // Tambahan claim sekunder jika mau:
             'aud' => 'refresh',
             'dev' => 'refresh',
         ], $this->accessTTL);
@@ -183,9 +180,8 @@ class AuthApiController extends BaseController
 
     public function logout()
     {
-        // Tidak gunakan session auth(); cukup revoke refresh dan hapus cookie
         $data = $this->request->getJSON(true) ?? $this->request->getPost();
-        $uid = (int) ($data['user_id'] ?? 0); // FE bisa kirim id user opsional
+        $uid = (int) ($data['user_id'] ?? 0); 
         $m = new RefreshTokenModel();
 
         if (!empty($data['refresh_token'])) {
@@ -202,7 +198,6 @@ class AuthApiController extends BaseController
             }
         }
 
-        // Hapus cookie access_token
         $this->response->deleteCookie('access_token', '', '/');
 
         $secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
@@ -223,8 +218,6 @@ class AuthApiController extends BaseController
 
     public function me()
     {
-        // Endpoint ini di-protect oleh filter jwt → user sudah ada di konteks
-        // Agar tidak bergantung Shield, kita rekonstruksi dari token saat ini.
         $authHeader = $this->request->getHeaderLine('Authorization');
         if (stripos($authHeader, 'Bearer ') !== 0) {
             return $this->failUnauthorized('Unauthorized');
@@ -251,7 +244,7 @@ class AuthApiController extends BaseController
                 'username' => $user['username'] ?? null,
                 'email' => $user['email'] ?? null,
                 'role' => $user['role'] ?? null,
-                'active' => 1, // tidak ada field aktif pada skema, set 1 default
+                'active' => 1,
             ], 200);
 
         } catch (\Throwable $e) {

@@ -75,7 +75,7 @@ class StorageControllerApi extends BaseApiController
             'rack' => 'permit_empty|max_length[50]',
             'bin' => 'permit_empty|max_length[50]',
             'name' => 'permit_empty|max_length[100]',
-            'capacity' => 'permit_empty|integer',   // kolom baru
+            'capacity' => 'permit_empty|integer',   
             'note' => 'permit_empty',
             'is_active' => 'permit_empty|in_list[0,1]',
             'created_by' => 'permit_empty|integer',
@@ -101,7 +101,7 @@ class StorageControllerApi extends BaseApiController
 
         $data['is_active'] = isset($data['is_active']) ? (int) $data['is_active'] : 1;
         $data['capacity'] = isset($data['capacity']) ? (int) $data['capacity'] : null;
-        $data['created_by'] = $data['created_by'] ?? null; // ganti user_id() sesuai autentikasi kamu
+        $data['created_by'] = $data['created_by'] ?? null; 
 
         try {
             $this->model->insert($data, true);

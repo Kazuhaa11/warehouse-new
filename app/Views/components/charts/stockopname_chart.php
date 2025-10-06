@@ -1,4 +1,4 @@
-<?php /** Stock Opname Chart */ ?>
+<?php  ?>
 <div class="card mb-4">
   <div class="card-header"><i class="fas fa-chart-area me-2"></i> Stock Opname (6 Bulan)</div>
   <div class="card-body">

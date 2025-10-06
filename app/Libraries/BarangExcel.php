@@ -32,7 +32,6 @@ class BarangExcel
         $reader->setReadDataOnly(true);
         $sheet = $reader->load($filePath)->getActiveSheet();
 
-        // Header
         $headerRow = 1;
         $header = [];
         $highestCol = $sheet->getHighestColumn();
@@ -47,7 +46,6 @@ class BarangExcel
         if ($missing)
             throw new \RuntimeException('Header Excel tidak sesuai. Kurang: ' . implode(', ', $missing));
 
-        // Map kolom
         $col = [];
         foreach ($this->excelMap as $excel => $dbField) {
             $idx = array_search($excel, $header, true);

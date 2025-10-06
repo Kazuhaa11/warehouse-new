@@ -23,8 +23,8 @@ class JwtService
     }
 
     /**
-     * @param array $claims e.g. ['sub'=>1,'email'=>'a@b','role'=>'admin']
-     * @param int   $ttl    detik
+     * @param array 
+     * @param int  
      */
     public function issue(array $claims, int $ttl): string
     {
@@ -44,13 +44,12 @@ class JwtService
     }
 
     /**
-     * @return array payload terverifikasi (assoc array)
-     * @throws \Exception jika invalid/expired
+     * @return array 
+     * @throws \Exception 
      */
     public function validate(string $jwt): array
     {
         $decoded = JWT::decode($jwt, new Key($this->secret, $this->algo));
-        // Ubah stdClass -> array asosiatif
         return json_decode(json_encode($decoded), true);
     }
 }

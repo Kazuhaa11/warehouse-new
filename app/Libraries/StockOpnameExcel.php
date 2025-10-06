@@ -6,7 +6,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class StockOpnameExcel
 {
-    // Header Excel -> field di stock_opname_items (gaya barang + Counted/Note opsional)
     protected array $excelMap = [
         'Material' => 'material',
         'Material Description' => 'material_description',
@@ -26,9 +25,9 @@ class StockOpnameExcel
     ];
 
     /**
-     * Import file ke stock_opname_items untuk 1 session.
-     * Minimal wajib: Material. Lainnya opsional (akan di-resolve dari master).
-     * @return array [$inserted, $skipped, $errors]
+     * 
+     * 
+     * @return array 
      */
     public function import(string $filePath, int $sessionId, string $barangTable = 'barang'): array
     {
@@ -42,7 +41,6 @@ class StockOpnameExcel
         $reader->setReadDataOnly(true);
         $sheet = $reader->load($filePath)->getActiveSheet();
 
-        // ===== Header
         $headerRow = 1;
         $header = [];
         $highestCol = $sheet->getHighestColumn();
@@ -53,17 +51,15 @@ class StockOpnameExcel
             $header[] = trim((string) $v);
         }
 
-        // CUKUP wajib Material saja
         if (!in_array('Material', $header, true)) {
             throw new \RuntimeException('Header Excel tidak sesuai. Kolom "Material" wajib ada.');
         }
 
-        // Map kolom
         $col = [];
         foreach ($this->excelMap as $excel => $field) {
             $idx = array_search($excel, $header, true);
             if ($idx === false)
-                continue; // biarkan opsional
+                continue;
             $col[$field] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
         }
 
@@ -78,13 +74,11 @@ class StockOpnameExcel
 
             $sloc = (string) $this->cell($sheet, $col, 'storage_location', $r);
 
-            // nilai dari file (opsional)
             $u = $this->toDecimal($this->calc($sheet, $col, 'qty_unrestricted', $r));
             $tt = $this->toDecimal($this->calc($sheet, $col, 'qty_transit_and_transfer', $r));
             $b = $this->toDecimal($this->calc($sheet, $col, 'qty_blocked', $r));
-            $cnt = $this->toDecimal($this->calc($sheet, $col, 'counted_qty', $r)); // default 0 jika kolom tak ada
+            $cnt = $this->toDecimal($this->calc($sheet, $col, 'counted_qty', $r)); 
 
-            // snapshot deskriptif (opsional)
             $row = [
                 'session_id' => $sessionId,
                 'material' => $mat,
@@ -105,7 +99,6 @@ class StockOpnameExcel
                 'note' => (string) $this->cell($sheet, $col, 'note', $r) ?: null,
             ];
 
-            // ===== Resolve dari master kalau qty kosong atau sloc kosong
             [$ru, $rtt, $rb, $rMat, $rSloc, $bid] = resolveSystemQty([
                 'material' => $row['material'],
                 'storage_location' => $row['storage_location'],
@@ -122,7 +115,6 @@ class StockOpnameExcel
                 $row['storage_location'] = $rSloc;
             }
 
-            // Kosongkan string "" jadi NULL untuk kolom teks opsional (hindari NOT NULL kalau ada)
             foreach (['material_description', 'plant', 'material_group', 'storage_location', 'storage_location_desc', 'df_stor_loc_level', 'base_unit_of_measure', 'material_type', 'note'] as $k) {
                 if (array_key_exists($k, $row) && $row[$k] === '')
                     $row[$k] = null;
@@ -142,7 +134,6 @@ class StockOpnameExcel
         return [$ins, $skip, $errs];
     }
 
-    /** Export baris suatu session (gaya barang + Counted + Diff + Note) */
     public function exportRows(int $sessionId): array
     {
         $db = \Config\Database::connect();
@@ -164,8 +155,8 @@ class StockOpnameExcel
             'Unrestricted',
             'Transit and Transfer',
             'Blocked',
-            'Counted',  // counted_qty
-            'Diff',     // counted - (U+TT+B)
+            'Counted',  
+            'Diff',     
             'Material Type',
             'Note',
         ];
@@ -213,7 +204,6 @@ class StockOpnameExcel
         return $ss;
     }
 
-    // ===== helpers =====
     protected function cell($sheet, array $col, string $key, int $row)
     {
         if (!isset($col[$key]))

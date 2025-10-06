@@ -1,7 +1,6 @@
 <?= $this->extend('layouts/sbadmin_local') ?>
 
 <?php
-// URL export langsung (download via browser)
 $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/export');
 ?>
 
@@ -12,7 +11,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     <div class="text-muted small" id="sessInfo">Memuat…</div>
   </div>
 
-  <!-- Actions + Filters -->
   <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
     <div class="d-flex align-items-center gap-2">
       <input id="inpSearch" class="form-control form-control-sm" style="width:220px" type="search"
@@ -37,7 +35,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
       </select>
     </div>
 
-    <!-- Export pakai <a> langsung -->
     <a href="<?= esc($exportUrl) ?>" class="btn btn-outline-info btn-sm">
       <i class="fas fa-download me-1"></i> Export XLSX
     </a>
@@ -103,7 +100,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
   </div>
 </div>
 
-<!-- Modal tambah -->
 <div class="modal fade" id="modalAdd" tabindex="-1">
   <div class="modal-dialog">
     <form class="modal-content" id="formAdd">
@@ -146,7 +142,7 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
           <div class="col-6">
             <label class="form-label">Counted Qty</label>
             <input id="fCounted" name="counted_qty" type="number" class="form-control" step="0.001" value="0" required>
-            <div class="form-text">Diff = Counted − (Unrest. + TT + Blocked)</div>
+            <div class="form-text">Diff = Counted - (Unrest. + TT + Blocked)</div>
           </div>
         </div>
 
@@ -163,7 +159,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
   </div>
 </div>
 
-<!-- Modal import -->
 <div class="modal fade" id="modalImport" tabindex="-1">
   <div class="modal-dialog">
     <form class="modal-content" id="formImport">
@@ -194,14 +189,11 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
 
 <?= $this->section('scripts') ?>
 <script>
-  // ===== CONFIG =====
   const sessionId = <?= (int) $sessionId ?>;
-  const API = <?= json_encode($api) ?>; // {session, items, finalize, recap}
+  const API_Opname = <?= json_encode($api) ?>; 
 
-  // ===== STATE =====
   const state = { page: 1, perPage: 25, sort: 'diff_desc', q: '', plant: '', lastMeta: null };
 
-  // ===== ELEMENTS =====
   const $tblBody = document.querySelector('#tblItems tbody');
   const $tSysU = document.getElementById('tSysU');
   const $tSysTT = document.getElementById('tSysTT');
@@ -225,7 +217,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
   const $inpSearch = document.getElementById('inpSearch');
   const $selPlant = document.getElementById('selPlant');
 
-  // ===== UTILS =====
   function num(n) { return Number(n || 0) }
   function notify(type, msg) {
     try {
@@ -253,13 +244,11 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     return j;
   }
 
-  // ===== DATA LOADERS =====
   async function loadSession() {
-    const j = await apiFetch(API.session);
+    const j = await apiFetch(API_Opname.session);
     const s = j.data?.session || j.data || {};
     document.getElementById('sessInfo').textContent =
       `${s.code ?? ''} • Jadwal: ${s.scheduled_at ?? '-'} • Finalized: ${s.finalized_at ?? '-'}`;
-    // hide finalize button if already finalized
     $btnFinalize.classList.toggle('d-none', !!s.finalized_at);
   }
 
@@ -279,7 +268,7 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
   }
 
   async function loadItems() {
-    const url = withQuery(API.items, {
+    const url = withQuery(API_Opname.items, {
       page: state.page, per_page: state.perPage, sort: state.sort, q: state.q, plant: state.plant
     });
     const j = await apiFetch(url);
@@ -287,7 +276,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     const meta = j.meta || { page: 1, per_page: items.length, total: items.length, total_pages: 1, sort: state.sort };
     renderPagination(meta);
 
-    // fill plant options once (from meta.plants or items)
     const plants = (meta.plants && meta.plants.length)
       ? meta.plants
       : Array.from(new Set(items.map(r => r.plant).filter(Boolean))).sort();
@@ -343,11 +331,9 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     $tDiff.textContent = sumDiff;
   }
 
-  // ===== ACTION HANDLERS =====
   document.getElementById('btnAdd').onclick = () => new bootstrap.Modal('#modalAdd').show();
   document.getElementById('btnImport').onclick = () => new bootstrap.Modal('#modalImport').show();
 
-  // Datalist material (GET /api/v1/barang?q=...)
   document.getElementById('fMaterial').addEventListener('input', async (e) => {
     const q = e.target.value.trim(); const dl = document.getElementById('dlMaterials'); if (q.length < 2) return;
     try {
@@ -389,7 +375,7 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     payload.qty_blocked = +payload.qty_blocked || 0;
 
     try {
-      await apiFetch(API.items, { method: 'POST', body: JSON.stringify(payload) });
+      await apiFetch(API_Opname.items, { method: 'POST', body: JSON.stringify(payload) });
       bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
       e.target.reset();
       notify('success', 'Item ditambahkan.');
@@ -401,7 +387,7 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     const inp = e.target.closest('.inp-cnt'); if (!inp) return;
     const id = inp.dataset.id; const val = +inp.value || 0;
     try {
-      await apiFetch(`${API.items}/${id}`, { method: 'PUT', body: JSON.stringify({ counted_qty: val }) });
+      await apiFetch(`${API_Opname.items}/${id}`, { method: 'PUT', body: JSON.stringify({ counted_qty: val }) });
       loadItems();
     } catch (err) { notify('danger', err.message || 'Gagal update.'); }
   });
@@ -410,18 +396,17 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     const btn = e.target.closest('button[data-del]'); if (!btn) return;
     if (!confirm('Hapus item ini?')) return;
     try {
-      await apiFetch(`${API.items}/${btn.dataset.del}`, { method: 'DELETE' });
+      await apiFetch(`${API_Opname.items}/${btn.dataset.del}`, { method: 'DELETE' });
       state.page = 1; loadItems();
     } catch (err) { notify('danger', err.message || 'Gagal menghapus.'); }
   });
 
-  // Import: tetap seperti biasa (FormData)
   document.getElementById('formImport').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     try {
       const token = localStorage.getItem('access_token');
-      await fetch(`${API.items}/import`, {
+      await fetch(`${API_Opname.items}/import`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
@@ -436,11 +421,10 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
 
   document.getElementById('btnFinalize').onclick = async () => {
     if (!confirm('Finalize sesi ini?')) return;
-    try { await apiFetch(API.finalize, { method: 'POST' }); notify('success', 'Sesi difinalkan.'); loadSession(); }
+    try { await apiFetch(API_Opname.finalize, { method: 'POST' }); notify('success', 'Sesi difinalkan.'); loadSession(); }
     catch (err) { notify('danger', err.message || 'Gagal finalize.'); }
   };
 
-  // Filters / paging
   document.getElementById('selSort').addEventListener('change', () => { state.sort = selSort.value; state.page = 1; loadItems(); });
   document.getElementById('selPerPage').addEventListener('change', () => { state.perPage = parseInt(selPerPage.value, 10) || 25; state.page = 1; loadItems(); });
   document.getElementById('paging').addEventListener('click', (e) => {
@@ -449,7 +433,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
     state.page = Math.max(1, p); loadItems();
   });
 
-  // Search & plant
   let tSearch;
   $inpSearch.addEventListener('input', () => {
     clearTimeout(tSearch);
@@ -457,7 +440,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
   });
   $selPlant.addEventListener('change', () => { state.plant = $selPlant.value; state.page = 1; loadItems(); });
 
-  // init
   (async function init() { await loadSession(); await loadItems(); })();
 </script>
 <?= $this->endSection() ?>

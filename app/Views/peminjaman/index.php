@@ -48,7 +48,6 @@
   </div>
 </div>
 
-<!-- Modal Detail Peminjaman (read-only) -->
 <?= view('components/modal/modal-form', [
   'modalId' => 'modalDetailPinjam',
   'title' => 'Detail Peminjaman',
@@ -58,29 +57,25 @@
   'size' => 'xl',
   'split' => 4,
   'fields' => [
-    // KIRI
     ['name' => 'no_nota', 'label' => 'No Nota', 'type' => 'text'],
     ['name' => 'borrow_date', 'label' => 'Tanggal', 'type' => 'text'],
     ['name' => 'plant', 'label' => 'Plant', 'type' => 'text'],
     ['name' => 'status', 'label' => 'Status', 'type' => 'text'],
-    // KANAN
     ['name' => 'peminjam', 'label' => 'Peminjam', 'type' => 'text'],
     ['name' => 'created_at', 'label' => 'Dibuat', 'type' => 'text'],
     ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
   ],
 ]) ?>
 
-<!-- Modal Cetak Laporan (pakai komponen modal-form) -->
 <?= view('components/modal/modal-form', [
   'modalId' => 'modalNota',
   'title' => 'Cetak Laporan Peminjaman',
-  'api' => '#',          // submit manual via JS (open PDF)
+  'api' => '#',         
   'method' => 'GET',
   'submitText' => 'Cetak PDF',
   'size' => 'lg',
   'split' => 4,
   'fields' => [
-    // KIRI
     [
       'name' => 'mode',
       'label' => 'Mode Filter',
@@ -104,7 +99,6 @@
     ],
     ['name' => 'year', 'label' => 'Tahun', 'type' => 'number', 'value' => date('Y')],
 
-    // KANAN
     [
       'name' => 'plant',
       'label' => 'Plant',
@@ -153,13 +147,11 @@
     const pager = document.getElementById('pager');
     const metaText = document.getElementById('metaText');
 
-    // Modal Detail
     const modalDetailEl = document.getElementById('modalDetailPinjam');
     const modalDetail = new bootstrap.Modal(modalDetailEl);
     const formEl = modalDetailEl.querySelector('form[data-modal-form]');
     const formId = formEl ? formEl.id : 'modalDetailPinjamForm';
 
-    // Init modal (readonly + tabel items)
     (function initDetailModalShell() {
       if (!formEl) return;
       formEl.querySelectorAll('input, textarea').forEach(el => el.readOnly = true);
@@ -212,7 +204,6 @@
       else el.textContent = v;
     }
 
-    // Filter init
     const init = new URLSearchParams(location.search);
     if (init.get('plant')) plantSel.value = init.get('plant');
     if (init.get('q')) qInput.value = init.get('q');
@@ -294,7 +285,6 @@
       }));
     }
 
-    // Detail
     tbody.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-action="detail"]');
       if (!btn) return;
@@ -302,7 +292,6 @@
     });
 
     async function openDetail(id) {
-      // reset awal
       setField('no_nota', '—');
       setField('borrow_date', '—');
       setField('plant', '—');
@@ -380,7 +369,6 @@
       }[m]));
     }
 
-    // ===== Cetak Laporan (Modal 'modalNota') =====
     (function () {
       const formId = 'modalNotaForm';
       const f = document.getElementById(formId);
@@ -444,11 +432,10 @@
         params.set('dl', '1');
 
         const url = '<?= base_url('api/v1/peminjaman/report/pdf') ?>?' + params.toString();
-        window.location.href = url; // langsung trigger download
+        window.location.href = url; 
       });
     })();
 
-    // initial
     load(1);
   })();
 </script>

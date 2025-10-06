@@ -1,4 +1,6 @@
 # Disable directory browsing
+RewriteEngine Off
+
 Options -Indexes
 
 # ----------------------------------------------------------------------

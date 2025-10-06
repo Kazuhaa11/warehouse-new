@@ -1,7 +1,3 @@
-// public/js/api.js
-
-// ===== API Helper untuk Warehouse CI4 =====
-
 const API = {
   getAccessToken: () => localStorage.getItem("access_token") || "",
   getRefreshToken: () => localStorage.getItem("refresh_token") || "",
@@ -31,7 +27,6 @@ async function apiFetch(url, options = {}) {
   const opts = { method: "GET", credentials: "same-origin", ...options };
   const headers = new Headers(opts.headers || {});
 
-  // set Content-Type hanya bila body bukan FormData dan belum diset
   if (
     !headers.has("Content-Type") &&
     opts.body &&
@@ -40,7 +35,6 @@ async function apiFetch(url, options = {}) {
     headers.set("Content-Type", "application/json");
   }
 
-  // tambahkan Authorization hanya jika ada token
   const at = API.getAccessToken();
   const tt = API.getTokenType();
   if (at && !headers.has("Authorization")) {
@@ -51,7 +45,6 @@ async function apiFetch(url, options = {}) {
   let res = await fetch(url, opts);
   if (res.status !== 401) return parseJson(res);
 
-  // ==== Kalau 401, coba refresh token sekali ====
   const rt = API.getRefreshToken();
   if (!rt) throw await errorFromResponse(res);
 
@@ -70,7 +63,6 @@ async function apiFetch(url, options = {}) {
   const refreshData = await refreshRes.json();
   API.setTokens(refreshData);
 
-  // ulangi request asli dengan token baru
   const retry = { ...opts, headers: new Headers(headers) };
   retry.headers.set(
     "Authorization",
@@ -122,7 +114,6 @@ async function errorFromResponse(res) {
   }
 }
 
-// logout global
 async function apiLogout({ endpoint, redirectUrl } = {}) {
   const token = API.getAccessToken();
   const rtoken = API.getRefreshToken();

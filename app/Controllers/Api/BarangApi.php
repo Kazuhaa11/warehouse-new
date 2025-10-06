@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers\Api;
 
 use App\Libraries\BarangExcel;
@@ -13,7 +14,7 @@ class BarangApi extends BaseApiController
     {
         $this->barang = new BarangModel();
     }
-    /** GET /api/v1/barang?q=&storage_location=&material_group=&material_type=&page=&per_page= */
+
     public function index()
     {
         $db = \Config\Database::connect();
@@ -22,7 +23,7 @@ class BarangApi extends BaseApiController
         $q = trim((string) $req->getGet('q'));
         $plant = $req->getGet('plant');
         $sl = $req->getGet('storage_location');
-        $slp = $req->getGet('storage_loc_prefix'); // '2' => 2xxx, '3' => 3xxx
+        $slp = $req->getGet('storage_loc_prefix');
         $mg = $req->getGet('material_group');
         $mt = $req->getGet('material_type');
         $page = max(1, (int) ($req->getGet('page') ?? 1));
@@ -47,11 +48,9 @@ class BarangApi extends BaseApiController
         if ($mt)
             $b->where('material_type', $mt);
 
-        // Total
         $count = clone $b;
         $total = (int) $count->select('COUNT(*) AS c')->get()->getRow('c');
 
-        // Data (urut material)
         $rows = $b->select('id, material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, material_type, import_batch, created_at, updated_at')
             ->orderBy('material', 'ASC')
             ->limit($per, ($page - 1) * $per)
@@ -80,27 +79,23 @@ class BarangApi extends BaseApiController
         return $this->ok($row);
     }
 
-    /** PUT /api/v1/barang/{id} */
     public function update($id)
     {
         $db = \Config\Database::connect();
         $id = (int) $id;
 
-        // Pastikan ada
         $exists = $db->table('barang')->select('id')->where('id', $id)->get()->getRowArray();
         if (!$exists) {
             return $this->failMsg('Barang tidak ditemukan', 404);
         }
 
-        // Ambil payload JSON atau form
         $p = $this->request->getJSON(true) ?? $this->request->getRawInput();
 
-        // Field yang diizinkan update dari modal
         $allowed = [
             'base_unit_of_measure',
             'material_type',
             'material_group',
-            'storage_id', // boleh null
+            'storage_id',
         ];
 
         $data = [];
@@ -120,7 +115,6 @@ class BarangApi extends BaseApiController
                 return $this->failMsg('Gagal mengupdate barang', 422);
             }
 
-            // Kembalikan row terbaru
             $row = $db->table('barang')->select(
                 'id, material, material_description, plant, material_group, storage_location, storage_location_desc,
                  df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
@@ -133,7 +127,6 @@ class BarangApi extends BaseApiController
         }
     }
 
-    /** DELETE /api/v1/barang/{id} */
     public function delete($id)
     {
         $db = \Config\Database::connect();
@@ -156,61 +149,71 @@ class BarangApi extends BaseApiController
     //create barang
     public function create()
     {
-        $p = $this->request->getJSON(true) ?? [];
+        $p = $this->request->getJSON(true);
+        if (!$p) {
+            $p = $this->request->getPost();
+        }
 
         $data = [
-            'material' => trim((string) ($p['material'] ?? '')),
-            'material_description' => trim((string) ($p['material_description'] ?? '')),
-            'plant' => trim((string) ($p['plant'] ?? '')),
-            'material_group' => null, // tidak dari form
-            'storage_location' => trim((string) ($p['storage_location'] ?? '')),
-            'storage_location_desc' => trim((string) ($p['storage_location_desc'] ?? '')), // NEW
-            'df_stor_loc_level' => null,
-            'base_unit_of_measure' => trim((string) ($p['base_unit_of_measure'] ?? '')),
-            'qty_unrestricted' => (string) ($p['qty_unrestricted'] ?? '0'),
+            'material'                 => trim((string) ($p['material'] ?? '')),
+            'material_description'     => trim((string) ($p['material_description'] ?? '')),
+            'plant'                    => trim((string) ($p['plant'] ?? '')),
+            'material_group'           => trim((string) ($p['material_group'] ?? '')),
+            'storage_location'         => trim((string) ($p['storage_location'] ?? '')),
+            'storage_location_desc'    => trim((string) ($p['storage_location_desc'] ?? '')),
+            'df_stor_loc_level'        => null,
+            'base_unit_of_measure'     => trim((string) ($p['base_unit_of_measure'] ?? '')),
+            'qty_unrestricted'         => (string) ($p['qty_unrestricted'] ?? '0'),
             'qty_transit_and_transfer' => (string) ($p['qty_transit_and_transfer'] ?? '0'),
-            'qty_blocked' => (string) ($p['qty_blocked'] ?? '0'),
-            'material_type' => trim((string) ($p['material_type'] ?? '')),
-            'import_batch' => date('Ymd_His'),
+            'qty_blocked'              => (string) ($p['qty_blocked'] ?? '0'),
+            'storage_id'               => (int) ($p['storage_id'] ?? 0) ?: null,
+            'material_type'            => trim((string) ($p['material_type'] ?? '')),
+            'import_batch'             => date('Ymd_His'),
         ];
 
         if ($data['material'] === '') {
             return $this->failMsg('Material wajib diisi', 400);
         }
         if ($data['plant'] !== '' && !in_array($data['plant'], ['1200', '1300'], true)) {
-            return $this->failMsg('Plant hanya 1200 atau 1300', 400);
+            return $this->failMsg('Plant hanya boleh 1200 atau 1300', 400);
+        }
+        if ($data['material_group'] === '') {
+            return $this->failMsg('Material Group wajib diisi', 400);
         }
 
         try {
             $db = \Config\Database::connect();
+
             $sql = "
-                INSERT INTO barang
-                (material, material_description, plant, material_group, storage_location, storage_location_desc,
-                 df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
-                 material_type, import_batch, created_at, updated_at)
-                VALUES
-                (:material:, :material_description:, :plant:, :material_group:, :storage_location:, :storage_location_desc:,
-                 :df_stor_loc_level:, :base_unit_of_measure:, :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
-                 :material_type:, :import_batch:, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                ON DUPLICATE KEY UPDATE
-                    material_description       = VALUES(material_description),
-                    plant                      = VALUES(plant),
-                    material_group             = VALUES(material_group),
-                    storage_location           = VALUES(storage_location),
-                    storage_location_desc      = VALUES(storage_location_desc),
-                    df_stor_loc_level          = VALUES(df_stor_loc_level),
-                    base_unit_of_measure       = VALUES(base_unit_of_measure),
-                    qty_unrestricted           = VALUES(qty_unrestricted),
-                    qty_transit_and_transfer   = VALUES(qty_transit_and_transfer),
-                    qty_blocked                = VALUES(qty_blocked),
-                    material_type              = VALUES(material_type),
-                    import_batch               = VALUES(import_batch),
-                    updated_at                 = CURRENT_TIMESTAMP
-            ";
+            INSERT INTO barang
+            (material, material_description, plant, material_group, storage_location, storage_location_desc,
+             df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
+             storage_id, material_type, import_batch, created_at, updated_at)
+            VALUES
+            (:material:, :material_description:, :plant:, :material_group:, :storage_location:, :storage_location_desc:,
+             :df_stor_loc_level:, :base_unit_of_measure:, :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
+             :storage_id:, :material_type:, :import_batch:, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON DUPLICATE KEY UPDATE
+                material_description       = VALUES(material_description),
+                plant                      = VALUES(plant),
+                material_group             = VALUES(material_group),
+                storage_location           = VALUES(storage_location),
+                storage_location_desc      = VALUES(storage_location_desc),
+                df_stor_loc_level          = VALUES(df_stor_loc_level),
+                base_unit_of_measure       = VALUES(base_unit_of_measure),
+                qty_unrestricted           = VALUES(qty_unrestricted),
+                qty_transit_and_transfer   = VALUES(qty_transit_and_transfer),
+                qty_blocked                = VALUES(qty_blocked),
+                storage_id                 = VALUES(storage_id),
+                material_type              = VALUES(material_type),
+                import_batch               = VALUES(import_batch),
+                updated_at                 = CURRENT_TIMESTAMP
+        ";
+
             $db->query($sql, $data);
 
             $row = $db->table('barang')
-                ->select('id, material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, material_type, import_batch, created_at, updated_at')
+                ->select('id, material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, storage_id, material_type, import_batch, created_at, updated_at')
                 ->where('material', $data['material'])
                 ->get()->getRowArray();
 
@@ -220,7 +223,7 @@ class BarangApi extends BaseApiController
         }
     }
 
-    /** POST multipart file=  (.xlsx/.xls/.csv) */
+
     public function import()
     {
         $file = $this->request->getFile('file');
@@ -239,7 +242,6 @@ class BarangApi extends BaseApiController
 
         $excel = new BarangExcel();
         try {
-            // Asumsi BarangExcel::import() mengembalikan [ins, upd, skip, errs]
             [$ins, $upd, $skip, $errs] = $excel->import($tmp);
             @unlink($tmp);
             return $this->ok(compact('ins', 'upd', 'skip', 'errs'));
@@ -249,7 +251,6 @@ class BarangApi extends BaseApiController
         }
     }
 
-    /** GET /api/v1/barang/export  -> download XLSX */
     public function export()
     {
         $excel = new BarangExcel();

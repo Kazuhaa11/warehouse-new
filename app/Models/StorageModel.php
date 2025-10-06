@@ -22,13 +22,12 @@ class StorageModel extends Model
         'created_by',
     ];
 
-    // karena ada created_at & updated_at
-    protected $useTimestamps = true;          // isi otomatis created_at, updated_at (datetime)
+    protected $useTimestamps = true;         
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
     /**
-     * @return array{0: array<int,array>, 1:int}
+     * @return array
      */
     public function listWithPath(array $filters, int $page, int $perPage): array
     {

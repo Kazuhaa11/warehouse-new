@@ -4,11 +4,9 @@
 <div class="card mb-4">
   <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
     <form id="filterForm" class="d-flex flex-wrap gap-2 align-items-center">
-      <!-- Search -->
       <input type="text" class="form-control form-control-sm" name="q" placeholder="Cari material/desc/sloc…"
         value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
 
-      <!-- Plant -->
       <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
         <option value="">All Plant</option>
         <option value="1200">Plant 1200</option>
@@ -18,7 +16,6 @@
       <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
 
-      <!-- Button buka modal: Tambah Satuan (Barang) -->
       <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalSatuan">
         <i class="fas fa-plus"></i> Tambah Satuan
       </button>
@@ -58,7 +55,6 @@
   </div>
 </div>
 
-<!-- MODAL: Tambah Satuan/Barang (komponen generik) -->
 <?= view('components/modal/modal-form', [
   'modalId' => 'modalSatuan',
   'title' => 'Tambah Barang',
@@ -66,17 +62,23 @@
   'method' => 'POST',
   'submitText' => 'Simpan',
   'size' => 'lg',
-  'split' => 5, // 5 field kiri, 4 kanan
+  'split' => 5,
   'fields' => [
-    // KIRI (5)
     ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'placeholder' => 'Kode material unik', 'required' => true],
     ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text', 'placeholder' => 'Nama/Deskripsi'],
+
     [
       'name' => 'plant',
       'label' => 'Plant',
       'type' => 'select',
-      'options' => [['value' => '1200', 'label' => 'Plant 1200'], ['value' => '1300', 'label' => 'Plant 1300']]
+      'options' => [
+        ['value' => '1200', 'label' => 'Plant 1200'],
+        ['value' => '1300', 'label' => 'Plant 1300']
+      ]
     ],
+
+    ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text', 'placeholder' => 'mis. MG01 / ELEC / PART'],
+
     [
       'name' => 'storage_location',
       'label' => 'Stor. Loc',
@@ -88,6 +90,7 @@
         ['value' => '3691', 'label' => '3691'],
       ]
     ],
+
     [
       'name' => 'storage_location_desc',
       'label' => 'Stor. Loc Desc',
@@ -98,7 +101,13 @@
       ]
     ],
 
-    // KANAN (4)
+    [
+      'name' => 'storage_id',
+      'label' => 'Storage ID',
+      'type' => 'select',
+      'options' => []
+    ],
+
     ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text', 'placeholder' => 'PCS / KG / L'],
     ['name' => 'qty_unrestricted', 'label' => 'Unrestricted', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
     ['name' => 'qty_transit_and_transfer', 'label' => 'Transit', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
@@ -107,31 +116,42 @@
   ],
 ]) ?>
 
-<!-- MODAL: Detail Barang (komponen generik) -->
+
+
 <?php
 echo view('components/modal/modal-form', [
   'modalId' => 'modalBarangDetail',
   'title' => 'Detail Barang',
-  'api' => '#',          // di-set via JS → /api/v1/barang/{id}
+  'api' => '#',
   'method' => 'PUT',
   'submitText' => 'Update',
   'size' => 'lg',
   'split' => 3,
   'fields' => [
-    // kiri
     ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'required' => true],
     ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text'],
     ['name' => 'plant', 'label' => 'Plant', 'type' => 'text'],
-    // kanan
     ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text'],
     ['name' => 'material_type', 'label' => 'Material Type', 'type' => 'text'],
     ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text'],
-    // bawah
-    ['name' => 'storage_id', 'label' => 'Storage ID', 'type' => 'text', 'placeholder' => 'ID storage'],
-    ['name' => 'storage_info', 'label' => 'Info Storage (auto)', 'type' => 'textarea', 'placeholder' => 'Akan diisi otomatis dari /storages/{id}'],
+
+    [
+      'name' => 'storage_id',
+      'label' => 'Storage ID',
+      'type' => 'select',
+      'options' => []
+    ],
+    [
+      'name' => 'storage_info',
+      'label' => 'Info Storage (auto)',
+      'type' => 'textarea',
+      'placeholder' => 'Akan diisi otomatis dari /storages/{id}',
+      'readonly' => true,
+    ],
   ],
 ]);
 ?>
+
 
 <?= $this->endSection() ?>
 
@@ -151,12 +171,14 @@ echo view('components/modal/modal-form', [
     const pager = document.getElementById('pager');
     const metaText = document.getElementById('metaText');
 
-    // keep params from URL
     const initParams = new URLSearchParams(location.search);
     if (initParams.get('plant')) plantSel.value = initParams.get('plant');
     if (initParams.get('q')) qInput.value = initParams.get('q');
 
-    form.addEventListener('submit', (e) => { e.preventDefault(); load(1); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      load(1);
+    });
     btnReset.addEventListener('click', () => {
       qInput.value = '';
       plantSel.value = '';
@@ -172,12 +194,9 @@ echo view('components/modal/modal-form', [
       params.set('per_page', PER_PAGE);
       params.set('page', page);
 
-      // update URL
       history.replaceState(null, '', '?' + params.toString());
 
-      tbody.innerHTML = `
-      <tr><td colspan="9" class="text-center text-muted">Memuat data...</td></tr>
-    `;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Memuat data...</td></tr>`;
       pager.innerHTML = '';
       metaText.textContent = '—';
 
@@ -187,23 +206,24 @@ echo view('components/modal/modal-form', [
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
 
         const rows = json.data || [];
-        const meta = json.meta || { page, per_page: PER_PAGE, total: 0, total_pages: 1 };
+        const meta = json.meta || {
+          page,
+          per_page: PER_PAGE,
+          total: 0,
+          total_pages: 1
+        };
 
         renderRows(rows);
         renderPager(meta);
         metaText.textContent = `Halaman ${meta.page} / ${meta.total_pages} • ${rows.length} data ditampilkan • Total ${meta.total} data`;
       } catch (err) {
-        tbody.innerHTML = `
-        <tr><td colspan="9" class="text-center text-danger">${esc(err.message)}</td></tr>
-      `;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">${esc(err.message)}</td></tr>`;
       }
     }
 
     function renderRows(rows) {
       if (!rows.length) {
-        tbody.innerHTML = `
-        <tr><td colspan="9" class="text-center text-muted">Tidak ada data</td></tr>
-      `;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Tidak ada data</td></tr>`;
         return;
       }
       tbody.innerHTML = rows.map(r => `
@@ -217,8 +237,7 @@ echo view('components/modal/modal-form', [
         <td class="text-end">${num(r.qty_transit_and_transfer)}</td>
         <td class="text-end">${num(r.qty_blocked)}</td>
         <td class="text-center">
-          <button class="btn btn-outline-primary btn-sm btn-detail"
-                  data-id="${r.id}" title="Detail">
+          <button class="btn btn-outline-primary btn-sm btn-detail" data-id="${r.id}" title="Detail">
             <i class="fas fa-eye"></i>
           </button>
         </td>
@@ -272,12 +291,10 @@ echo view('components/modal/modal-form', [
       });
     }
 
-    // ====== DETAIL MODAL ======
     const detailModalEl = document.getElementById('modalBarangDetail');
     const detailForm = detailModalEl.querySelector('form[data-modal-form]');
     const errBox = detailModalEl.querySelector('[data-role="error"]');
 
-    // Tambahkan tombol Hapus di footer modal
     (() => {
       const footer = detailModalEl.querySelector('.modal-footer');
       const delBtn = document.createElement('button');
@@ -288,27 +305,110 @@ echo view('components/modal/modal-form', [
       footer.insertBefore(delBtn, footer.lastElementChild);
     })();
 
-    // Klik detail → buka modal
     tbody.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.btn-detail'); if (!btn) return;
+      const btn = e.target.closest('.btn-detail');
+      if (!btn) return;
       const id = btn.dataset.id;
       await openDetail(id);
     });
 
+    document.getElementById("modalSatuan").addEventListener("shown.bs.modal", async () => {
+      const select = document.querySelector("#modalSatuanForm_storage_id");
+      if (!select) return;
+
+      if (select.options.length > 1) return;
+
+      try {
+        const res = await fetch(API_STORAGES);
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((item) => {
+            const path = [item.zone, item.rack, item.bin].filter(Boolean).join(" / ");
+            const label = `${item.id} — ${item.name || path || "(tanpa nama)"}`;
+            const opt = document.createElement("option");
+            opt.value = item.id;
+            opt.textContent = label;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error("Gagal memuat Storage:", err);
+      }
+    });
+    
+    document.getElementById("modalBarangDetail").addEventListener("shown.bs.modal", async () => {
+      const select = document.querySelector("#modalBarangDetailForm_storage_id");
+      const info = document.querySelector("#modalBarangDetailForm_storage_info");
+      if (!select || !info) return;
+
+      if (select.options.length <= 1) {
+        try {
+          const res = await fetch(API_STORAGES);
+          const json = await res.json();
+
+          if (json.success && Array.isArray(json.data)) {
+            json.data.forEach((item) => {
+              const path = [item.zone, item.rack, item.bin].filter(Boolean).join(" / ");
+              const label = `${item.id} — ${item.name || path || "(tanpa nama)"}`;
+              const opt = document.createElement("option");
+              opt.value = item.id;
+              opt.textContent = label;
+              select.appendChild(opt);
+            });
+          }
+        } catch (err) {
+          console.error("Gagal memuat Storage:", err);
+        }
+      }
+
+      info.setAttribute("readonly", true);
+
+      select.addEventListener("change", async (e) => {
+        const val = e.target.value;
+        if (!val) {
+          info.value = "Tidak ada storage dipilih.";
+          return;
+        }
+
+        info.value = "Memuat info storage...";
+        try {
+          const res = await fetch(`${API_STORAGES}/${val}`);
+          const js = await res.json();
+          if (res.ok && js.success && js.data) {
+            const s = js.data;
+            const label = [
+              s.name || s.title || "",
+              s.path ? `(${s.path})` : "",
+              s.plant ? ` • Plant: ${s.plant}` : "",
+              s.storage_location ? ` • SLoc: ${s.storage_location}` : "",
+              s.zone ? ` • Zone: ${s.zone}` : "",
+              s.rack ? ` • Rack: ${s.rack}` : "",
+              s.bin ? ` • Bin: ${s.bin}` : ""
+            ].filter(Boolean).join(" ");
+            info.value = label || "Storage ditemukan tetapi tanpa detail.";
+          } else {
+            info.value = js?.error?.message || "Gagal memuat info storage.";
+          }
+        } catch (err) {
+          info.value = "Gagal memuat info storage.";
+          console.error(err);
+        }
+      });
+    });
+
+
     async function openDetail(id) {
       clearError();
       try {
-        // GET barang
         const res = await fetch(`${API_BARANG}/${id}`);
         const json = await res.json();
         if (!res.ok || !json.success) throw new Error(json?.error?.message || 'Gagal ambil detail');
 
         const b = json.data || json;
-        // set target PUT /barang/{id}
         detailForm.dataset.api = `${API_BARANG}/${id}`;
         detailForm.dataset.method = 'PUT';
 
-        // isi fields
         setValue('material', b.material);
         setValue('material_description', b.material_description);
         setValue('plant', b.plant);
@@ -318,7 +418,6 @@ echo view('components/modal/modal-form', [
         setValue('storage_id', b.storage_id || '');
         setValue('storage_info', 'Memuat info storage…');
 
-        // GET info storage (jika ada storage_id)
         if (b.storage_id) {
           try {
             const rs = await fetch(`${API_STORAGES}/${b.storage_id}`);
@@ -326,8 +425,8 @@ echo view('components/modal/modal-form', [
             if (rs.ok) {
               const s = js.data || js;
               const label = [
-                s.zone ? ` • Zone: ${s.bin}`: '', 
-                s.rack ? ` • Rack: ${s.rack}`: '',
+                s.zone ? ` • Zone: ${s.zone}` : '',
+                s.rack ? ` • Rack: ${s.rack}` : '',
                 s.bin ? ` • Bin: ${s.bin}` : '',
                 s.plant ? ` • Plant: ${s.plant}` : '',
                 s.storage_location ? ` • SLoc: ${s.storage_location}` : ''
@@ -343,60 +442,39 @@ echo view('components/modal/modal-form', [
           setValue('storage_info', 'Tidak ada storage_id.');
         }
 
-        // tampilkan modal
         new bootstrap.Modal(detailModalEl).show();
 
-        // tombol delete
         const del = document.getElementById('btnDeleteBarang');
         del.onclick = async () => {
           if (!confirm('Hapus barang ini?')) return;
           try {
-            const r = await fetch(`${API_BARANG}/${id}`, { method: 'DELETE' });
+            const r = await fetch(`${API_BARANG}/${id}`, {
+              method: 'DELETE'
+            });
             const j = await r.json().catch(() => ({}));
             if (!r.ok || j.success === false) throw new Error(j?.error?.message || 'Gagal menghapus');
             bootstrap.Modal.getInstance(detailModalEl)?.hide();
             load(1);
-          } catch (err) { showError(err.message || 'Gagal menghapus'); }
+          } catch (err) {
+            showError(err.message || 'Gagal menghapus');
+          }
         };
 
-        // change storage_id → refresh storage_info
-        detailForm.querySelector('#<?= esc('modalBarangDetailForm_storage_id') ?>')
-          ?.addEventListener('change', async (e) => {
-            const val = String(e.target.value || '').trim();
-            if (!val) { setValue('storage_info', 'Tidak ada storage_id.'); return; }
-            setValue('storage_info', 'Memuat info storage…');
-            try {
-              const rs = await fetch(`${API_STORAGES}/${encodeURIComponent(val)}`);
-              const js = await rs.json();
-              if (!rs.ok) throw new Error(js?.error?.message || 'Gagal memuat info storage.');
-              const s = js.data || js;
-              const label = [
-                s.name || s.title || '',
-                s.path ? ` (${s.path})` : '',
-                s.plant ? ` • Plant: ${s.plant}` : '',
-                s.storage_location ? ` • SLoc: ${s.storage_location}` : ''
-              ].filter(Boolean).join('');
-              setValue('storage_info', label || 'Storage ditemukan tetapi tanpa detail.');
-            } catch (err) {
-              setValue('storage_info', err.message || 'Gagal memuat info storage.');
-            }
-          });
+        window.addEventListener('modal:success', onModalSuccess, {
+          once: true
+        });
 
-        // reload list ketika update sukses
-        window.addEventListener('modal:success', onModalSuccess, { once: true });
         function onModalSuccess(ev) {
           if (ev.detail?.modalId === 'modalBarangDetail') load(1);
         }
-
       } catch (err) {
         alert(err.message || 'Gagal memuat detail.');
       }
     }
 
-    // notifikasi sederhana untuk Tambah Satuan sukses
     window.addEventListener('modal:success', (ev) => {
       if (ev.detail?.modalId === 'modalSatuan') {
-        alert('Satuan/Barang berhasil ditambahkan.');
+        alert('Barang berhasil ditambahkan.');
         load(1);
       }
     });
@@ -405,17 +483,43 @@ echo view('components/modal/modal-form', [
       const el = detailForm.querySelector(`[name="${css(name)}"]`);
       if (el) el.value = value ?? '';
     }
-    function clearError() { if (errBox) { errBox.classList.add('d-none'); errBox.textContent = ''; } }
-    function showError(msg) { if (errBox) { errBox.classList.remove('d-none'); errBox.textContent = msg; } }
-    function num(v) { const n = Number(v ?? 0); return isNaN(n) ? '0' : n.toLocaleString(); }
-    function esc(s) { return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
-    function css(s) { return String(s).replace(/"/g, '\\"'); }
 
-    // initial
+    function clearError() {
+      if (errBox) {
+        errBox.classList.add('d-none');
+        errBox.textContent = '';
+      }
+    }
+
+    function showError(msg) {
+      if (errBox) {
+        errBox.classList.remove('d-none');
+        errBox.textContent = msg;
+      }
+    }
+
+    function num(v) {
+      const n = Number(v ?? 0);
+      return isNaN(n) ? '0' : n.toLocaleString();
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      } [m]));
+    }
+
+    function css(s) {
+      return String(s).replace(/"/g, '\\"');
+    }
+
     load(1);
   })();
 </script>
 
-<!-- handler modal generik -->
 <script src="<?= base_url('sbadmin/js/modal-form.js') ?>"></script>
 <?= $this->endSection() ?>

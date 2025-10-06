@@ -23,7 +23,7 @@ class BaseApiController extends Controller
     ) {
         parent::initController($request, $response, $logger);
         /** @var IncomingRequest|CLIRequest $request */
-        $this->request = $request; // beri tahu IDE tipenya yang tepat
+        $this->request = $request; 
     }
 
     protected function ok($data = [], $meta = [], int $code = 200)

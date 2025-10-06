@@ -11,22 +11,18 @@ $request = service('request');
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><?= esc($title) ?> · Warehouse</title>
 
-    <!-- SB Admin CSS (dari ZIP lokal) -->
-    <link href="<?= base_url('sbadmin/css/styles.css') ?>" rel="stylesheet" />
+    <link rel="stylesheet" href="<?= base_url('assets/bootstrap/css/bootstrap.min.css') ?>">
 
-    <!-- Font Awesome & Bootstrap via CDN (boleh diganti lokal kalau mau) -->
-    <script src="https://use.fontawesome.com/releases/v6.5.2/js/all.js" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.0/dist/style.min.css" rel="stylesheet">
+    <link href="<?= base_url('sbadmin/css/styles.css') ?>" rel="stylesheet" />
+    <link rel="stylesheet" href="<?= base_url('fontawesome/css/all.min.css') ?>">
 </head>
 
 <body class="sb-nav-fixed">
-    <!-- Top Navbar -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-3" id="sidebarToggle"><i
                 class="fas fa-bars"></i></button>
         <a class="navbar-brand ps-3" href="<?= base_url('admin/dashboard') ?>">Warehouse</a>
 
-        <!-- Search -->
         <form class="d-none d-md-inline-block ms-auto me-3" action="<?= base_url('admin/barang') ?>" method="get">
             <div class="input-group input-group-sm">
                 <input class="form-control" type="text" name="q" placeholder="Cari Material / Deskripsi"
@@ -35,7 +31,6 @@ $request = service('request');
             </div>
         </form>
 
-        <!-- User -->
         <ul class="navbar-nav me-3">
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"><i
@@ -52,7 +47,6 @@ $request = service('request');
     </nav>
 
     <div id="layoutSidenav">
-        <!-- Sidebar -->
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
@@ -90,7 +84,6 @@ $request = service('request');
             </nav>
         </div>
 
-        <!-- Content -->
         <div id="layoutSidenav_content">
             <main class="container-fluid px-4 py-3">
                 <h1 class="mt-2 mb-3"><?= esc($title) ?></h1>
@@ -118,12 +111,9 @@ $request = service('request');
         });
     </script>
 
-    <!-- JS vendor (CDN seperti di template asli) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
-
-    <!-- SB Admin JS (dari ZIP lokal) -->
+    <script src="<?= base_url('assets/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= base_url('sbadmin/js/scripts.js') ?>"></script>
+
 
     <?= $this->renderSection('scripts') ?>
 </body>
