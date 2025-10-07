@@ -1,8 +1,11 @@
 <?php
 namespace App\Controllers\Api;
 
-use App\Controllers\BaseController;
+use App\Controllers\Api\BaseApiController;
+use App\Libraries\Auth;
 use Config\Database;
+
+
 
 class PeminjamanApi extends BaseApiController
 {
@@ -51,6 +54,13 @@ class PeminjamanApi extends BaseApiController
             ->join('peminjaman_items pi', 'pi.peminjaman_id = p.id', 'left')
             ->join('barang b', 'b.id = pi.barang_id', 'left');
 
+        $role = Auth::role();
+        $uid  = Auth::id();
+
+        if ($role === 'mobile' && $uid) {
+            $b->where('p.peminjam_id', $uid);
+        }
+
         if ($q !== '') {
             $b->groupStart()
                 ->like('p.no_nota', $q)
@@ -59,7 +69,7 @@ class PeminjamanApi extends BaseApiController
                 ->groupEnd();
         }
         if ($plant !== '') {
-            $b->where('b.plant', $plant); 
+            $b->where('b.plant', $plant);
         }
 
         $count = clone $b;
@@ -92,7 +102,6 @@ class PeminjamanApi extends BaseApiController
                 p.note,
                 p.peminjam_id,
                 u.username AS peminjam_username,
-                u.username AS peminjam,
                 p.created_at,
                 p.updated_at
             ')
@@ -102,6 +111,13 @@ class PeminjamanApi extends BaseApiController
 
         if (!$row) {
             return $this->failMsg('Data tidak ditemukan', 404);
+        }
+        
+        $role = Auth::role();
+        $uid  = Auth::id();
+
+        if ($role === 'mobile' && $uid && (int)$row['peminjam_id'] !== $uid) {
+            return $this->failMsg('Forbidden: tidak boleh akses data orang lain', 403);
         }
 
         $plants = $this->db->table('peminjaman_items pi')
@@ -122,94 +138,86 @@ class PeminjamanApi extends BaseApiController
     public function create()
     {
         try {
-            $user = auth()->user();
+            // ==== Validasi auth & role ====
+            $user = Auth::user();
             if (!$user) {
                 return $this->failMsg('Unauthorized', 401);
             }
-            if (($user->role ?? null) !== 'mobile') {
+            if (($user['role'] ?? null) !== 'mobile') {
                 return $this->failMsg('Hanya user dengan role "mobile" yang boleh membuat peminjaman', 403);
             }
-            $peminjamId = (int) $user->id; 
+            $peminjamId = (int) $user['id'];
 
             $p = $this->request->getJSON(true) ?? [];
-            $tanggal = $p['tanggal'] ?? $p['borrow_date'] ?? date('Y-m-d');
-            $dueDate = $p['due_date'] ?? null; 
-            $plant = $p['plant'] ?? null;
-            $note = $p['keterangan'] ?? $p['note'] ?? null;
-            $items = is_array($p['items'] ?? null) ? $p['items'] : [];
+            $tanggal = $p['tanggal'] ?? date('Y-m-d');
+            $dueDate = $p['due_date'] ?? null;
+            $plant   = $p['plant'] ?? null;
+            $note    = $p['note'] ?? null;
+            $items   = is_array($p['items'] ?? null) ? $p['items'] : [];
 
+            // Validasi header
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
                 return $this->failMsg('Format tanggal harus YYYY-MM-DD');
             }
             if ($dueDate !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
                 return $this->failMsg('Format due_date harus YYYY-MM-DD');
             }
-            if ($plant !== null && !in_array($plant, ['1200', '1300'], true)) {
+            if ($plant !== null && !in_array($plant, ['1200','1300'], true)) {
                 return $this->failMsg('Plant hanya 1200 atau 1300');
             }
 
             $this->db->transStart();
 
             $no = $this->generateNumber();
-            $dataHeader = [
-                'no_nota' => $no,
+            $this->db->table('peminjaman')->insert([
+                'no_nota'     => $no,
                 'peminjam_id' => $peminjamId,
                 'borrow_date' => $tanggal . ' 00:00:00',
-                'due_date' => $dueDate ? ($dueDate . ' 00:00:00') : null,
-                'status' => 'draft',
-                'note' => $note,
-            ];
-            $this->db->table('peminjaman')->insert($dataHeader);
-            $err = $this->db->error();
-            if (!empty($err['code'])) {
-                throw new \RuntimeException('DB insert error: ' . $err['message']);
-            }
+                'due_date'    => $dueDate ? $dueDate . ' 00:00:00' : null,
+                'status'      => 'draft',
+                'note'        => $note,
+                'created_at'  => date('Y-m-d H:i:s')
+            ]);
             $peminjamanIdNew = (int) $this->db->insertID();
 
             if (!empty($items)) {
                 $rows = [];
                 foreach ($items as $i => $it) {
-                    $scan = $it['scan'] ?? null;
-                    $barangId = $it['barang_id'] ?? null;
-                    $qty = (float) ($it['qty'] ?? $it['quantity'] ?? 0);
+                    $scan      = $it['scan'] ?? null;       // kode material hasil QR
+                    $barangId  = isset($it['barang_id']) ? (int)$it['barang_id'] : null;
+                    $qty       = (float) ($it['qty'] ?? $it['quantity'] ?? 0);
                     $plantItem = $it['plant'] ?? $plant;
-                    $storLoc = $it['storage_location'] ?? null;
-                    $storageId = $it['storage_id'] ?? null;
+                    $storLoc   = $it['storage_location'] ?? null;
+                    $storageId = isset($it['storage_id']) ? (int)$it['storage_id'] : null;
 
                     if ($qty <= 0) {
-                        throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": qty harus > 0");
+                        throw new \InvalidArgumentException("Item ke-".($i+1).": qty harus > 0");
                     }
-                    if ($plantItem !== null && !in_array($plantItem, ['1200', '1300'], true)) {
-                        throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": plant hanya 1200 atau 1300");
+                    if ($plantItem !== null && !in_array($plantItem, ['1200','1300'], true)) {
+                        throw new \InvalidArgumentException("Item ke-".($i+1).": plant hanya 1200/1300");
                     }
 
+                    // Ambil data barang
                     $barang = $this->resolveBarang($scan, $barangId);
                     if (!$barang) {
-                        throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": barang tidak ditemukan");
+                        throw new \InvalidArgumentException("Item ke-".($i+1).": barang tidak ditemukan");
                     }
 
-                    $uomDefault = $barang['base_unit_of_measure'] ?? 'EA';
-                    $storDefault = $barang['storage_location'] ?? null;
-
                     $rows[] = [
-                        'peminjaman_id' => $peminjamanIdNew,
-                        'barang_id' => (int) $barang['id'],
-                        'storage_id' => $storageId ?: ($barang['storage_id'] ?? null),
-                        'material' => $barang['material'],
-                        'requested_qty' => $qty,
-                        'approved_qty' => 0,
-                        'uom' => $uomDefault,
-                        'storage_location' => $storLoc ?: $storDefault,
-                        'note' => $it['note'] ?? null,
+                        'peminjaman_id'    => $peminjamanIdNew,
+                        'barang_id'        => (int)$barang['id'],
+                        'material'         => $barang['material'],
+                        'requested_qty'    => $qty,
+                        'approved_qty'     => 0,
+                        'uom'              => $barang['base_unit_of_measure'] ?? 'EA',
+                        'storage_location' => $storLoc ?: ($barang['storage_location'] ?? null),
+                        'storage_id'       => $storageId ?: ($barang['storage_id'] ?? null),
+                        'note'             => $it['note'] ?? null,
                     ];
                 }
 
                 if (!empty($rows)) {
                     $this->db->table('peminjaman_items')->insertBatch($rows);
-                    $err = $this->db->error();
-                    if (!empty($err['code'])) {
-                        throw new \RuntimeException('DB insert error (items): ' . $err['message']);
-                    }
                 }
             }
 
@@ -253,13 +261,16 @@ class PeminjamanApi extends BaseApiController
         }
     }
 
+    /**
+     * Resolve barang berdasarkan barang_id atau kode material (scan).
+     */
     private function resolveBarang(?string $scan, ?int $barangId): ?array
     {
         $builder = $this->db->table('barang')
             ->select('id, material, base_unit_of_measure, storage_location, storage_id');
 
-        if (!empty($barangId)) {
-            $row = $builder->where('id', (int) $barangId)->get()->getRowArray();
+        if ($barangId && $barangId > 0) {
+            $row = $builder->where('id', $barangId)->get()->getRowArray();
             if ($row) {
                 return $row;
             }
