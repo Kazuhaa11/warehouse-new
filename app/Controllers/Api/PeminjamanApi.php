@@ -55,7 +55,7 @@ class PeminjamanApi extends BaseApiController
             ->join('barang b', 'b.id = pi.barang_id', 'left');
 
         $role = Auth::role();
-        $uid  = Auth::id();
+        $uid = Auth::id();
 
         if ($role === 'mobile' && $uid) {
             $b->where('p.peminjam_id', $uid);
@@ -112,11 +112,11 @@ class PeminjamanApi extends BaseApiController
         if (!$row) {
             return $this->failMsg('Data tidak ditemukan', 404);
         }
-        
-        $role = Auth::role();
-        $uid  = Auth::id();
 
-        if ($role === 'mobile' && $uid && (int)$row['peminjam_id'] !== $uid) {
+        $role = Auth::role();
+        $uid = Auth::id();
+
+        if ($role === 'mobile' && $uid && (int) $row['peminjam_id'] !== $uid) {
             return $this->failMsg('Forbidden: tidak boleh akses data orang lain', 403);
         }
 
@@ -138,106 +138,125 @@ class PeminjamanApi extends BaseApiController
     public function create()
     {
         try {
-            // ==== Validasi auth & role ====
             $user = Auth::user();
             if (!$user) {
-                return $this->failMsg('Unauthorized', 401);
+                return $this->fail('Unauthorized', 401);
             }
-            if (($user['role'] ?? null) !== 'mobile') {
-                return $this->failMsg('Hanya user dengan role "mobile" yang boleh membuat peminjaman', 403);
-            }
-            $peminjamId = (int) $user['id'];
 
+            if (($user['role'] ?? null) !== 'mobile') {
+                return $this->fail('Hanya user dengan role "mobile" yang boleh membuat peminjaman', 403);
+            }
+
+            $peminjamId = (int) $user['id'];
             $p = $this->request->getJSON(true) ?? [];
+
             $tanggal = $p['tanggal'] ?? date('Y-m-d');
             $dueDate = $p['due_date'] ?? null;
-            $plant   = $p['plant'] ?? null;
-            $note    = $p['note'] ?? null;
-            $items   = is_array($p['items'] ?? null) ? $p['items'] : [];
+            $plant = $p['plant'] ?? null;
+            $note = $p['note'] ?? null;
+            $items = is_array($p['items'] ?? null) ? $p['items'] : [];
 
-            // Validasi header
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
-                return $this->failMsg('Format tanggal harus YYYY-MM-DD');
+                return $this->fail('Format tanggal harus YYYY-MM-DD', 400);
             }
             if ($dueDate !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
-                return $this->failMsg('Format due_date harus YYYY-MM-DD');
+                return $this->fail('Format due_date harus YYYY-MM-DD', 400);
             }
-            if ($plant !== null && !in_array($plant, ['1200','1300'], true)) {
-                return $this->failMsg('Plant hanya 1200 atau 1300');
+            if ($plant !== null && !in_array($plant, ['1200', '1300'], true)) {
+                return $this->fail('Plant hanya 1200 atau 1300', 400);
+            }
+
+            if (empty($items)) {
+                return $this->fail('Minimal 1 item harus dikirim', 400);
             }
 
             $this->db->transStart();
 
             $no = $this->generateNumber();
             $this->db->table('peminjaman')->insert([
-                'no_nota'     => $no,
+                'no_nota' => $no,
                 'peminjam_id' => $peminjamId,
                 'borrow_date' => $tanggal . ' 00:00:00',
-                'due_date'    => $dueDate ? $dueDate . ' 00:00:00' : null,
-                'status'      => 'draft',
-                'note'        => $note,
-                'created_at'  => date('Y-m-d H:i:s')
+                'due_date' => $dueDate ? $dueDate . ' 00:00:00' : null,
+                'status' => 'draft',
+                'note' => $note,
+                'created_at' => date('Y-m-d H:i:s')
             ]);
+
             $peminjamanIdNew = (int) $this->db->insertID();
+            $rows = [];
 
-            if (!empty($items)) {
-                $rows = [];
-                foreach ($items as $i => $it) {
-                    $scan      = $it['scan'] ?? null;       // kode material hasil QR
-                    $barangId  = isset($it['barang_id']) ? (int)$it['barang_id'] : null;
-                    $qty       = (float) ($it['qty'] ?? $it['quantity'] ?? 0);
-                    $plantItem = $it['plant'] ?? $plant;
-                    $storLoc   = $it['storage_location'] ?? null;
-                    $storageId = isset($it['storage_id']) ? (int)$it['storage_id'] : null;
+            foreach ($items as $i => $it) {
+                $scan = $it['scan'] ?? null;
+                $barangId = isset($it['barang_id']) ? (int) $it['barang_id'] : null;
+                $qty = (float) ($it['qty'] ?? $it['quantity'] ?? 0);
+                $plantItem = $it['plant'] ?? $plant;
+                $storLoc = $it['storage_location'] ?? null;
+                $storageId = isset($it['storage_id']) ? (int) $it['storage_id'] : null;
 
-                    if ($qty <= 0) {
-                        throw new \InvalidArgumentException("Item ke-".($i+1).": qty harus > 0");
-                    }
-                    if ($plantItem !== null && !in_array($plantItem, ['1200','1300'], true)) {
-                        throw new \InvalidArgumentException("Item ke-".($i+1).": plant hanya 1200/1300");
-                    }
-
-                    // Ambil data barang
-                    $barang = $this->resolveBarang($scan, $barangId);
-                    if (!$barang) {
-                        throw new \InvalidArgumentException("Item ke-".($i+1).": barang tidak ditemukan");
-                    }
-
-                    $rows[] = [
-                        'peminjaman_id'    => $peminjamanIdNew,
-                        'barang_id'        => (int)$barang['id'],
-                        'material'         => $barang['material'],
-                        'requested_qty'    => $qty,
-                        'approved_qty'     => 0,
-                        'uom'              => $barang['base_unit_of_measure'] ?? 'EA',
-                        'storage_location' => $storLoc ?: ($barang['storage_location'] ?? null),
-                        'storage_id'       => $storageId ?: ($barang['storage_id'] ?? null),
-                        'note'             => $it['note'] ?? null,
-                    ];
+                if ($qty <= 0) {
+                    throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": qty harus > 0");
+                }
+                if ($plantItem !== null && !in_array($plantItem, ['1200', '1300'], true)) {
+                    throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": plant hanya 1200/1300");
                 }
 
-                if (!empty($rows)) {
-                    $this->db->table('peminjaman_items')->insertBatch($rows);
+                $barang = $this->resolveBarang($scan, $barangId);
+                if (!$barang) {
+                    throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": barang tidak ditemukan");
                 }
+
+                $qtyUnrestricted = (float) ($barang['qty_unrestricted'] ?? 0);
+                log_message('debug', 'Barang ditemukan: ID=' . $barang['id'] .
+                    ' material=' . $barang['material'] .
+                    ' stok=' . $qtyUnrestricted .
+                    ' qtyReq=' . $qty);
+
+                if ($qtyUnrestricted <= 0) {
+                    throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": stok barang kosong (qty_unrestricted = 0)");
+                }
+                if ($qty > $qtyUnrestricted) {
+                    throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": stok tidak mencukupi, sisa $qtyUnrestricted");
+                }
+                $this->db->table('barang')
+                    ->where('id', (int) $barang['id'])
+                    ->set('qty_unrestricted', 'qty_unrestricted - ' . $qty, false)
+                    ->update();
+
+                $rows[] = [
+                    'peminjaman_id' => $peminjamanIdNew,
+                    'barang_id' => (int) $barang['id'],
+                    'material' => $barang['material'],
+                    'requested_qty' => $qty,
+                    'approved_qty' => 0,
+                    'uom' => $barang['base_unit_of_measure'] ?? 'EA',
+                    'storage_location' => $storLoc ?: ($barang['storage_location'] ?? null),
+                    'storage_id' => $storageId ?: ($barang['storage_id'] ?? null),
+                    'note' => $it['note'] ?? null,
+                ];
+            }
+
+            if (!empty($rows)) {
+                $this->db->table('peminjaman_items')->insertBatch($rows);
             }
 
             $this->db->transComplete();
             if (!$this->db->transStatus()) {
-                return $this->failMsg('Transaksi gagal');
+                return $this->fail('Transaksi gagal disimpan', 500);
             }
 
             $header = $this->db->table('peminjaman p')
                 ->select('
-                    p.id,
-                    p.no_nota,
-                    DATE(p.borrow_date) AS tanggal,
-                    DATE(p.due_date)    AS jatuh_tempo,
-                    p.status,
-                    p.note,
-                    p.peminjam_id,
-                    u.username AS peminjam_username,
-                    u.username AS peminjam
-                ')
+                p.id,
+                p.no_nota,
+                DATE(p.borrow_date) AS tanggal,
+                DATE(p.due_date)    AS jatuh_tempo,
+                p.status,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                u.username AS peminjam
+            ')
                 ->join('users u', 'u.id = p.peminjam_id', 'left')
                 ->where('p.id', $peminjamanIdNew)
                 ->get()->getRowArray();
@@ -247,27 +266,29 @@ class PeminjamanApi extends BaseApiController
                 ->where('pi.peminjaman_id', $peminjamanIdNew)
                 ->get()->getResultArray();
 
-            return $this->response->setJSON([
+            return $this->respond([
                 'success' => true,
                 'data' => [
                     'header' => $header,
                     'items' => $detail,
                 ],
-                'meta' => null,
             ]);
+
+        } catch (\InvalidArgumentException $e) {
+            $this->db->transRollback();
+            log_message('warning', '[PeminjamanApi] ' . $e->getMessage());
+            return $this->fail($e->getMessage(), 400);
         } catch (\Throwable $e) {
             $this->db->transRollback();
-            return $this->failMsg('Gagal menyimpan peminjaman', 500, $e->getMessage());
+            log_message('error', '[PeminjamanApi] ' . $e->getMessage());
+            return $this->failServerError('Terjadi kesalahan pada server.');
         }
     }
 
-    /**
-     * Resolve barang berdasarkan barang_id atau kode material (scan).
-     */
     private function resolveBarang(?string $scan, ?int $barangId): ?array
     {
         $builder = $this->db->table('barang')
-            ->select('id, material, base_unit_of_measure, storage_location, storage_id');
+            ->select('id, material, base_unit_of_measure, storage_location, storage_id, qty_unrestricted');
 
         if ($barangId && $barangId > 0) {
             $row = $builder->where('id', $barangId)->get()->getRowArray();

@@ -1,7 +1,6 @@
 <?= $this->extend('layouts/sbadmin_local') ?>
 
 <?php
-$exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/export');
 ?>
 
 <?= $this->section('content') ?>
@@ -35,10 +34,6 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
       </select>
     </div>
 
-    <a href="<?= esc($exportUrl) ?>" class="btn btn-outline-info btn-sm">
-      <i class="fas fa-download me-1"></i> Export XLSX
-    </a>
-
     <button id="btnImport" class="btn btn-outline-secondary btn-sm">
       <i class="fas fa-file-excel me-1"></i> Import Excel
     </button>
@@ -46,8 +41,10 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
       <i class="fas fa-plus me-1"></i> Tambah Item
     </button>
     <button id="btnFinalize" class="btn btn-primary btn-sm">
-      <i class="fas fa-check me-1"></i> Finalize
+      <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+      <span class="btn-text"><i class="fas fa-check me-1"></i> Finalize</span>
     </button>
+
   </div>
 </div>
 
@@ -180,7 +177,10 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-        <button class="btn btn-primary" type="submit">Upload</button>
+        <button class="btn btn-primary" id="btnUploadImport" type="submit">
+          <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <span class="btn-text">Upload</span>
+        </button>
       </div>
     </form>
   </div>
@@ -190,7 +190,7 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
 <?= $this->section('scripts') ?>
 <script>
   const sessionId = <?= (int) $sessionId ?>;
-  const API_Opname = <?= json_encode($api) ?>; 
+  const API_Opname = <?= json_encode($api) ?>;
 
   const state = { page: 1, perPage: 25, sort: 'diff_desc', q: '', plant: '', lastMeta: null };
 
@@ -403,27 +403,92 @@ $exportUrl = base_url('api/v1/stock-opname/sessions/' . (int) $sessionId . '/exp
 
   document.getElementById('formImport').addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const fd = new FormData(e.target);
+    const btnUpload = document.getElementById('btnUploadImport');
+    const spinner = btnUpload.querySelector('.spinner-border');
+    const btnText = btnUpload.querySelector('.btn-text');
+
+    btnUpload.disabled = true;
+    spinner.classList.remove('d-none');
+    btnText.textContent = 'Uploading...';
+
     try {
       const token = localStorage.getItem('access_token');
-      await fetch(`${API_Opname.items}/import`, {
+      const res = await fetch(`${API_Opname.items}/import`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
         credentials: 'same-origin'
-      }).then(r => r.json());
+      });
+
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+
       bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide();
       e.target.reset();
       notify('success', 'Import selesai.');
-      state.page = 1; loadItems();
-    } catch (err) { notify('danger', err.message || 'Gagal import.'); }
+      state.page = 1;
+      loadItems();
+    } catch (err) {
+      console.error(err);
+      notify('danger', err.message || 'Gagal import.');
+    } finally {
+      btnUpload.disabled = false;
+      spinner.classList.add('d-none');
+      btnText.textContent = 'Upload';
+    }
   });
 
   document.getElementById('btnFinalize').onclick = async () => {
-    if (!confirm('Finalize sesi ini?')) return;
-    try { await apiFetch(API_Opname.finalize, { method: 'POST' }); notify('success', 'Sesi difinalkan.'); loadSession(); }
-    catch (err) { notify('danger', err.message || 'Gagal finalize.'); }
+    if (!confirm('Finalize sesi ini dan unduh hasilnya?')) return;
+
+    const token = localStorage.getItem('access_token');
+    const url = API_Opname.finalize;
+    const btnFinalize = document.getElementById('btnFinalize');
+    const spinner = btnFinalize.querySelector('.spinner-border');
+    const btnText = btnFinalize.querySelector('.btn-text');
+
+    try {
+      btnFinalize.disabled = true;
+      spinner.classList.remove('d-none');
+      btnText.textContent = 'Processing...';
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'same-origin',
+      });
+
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+      const disposition = res.headers.get('Content-Disposition');
+      let filename = 'StockOpname_Final.xlsx';
+      if (disposition && disposition.includes('filename=')) {
+        filename = disposition.split('filename=')[1].replace(/"/g, '');
+      }
+
+      const blob = await res.blob();
+      const urlBlob = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = urlBlob;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(urlBlob);
+
+      notify('success', 'Sesi difinalkan dan file berhasil diunduh.');
+      await loadSession();
+    } catch (err) {
+      console.error(err);
+      notify('danger', err.message || 'Gagal finalize.');
+    } finally {
+      btnFinalize.disabled = false;
+      spinner.classList.add('d-none');
+      btnText.innerHTML = '<i class="fas fa-check me-1"></i> Finalize';
+    }
   };
+
 
   document.getElementById('selSort').addEventListener('change', () => { state.sort = selSort.value; state.page = 1; loadItems(); });
   document.getElementById('selPerPage').addEventListener('change', () => { state.perPage = parseInt(selPerPage.value, 10) || 25; state.page = 1; loadItems(); });

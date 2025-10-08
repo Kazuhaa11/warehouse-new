@@ -5,7 +5,6 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->get('/', 'Api\AuthApiController::loginPage');
 
-// AUTH API
 $routes->group('api/v1/auth', ['namespace' => 'App\Controllers\Api'], static function ($r) {
     $r->post('login', 'AuthApiController::login');
     $r->post('refresh', 'AuthApiController::refresh');
@@ -23,7 +22,7 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('import-export', 'ImportExportController::index');
 });
 
-// BARANG API (admin)
+
 $routes->group('api/v1', static function ($routes) {
     $routes->get('barang', 'Api\BarangApi::index', ['filter' => 'auth']);
     $routes->post('barang/import', 'Api\BarangApi::import', ['filter' => 'authadmin']);
@@ -48,7 +47,6 @@ $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
 });
 
-// STORAGES API (admin)
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api',
 ], static function ($routes) {
     $routes->get('storages', 'StorageControllerApi::index', ['filter' => 'auth']);
@@ -75,5 +73,4 @@ $routes->group('api/v1/stock-opname', [
     $routes->post('sessions/(:num)/items/import', 'StockOpnameController::importItems/$1');
 
     $routes->get('sessions/(:num)/recap', 'StockOpnameController::recap/$1');
-    $routes->get('sessions/(:num)/export', 'StockOpnameController::export/$1');
 });

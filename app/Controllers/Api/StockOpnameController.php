@@ -7,25 +7,27 @@ use App\Models\StockOpnameItemModel;
 use App\Models\StockOpnameSessionModel;
 use App\Libraries\StockOpnameExcel;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Libraries\Auth;
+use CodeIgniter\Database\BaseConnection;
+use Config\Database;
 
-class StockOpnameController extends BaseController
+class StockOpnameController extends BaseApiController
 {
     use \CodeIgniter\API\ResponseTrait;
 
     protected $helpers = ['stockopname'];
-
-    /** @var \CodeIgniter\HTTP\IncomingRequest */
     protected $request;
 
     protected StockOpnameSessionModel $sessions;
     protected StockOpnameItemModel $items;
-
+    protected BaseConnection $db;
     protected string $barangTable = 'barang';
 
     public function __construct()
     {
         $this->sessions = new StockOpnameSessionModel();
         $this->items = new StockOpnameItemModel();
+        $this->db = Database::connect();
     }
 
     public function index()
@@ -36,28 +38,50 @@ class StockOpnameController extends BaseController
 
     public function create()
     {
-        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
-        $code = $this->sessions->nextCode();
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return $this->fail('Unauthorized', 401);
+            }
 
-        $uid = auth()->id();
-        if (!$uid) {
-            return $this->failUnauthorized('Unauthorized');
+            if (($user['role'] ?? null) !== 'admin') {
+                return $this->fail('Hanya user dengan role "admin" yang boleh membuat sesi stock opname', 403);
+            }
+
+            $p = $this->request->getJSON(true) ?? $this->request->getPost();
+            $code = $this->sessions->nextCode();
+
+            $uid = (int) ($user['id'] ?? 0);
+            if (!$uid) {
+                return $this->fail('ID pengguna tidak valid', 400);
+            }
+
+            $row = [
+                'code' => $code,
+                'scheduled_at' => $p['scheduled_at'] ?? null,
+                'note' => $p['note'] ?? null,
+                'created_by' => $uid,
+            ];
+
+            if (!$this->sessions->insert($row)) {
+                return $this->fail([
+                    'message' => 'Gagal membuat sesi',
+                    'errors' => $this->sessions->errors(),
+                ], 422);
+            }
+
+            $created = $this->sessions->find($this->sessions->getInsertID());
+            return $this->respondCreated([
+                'success' => true,
+                'data' => $created,
+            ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', '[StockOpnameController::create] ' . $e->getMessage());
+            return $this->failServerError('Terjadi kesalahan pada server.');
         }
-
-        $row = [
-            'code' => $code,
-            'scheduled_at' => $payload['scheduled_at'] ?? null,
-            'note' => $payload['note'] ?? null,
-            'created_by' => (int) $uid,
-        ];
-
-        if (!$this->sessions->insert($row)) {
-            return $this->fail(['message' => 'Gagal membuat sesi', 'errors' => $this->sessions->errors()], 422);
-        }
-
-        $created = $this->sessions->find($this->sessions->getInsertID());
-        return $this->respondCreated(['success' => true, 'data' => $created]);
     }
+
 
     public function show($id)
     {
@@ -84,7 +108,6 @@ class StockOpnameController extends BaseController
             return $this->failNotFound('Sesi tidak ditemukan');
         }
 
-        // query params
         $q = trim((string) $this->request->getGet('q'));
         $plant = trim((string) $this->request->getGet('plant'));
         $page = max(1, (int) ($this->request->getGet('page') ?? 1));
@@ -237,15 +260,47 @@ class StockOpnameController extends BaseController
     public function finalize($id)
     {
         $sess = $this->sessions->find($id);
-        if (!$sess)
+        if (!$sess) {
             return $this->failNotFound('Sesi tidak ditemukan');
-        if (!empty($sess['finalized_at'])) {
-            return $this->respond(['success' => true, 'message' => 'Sudah final']);
         }
 
-        $this->sessions->update($id, ['finalized_at' => date('Y-m-d H:i:s')]);
-        return $this->respond(['success' => true, 'message' => 'Sesi difinalkan']);
+        if (!empty($sess['finalized_at'])) {
+            return $this->respond(['success' => true, 'message' => 'Sudah difinalkan sebelumnya']);
+        }
+
+        try {
+            $excel = new StockOpnameExcel();
+            [$headers, $rows] = $excel->exportRows((int) $id);
+            $ss = $excel->makeSpreadsheet($headers, $rows);
+
+            @is_dir(WRITEPATH . 'exports') || @mkdir(WRITEPATH . 'exports', 0775, true);
+            $filename = 'StockOpname_Final_' . date('Ymd_His') . '.xlsx';
+            $filepath = WRITEPATH . 'exports/' . $filename;
+
+            $writer = new Xlsx($ss);
+            $writer->save($filepath);
+
+            $this->sessions->update($id, ['finalized_at' => date('Y-m-d H:i:s')]);
+            $this->db->table('stock_opname_items')->truncate();
+
+            if (ob_get_length())
+                ob_end_clean();
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
+            header('Content-Transfer-Encoding: binary');
+            header('Content-Length: ' . filesize($filepath));
+            flush();
+            readfile($filepath);
+            exit; 
+
+        } catch (\Throwable $e) {
+            log_message('error', '[StockOpnameController::finalize] ' . $e->getMessage());
+            return $this->failServerError('Gagal finalize: ' . $e->getMessage());
+        }
     }
+
+
 
     public function recap($id)
     {
@@ -281,31 +336,5 @@ class StockOpnameController extends BaseController
             'skipped' => $skip,
             'errors' => $errs,
         ], empty($errs) ? 200 : 207);
-    }
-
-    public function export($id)
-    {
-        $sess = $this->sessions->find($id);
-        if (!$sess) {
-            return $this->failNotFound('Sesi tidak ditemukan');
-        }
-
-        try {
-            $excel = new StockOpnameExcel();
-            [$headers, $rows] = $excel->exportRows((int) $id);
-            $ss = $excel->makeSpreadsheet($headers, $rows);
-
-            @is_dir(WRITEPATH . 'exports') || @mkdir(WRITEPATH . 'exports', 0775, true);
-            $file = WRITEPATH . 'exports/StockOpname_' . (int) $id . '_' . date('Ymd_His') . '.xlsx';
-
-            $writer = new Xlsx($ss);
-            $writer->save($file);
-
-            return $this->response
-                ->download($file, null)
-                ->setFileName(basename($file));
-        } catch (\Throwable $e) {
-            return $this->fail(['message' => 'Gagal export', 'detail' => $e->getMessage()], 500);
-        }
     }
 }

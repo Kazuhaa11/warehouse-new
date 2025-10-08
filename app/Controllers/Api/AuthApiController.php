@@ -112,12 +112,14 @@ class AuthApiController extends BaseController
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
+
             if (ENVIRONMENT === 'development') {
                 return $this->failServerError($e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
             }
             return $this->failServerError('Login gagal.');
         }
     }
+
 
     public function refresh()
     {
@@ -181,7 +183,7 @@ class AuthApiController extends BaseController
     public function logout()
     {
         $data = $this->request->getJSON(true) ?? $this->request->getPost();
-        $uid = (int) ($data['user_id'] ?? 0); 
+        $uid = (int) ($data['user_id'] ?? 0);
         $m = new RefreshTokenModel();
 
         if (!empty($data['refresh_token'])) {
