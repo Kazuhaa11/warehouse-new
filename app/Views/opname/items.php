@@ -42,7 +42,7 @@
     </button>
     <button id="btnFinalize" class="btn btn-primary btn-sm">
       <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-      <span class="btn-text"><i class="fas fa-check me-1"></i> Finalize</span>
+      <span class="btn-text"><i class="fas fa-check me-1"></i> Finalisasi</span>
     </button>
 
   </div>
