@@ -33,7 +33,7 @@
             <th style="width:1%;">#</th>
             <th>Kode</th>
             <th>Jadwal</th>
-            <th>Finalized</th>
+            <th>Final</th>
             <th>Catatan</th>
             <th style="width:1%;">Aksi</th>
           </tr>

@@ -29,12 +29,12 @@
             <form id="loginForm" novalidate>
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+                    <input type="text" class="form-control" id="email" placeholder="masukkan username" required>
                     <div class="invalid-feedback">Email wajib diisi</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                    <input type="password" class="form-control" id="password" placeholder="masukkan password" required>
                     <div class="invalid-feedback">Password wajib diisi</div>
                 </div>
 
@@ -43,10 +43,6 @@
                     Log in
                 </button>
             </form>
-
-            <p class="text-muted small mt-3 mb-0">
-                contoh: admin@example.com / admin123
-            </p>
         </div>
     </div>
 
@@ -96,7 +92,6 @@
                     return;
                 }
 
-                // simpan token
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('refresh_token', data.refresh_token || '');
                 localStorage.setItem('token_type', data.token_type || 'Bearer');

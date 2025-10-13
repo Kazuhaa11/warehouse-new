@@ -4,22 +4,22 @@
 <div class="card mb-4">
   <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
     <form id="filterForm" class="d-flex flex-wrap gap-2 align-items-center">
-      <input type="text" class="form-control form-control-sm" name="q" placeholder="Cari material/desc/sloc…"
-        value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
-
+      <div class="input-group input-group-sm">
+        <input type="text" class="form-control form-control-sm" name="q" placeholder="Cari material/desc/sloc…"
+          value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+      </div>
       <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
         <option value="">All Plant</option>
         <option value="1200">Plant 1200</option>
         <option value="1300">Plant 1300</option>
       </select>
 
-      <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
-
-      <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalSatuan">
+    </form>
+    <button type="button" class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalSatuan">
         <i class="fas fa-plus"></i> Tambah Satuan
       </button>
-    </form>
   </div>
 
   <div class="card-body">
@@ -336,7 +336,7 @@ echo view('components/modal/modal-form', [
         console.error("Gagal memuat Storage:", err);
       }
     });
-    
+
     document.getElementById("modalBarangDetail").addEventListener("shown.bs.modal", async () => {
       const select = document.querySelector("#modalBarangDetailForm_storage_id");
       const info = document.querySelector("#modalBarangDetailForm_storage_info");

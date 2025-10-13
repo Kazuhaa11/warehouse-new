@@ -42,7 +42,7 @@ $routes->group('api/v1', ['filter' => 'authadmin'], static function ($routes) {
 
 $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman', 'Api\PeminjamanApi::index', ['filter' => 'auth']);
-    $routes->post('peminjaman', 'Api\PeminjamanApi::create', ['filter' => 'authmobile']);
+    $routes->post('peminjaman', 'Api\PeminjamanApi::create', ['filter' => 'auth']);
     $routes->get('peminjaman/(:num)', 'Api\PeminjamanApi::show/$1', ['filter' => 'auth']);
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
 });

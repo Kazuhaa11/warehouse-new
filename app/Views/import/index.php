@@ -6,9 +6,16 @@
       <div class="card-header bg-primary text-white">Import Excel Barang</div>
       <div class="card-body">
         <form id="importForm">
-          <div class="mb-3">
-            <label class="form-label">File Excel (.xlsx / .xls)</label>
-            <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+          <div class="modal-body">
+            <p class="small mb-2">
+              Header yang didukung (kolom exel):
+              <code>Material</code>, <code>Material Description</code>, <code>Plant</code>, <code>Material Group</code>,
+              <code>Storage Location</code>, <code>Descr. of Storage Loc.</code>, <code>DF stor. loc. level</code>,
+              <code>Base Unit of Measure</code>, <code>Unrestricted</code>, <code>Transit and Transfer</code>,
+              <code>Blocked</code>, <code>Material Type</code>
+              Minimal wajib: <strong>Material</strong>.
+            </p>
+            <input type="file" name="file" accept=".xlsx,.xls,.csv" class="form-control" required>
           </div>
           <button class="btn btn-primary btn-sm" type="submit">
             <i class="fas fa-upload me-1"></i> Upload & Import
@@ -32,18 +39,26 @@
 
 <?= $this->section('scripts') ?>
 <script>
-  document.getElementById('importForm').addEventListener('submit', async function (e) {
+  document.getElementById('importForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const fd = new FormData(this);
     const box = document.getElementById('importResult');
     box.innerHTML = 'Uploading...';
 
     try {
-      const res = await fetch('<?= base_url('api/v1/barang/import') ?>', { method: 'POST', body: fd });
+      const res = await fetch('<?= base_url('api/v1/barang/import') ?>', {
+        method: 'POST',
+        body: fd
+      });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json?.error?.message || 'Import gagal');
 
-      const { ins, upd, skip, errs } = json.data;
+      const {
+        ins,
+        upd,
+        skip,
+        errs
+      } = json.data;
       box.innerHTML = `
       <div class="alert alert-success mb-2">Import OK. Inserted: ${ins}, Updated: ${upd}, Skipped: ${skip}.</div>
       ${errs && errs.length ? '<div class="alert alert-warning"><b>Detail:</b><ul>' + errs.map(e => '<li>' + e + '</li>').join('') + '</ul></div>' : ''}

@@ -22,24 +22,11 @@ $request = service('request');
         <button class="btn btn-link btn-sm order-1 order-lg-0 me-3" id="sidebarToggle"><i
                 class="fas fa-bars"></i></button>
         <a class="navbar-brand ps-3" href="<?= base_url('admin/dashboard') ?>">Warehouse</a>
-
-        <form class="d-none d-md-inline-block ms-auto me-3" action="<?= base_url('admin/barang') ?>" method="get">
-            <div class="input-group input-group-sm">
-                <input class="form-control" type="text" name="q" placeholder="Cari Material / Deskripsi"
-                    value="<?= esc($request->getGet('q') ?? '') ?>" />
-                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
-            </div>
-        </form>
-
-        <ul class="navbar-nav me-3">
+        <ul class="navbar-nav ms-auto me-3">
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"><i
                         class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li>
-                        <hr class="dropdown-divider" />
-                    </li>
                     <li><a class="dropdown-item" href="#" id="btnLogout">Logout</a></li>
                 </ul>
             </li>
@@ -62,7 +49,7 @@ $request = service('request');
                         </a>
                         <a class="nav-link <?= $menu === 'peminjaman' ? 'active' : '' ?>"
                             href="<?= base_url('admin/peminjaman') ?>">
-                            <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Peminjaman
+                            <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Bon Pinjam
                         </a>
                         <a class="nav-link <?= $menu === 'opname' ? 'active' : '' ?>"
                             href="<?= base_url('admin/opname') ?>">

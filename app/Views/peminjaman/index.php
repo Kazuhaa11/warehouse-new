@@ -3,19 +3,25 @@
 <?= $this->section('content') ?>
 <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
   <form id="filterForm" class="d-flex flex-wrap gap-2 align-items-center">
-    <input type="text" class="form-control form-control-sm" name="q" placeholder="Cari no nota / catatan"
-      value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
+    <div class="input-group input-group-sm">
+      <input type="text" class="form-control form-control-sm" name="q" placeholder="Cari no nota / catatan"
+        value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
+      <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
+    </div>
     <select class="form-select form-select-sm" name="plant" style="min-width:120px">
       <option value="">All Plant</option>
       <option value="1200">Plant 1200</option>
       <option value="1300">Plant 1300</option>
     </select>
-    <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
     <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
-    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalNota">
-      <i class="fas fa-file-invoice me-1"></i> Cetak Laporan
-    </button>
   </form>
+  <button id="btnAdd" class="btn btn-primary btn-sm">
+    <i class="fas fa-plus me-1"></i> Tambah Peminjaman
+  </button>
+
+  <button id="btnCetak" class="btn btn-success ms-auto btn-sm">
+    <i class="fas fa-file-invoice me-1"></i> Cetak Laporan
+  </button>
 </div>
 
 <div class="card">
@@ -66,75 +72,11 @@
     ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
   ],
 ]) ?>
-
-<?= view('components/modal/modal-form', [
-  'modalId' => 'modalNota',
-  'title' => 'Cetak Laporan Peminjaman',
-  'api' => '#',         
-  'method' => 'GET',
-  'submitText' => 'Cetak PDF',
-  'size' => 'lg',
-  'split' => 4,
-  'fields' => [
-    [
-      'name' => 'mode',
-      'label' => 'Mode Filter',
-      'type' => 'select',
-      'value' => 'range',
-      'options' => [
-        ['value' => 'range', 'label' => 'Range Tanggal'],
-        ['value' => 'monthyear', 'label' => 'Bulan & Tahun'],
-      ],
-    ],
-    ['name' => 'from_date', 'label' => 'Dari Tanggal', 'type' => 'date', 'required' => true],
-    ['name' => 'to_date', 'label' => 'Sampai Tanggal', 'type' => 'date', 'required' => true],
-    [
-      'name' => 'month',
-      'label' => 'Bulan',
-      'type' => 'select',
-      'options' => array_map(
-        fn($m) => ['value' => $m, 'label' => DateTime::createFromFormat('!m', (string) $m)->format('F')],
-        range(1, 12)
-      ),
-    ],
-    ['name' => 'year', 'label' => 'Tahun', 'type' => 'number', 'value' => date('Y')],
-
-    [
-      'name' => 'plant',
-      'label' => 'Plant',
-      'type' => 'select',
-      'options' => [
-        ['value' => '1200', 'label' => '1200'],
-        ['value' => '1300', 'label' => '1300'],
-      ],
-    ],
-    [
-      'name' => 'sort_by',
-      'label' => 'Sortir',
-      'type' => 'select',
-      'value' => 'tanggal',
-      'options' => [
-        ['value' => 'tanggal', 'label' => 'Tanggal'],
-        ['value' => 'no_nota', 'label' => 'No Nota'],
-      ],
-    ],
-    [
-      'name' => 'sort_dir',
-      'label' => 'Urutan',
-      'type' => 'select',
-      'value' => 'desc',
-      'options' => [
-        ['value' => 'asc', 'label' => 'ASC'],
-        ['value' => 'desc', 'label' => 'DESC'],
-      ],
-    ],
-  ],
-]) ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
-  (function () {
+  (function() {
     const API = '<?= base_url('api/v1/peminjaman') ?>';
     const PER_PAGE = 50;
 
@@ -208,8 +150,15 @@
     if (init.get('plant')) plantSel.value = init.get('plant');
     if (init.get('q')) qInput.value = init.get('q');
 
-    form.addEventListener('submit', (e) => { e.preventDefault(); load(1); });
-    btnReset.addEventListener('click', () => { qInput.value = ''; plantSel.value = ''; load(1); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      load(1);
+    });
+    btnReset.addEventListener('click', () => {
+      qInput.value = '';
+      plantSel.value = '';
+      load(1);
+    });
 
     async function load(page = 1) {
       const params = new URLSearchParams();
@@ -220,14 +169,19 @@
       history.replaceState(null, '', '?' + params.toString());
 
       tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Memuat data...</td></tr>`;
-      pager.innerHTML = ''; metaText.textContent = '—';
+      pager.innerHTML = '';
+      metaText.textContent = '—';
 
       try {
         const res = await fetch(`${API}?${params.toString()}`);
         const json = await res.json();
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
         renderRows(json.data || []);
-        renderPager(json.meta || { page, total_pages: 1, total: 0 });
+        renderPager(json.meta || {
+          page,
+          total_pages: 1,
+          total: 0
+        });
         metaText.textContent = `Halaman ${json.meta.page} / ${json.meta.total_pages} • ${json.data.length} data • Total ${json.meta.total}`;
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${esc(err.message)}</td></tr>`;
@@ -255,7 +209,10 @@
     }
 
     function renderPager(meta) {
-      const total = meta.total_pages || 1; const current = meta.page || 1; pager.innerHTML = '';
+      const total = meta.total_pages || 1;
+      const current = meta.page || 1;
+      pager.innerHTML = '';
+
       function item(p, label = p, disabled = false, active = false) {
         return `<li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
           <a class="page-link" href="#" data-p="${p}">${label}</a></li>`;
@@ -352,89 +309,90 @@
 
     function badge(status) {
       switch ((status || '').toLowerCase()) {
-        case 'draft': return 'secondary';
-        case 'submitted': return 'info';
-        case 'approved': return 'success';
-        case 'returned': return 'primary';
-        case 'rejected': return 'danger';
-        case 'loaned': return 'warning';
-        case 'lost': return 'dark';
-        default: return 'light';
+        case 'draft':
+          return 'secondary';
+        case 'submitted':
+          return 'info';
+        case 'approved':
+          return 'success';
+        case 'returned':
+          return 'primary';
+        case 'rejected':
+          return 'danger';
+        case 'loaned':
+          return 'warning';
+        case 'lost':
+          return 'dark';
+        default:
+          return 'light';
       }
     }
 
     function esc(s) {
       return String(s ?? '').replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-      }[m]));
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      } [m]));
     }
 
-    (function () {
-      const formId = 'modalNotaForm';
-      const f = document.getElementById(formId);
-      if (!f) return;
+    const btnCetak = document.getElementById('btnCetak');
 
-      const modeEl = document.getElementById(formId + '_mode');
-      const fromEl = document.getElementById(formId + '_from_date');
-      const toEl = document.getElementById(formId + '_to_date');
-      const monthEl = document.getElementById(formId + '_month');
-      const yearEl = document.getElementById(formId + '_year');
-      const plantEl = document.getElementById(formId + '_plant');
-      const sortByEl = document.getElementById(formId + '_sort_by');
-      const sortDirEl = document.getElementById(formId + '_sort_dir');
+    btnCetak.addEventListener('click', () => {
+      const params = new URLSearchParams();
+      const qVal = qInput.value.trim();
+      const plantVal = plantSel.value;
 
-      const wrap = el => el ? el.closest('.mb-2') : null;
-      const show = (el, on) => { const w = wrap(el); if (w) w.style.display = on ? '' : 'none'; }
-      const setReq = (el, on) => { if (el) el.required = !!on; }
+      params.set('mode', 'range');
+      const now = new Date();
+      const fromDate = `${now.getFullYear()}-01-01`;
+      const toDate = `${now.getFullYear()}-12-31`;
+      params.set('from_date', fromDate);
+      params.set('to_date', toDate);
 
-      function applyModeUI() {
-        const isRange = (modeEl?.value || 'range') === 'range';
-        show(fromEl, isRange);
-        show(toEl, isRange);
-        setReq(fromEl, isRange);
-        setReq(toEl, isRange);
+      if (qVal) params.set('q', qVal);
+      if (plantVal) params.set('plant', plantVal);
+      params.set('sort_by', 'tanggal');
+      params.set('sort_dir', 'desc');
+      params.set('dl', '1');
 
-        show(monthEl, !isRange);
-        show(yearEl, !isRange);
-        setReq(monthEl, !isRange);
-        setReq(yearEl, !isRange);
-      }
-      modeEl?.addEventListener('change', applyModeUI);
-      applyModeUI();
+      const url = `<?= base_url('api/v1/peminjaman/report/pdf') ?>?${params.toString()}`;
 
-      f.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const params = new URLSearchParams();
-        const mode = modeEl?.value || 'range';
-        params.set('mode', mode);
+      btnCetak.disabled = true;
+      const oldHtml = btnCetak.innerHTML;
+      btnCetak.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mencetak...';
 
-        if (mode === 'range') {
-          const from = fromEl?.value || '';
-          const to = toEl?.value || '';
-          if (!from || !to) { alert('Isi rentang tanggal.'); return; }
-          params.set('from_date', from);
-          params.set('to_date', to);
-        } else {
-          const month = monthEl?.value || '';
-          const year = yearEl?.value || '';
-          if (!month || !year) { alert('Pilih bulan & tahun.'); return; }
-          params.set('month', month);
-          params.set('year', year);
-        }
+      fetch(url, {
+          method: 'GET',
+          credentials: 'same-origin'
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Gagal membuat laporan');
+          return res.blob();
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          a.href = blobUrl;
+          a.download = `Laporan_Bon_Pinjam_${y}${m}${d}.pdf`; // atau .xlsx tergantung backend
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+        })
+        .catch(err => alert(err.message))
+        .finally(() => {
+          btnCetak.disabled = false;
+          btnCetak.innerHTML = oldHtml;
+        });
+    });
 
-        const plant = plantEl?.value || '';
-        const sort_by = sortByEl?.value || 'tanggal';
-        const sort_dir = sortDirEl?.value || 'desc';
-        if (plant) params.set('plant', plant);
-        params.set('sort_by', sort_by);
-        params.set('sort_dir', sort_dir);
-
-        params.set('dl', '1');
-
-        const url = '<?= base_url('api/v1/peminjaman/report/pdf') ?>?' + params.toString();
-        window.location.href = url; 
-      });
-    })();
 
     load(1);
   })();

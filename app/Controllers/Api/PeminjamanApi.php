@@ -143,10 +143,6 @@ class PeminjamanApi extends BaseApiController
                 return $this->fail('Unauthorized', 401);
             }
 
-            if (($user['role'] ?? null) !== 'mobile') {
-                return $this->fail('Hanya user dengan role "mobile" yang boleh membuat peminjaman', 403);
-            }
-
             $peminjamId = (int) $user['id'];
             $p = $this->request->getJSON(true) ?? [];
 
