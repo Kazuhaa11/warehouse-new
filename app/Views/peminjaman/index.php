@@ -15,12 +15,11 @@
     </select>
     <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
   </form>
-  <button id="btnAdd" class="btn btn-primary btn-sm">
-    <i class="fas fa-plus me-1"></i> Tambah Peminjaman
-  </button>
-
   <button id="btnCetak" class="btn btn-success ms-auto btn-sm">
     <i class="fas fa-file-invoice me-1"></i> Cetak Laporan
+  </button>
+  <button id="btnAdd" class="btn btn-primary btn-sm">
+    <i class="fas fa-plus me-1"></i> Tambah Peminjaman
   </button>
 </div>
 
@@ -72,27 +71,69 @@
     ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
   ],
 ]) ?>
+<?= view('components/modal/modal-form', [
+  'modalId' => 'modalAddPinjam',
+  'title' => 'Tambah Peminjaman',
+  'method' => 'POST',
+  'submitText' => 'Simpan',
+  'size' => 'lg',
+  'split' => 2,
+  'fields' => [
+    ['name' => 'tanggal', 'label' => 'Tanggal Peminjaman', 'type' => 'date', 'required' => true],
+    [
+      'name' => 'plant',
+      'label' => 'Plant',
+      'type' => 'select',
+      'required' => true,
+      'options' => [
+        ['value' => '1200', 'label' => 'Plant 1200'],
+        ['value' => '1300', 'label' => 'Plant 1300'],
+      ]
+    ],
+    ['name' => 'due_date', 'label' => 'Tanggal Jatuh Tempo', 'type' => 'date'],
+    ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
+    [
+      'name' => 'search_barang',
+      'label' => 'Cari Barang',
+      'type' => 'text',
+      'placeholder' => 'Ketik nama atau material barang...',
+      'required' => true
+    ],
+    [
+      'name' => 'qty',
+      'label' => 'Jumlah',
+      'type' => 'number',
+      'step' => '1',
+      'value' => '1',
+      'required' => true
+    ],
+  ],
+]) ?>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
-  (function() {
-    const API = '<?= base_url('api/v1/peminjaman') ?>';
+  document.addEventListener('DOMContentLoaded', function() {
+    const PEMINJAMAN_API = '<?= base_url('api/v1/peminjaman') ?>';
+    const BARANG_API = '<?= base_url('api/v1/barang') ?>';
     const PER_PAGE = 50;
 
     const form = document.getElementById('filterForm');
     const qInput = form.querySelector('input[name="q"]');
     const plantSel = form.querySelector('select[name="plant"]');
     const btnReset = document.getElementById('btnReset');
-
     const tbody = document.getElementById('tbody-pinjam');
     const pager = document.getElementById('pager');
     const metaText = document.getElementById('metaText');
-
     const modalDetailEl = document.getElementById('modalDetailPinjam');
     const modalDetail = new bootstrap.Modal(modalDetailEl);
     const formEl = modalDetailEl.querySelector('form[data-modal-form]');
     const formId = formEl ? formEl.id : 'modalDetailPinjamForm';
+    const btnAdd = document.getElementById('btnAdd');
+    const modalAddEl = document.getElementById('modalAddPinjam');
+    const modalAdd = modalAddEl ? new bootstrap.Modal(modalAddEl) : null;
+    const formAdd = modalAddEl ? modalAddEl.querySelector('form[data-modal-form]') : null;
 
     (function initDetailModalShell() {
       if (!formEl) return;
@@ -108,49 +149,34 @@
       if (!document.getElementById('pinjamItemsBody')) {
         const wrap = document.createElement('div');
         wrap.innerHTML = `
-        <hr class="my-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="mb-0">Items</h6>
-          <small class="text-muted" id="pinjamItemsMeta">—</small>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-sm table-bordered align-middle">
-            <thead class="table-light">
-              <tr>
-                <th style="width:60px">#</th>
-                <th>Material</th>
-                <th>Deskripsi</th>
-                <th style="width:120px">Plant</th>
-                <th style="width:140px">Storage Loc</th>
-                <th style="width:100px" class="text-end">Qty</th>
-                <th style="width:120px">UoM</th>
-              </tr>
-            </thead>
-            <tbody id="pinjamItemsBody">
-              <tr><td colspan="7" class="text-center text-muted">—</td></tr>
-            </tbody>
-          </table>
-        </div>`;
+      <hr class="my-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Items</h6>
+        <small class="text-muted" id="pinjamItemsMeta">—</small>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:60px">#</th>
+              <th>Material</th>
+              <th>Deskripsi</th>
+              <th style="width:120px">Plant</th>
+              <th style="width:140px">Storage Loc</th>
+              <th style="width:100px" class="text-end">Qty</th>
+              <th style="width:120px">UoM</th>
+            </tr>
+          </thead>
+          <tbody id="pinjamItemsBody">
+            <tr><td colspan="7" class="text-center text-muted">—</td></tr>
+          </tbody>
+        </table>
+      </div>`;
         body.appendChild(wrap);
       }
-      modalDetailEl.addEventListener('hidden.bs.modal', () => {
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-      });
     })();
 
-    function setField(name, val) {
-      const el = document.getElementById(`${formId}_${name}`);
-      if (!el) return;
-      const v = (val ?? '').toString();
-      if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' || el.tagName === 'SELECT') el.value = v;
-      else el.textContent = v;
-    }
-
-    const init = new URLSearchParams(location.search);
-    if (init.get('plant')) plantSel.value = init.get('plant');
-    if (init.get('q')) qInput.value = init.get('q');
-
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', e => {
       e.preventDefault();
       load(1);
     });
@@ -166,14 +192,11 @@
       if (plantSel.value) params.set('plant', plantSel.value);
       params.set('per_page', PER_PAGE);
       params.set('page', page);
-      history.replaceState(null, '', '?' + params.toString());
-
       tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Memuat data...</td></tr>`;
       pager.innerHTML = '';
       metaText.textContent = '—';
-
       try {
-        const res = await fetch(`${API}?${params.toString()}`);
+        const res = await fetch(`${PEMINJAMAN_API}?${params.toString()}`);
         const json = await res.json();
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
         renderRows(json.data || []);
@@ -215,25 +238,10 @@
 
       function item(p, label = p, disabled = false, active = false) {
         return `<li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-          <a class="page-link" href="#" data-p="${p}">${label}</a></li>`;
+      <a class="page-link" href="#" data-p="${p}">${label}</a></li>`;
       }
       pager.insertAdjacentHTML('beforeend', item(current - 1, '&laquo;', current <= 1));
-      const max = 7;
-      let start = Math.max(1, current - Math.floor(max / 2));
-      let end = Math.min(total, start + max - 1);
-      if (end - start + 1 < max) start = Math.max(1, end - max + 1);
-      if (start > 1) {
-        pager.insertAdjacentHTML('beforeend', item(1, '1', false, current === 1));
-        if (start > 2) pager.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">…</span></li>`);
-      }
-      for (let p = start; p <= end; p++) {
-        if (p === 1 || p === total) continue;
-        pager.insertAdjacentHTML('beforeend', item(p, String(p), false, p === current));
-      }
-      if (end < total) {
-        if (end < total - 1) pager.insertAdjacentHTML('beforeend', `<li class="page-item disabled"><span class="page-link">…</span></li>`);
-        pager.insertAdjacentHTML('beforeend', item(total, String(total), false, current === total));
-      }
+      for (let p = 1; p <= total; p++) pager.insertAdjacentHTML('beforeend', item(p, p, false, p === current));
       pager.insertAdjacentHTML('beforeend', item(current + 1, '&raquo;', current >= total));
       pager.querySelectorAll('a.page-link').forEach(a => a.addEventListener('click', e => {
         e.preventDefault();
@@ -242,43 +250,44 @@
       }));
     }
 
-    tbody.addEventListener('click', (e) => {
+    tbody.addEventListener('click', e => {
       const btn = e.target.closest('button[data-action="detail"]');
       if (!btn) return;
       openDetail(btn.dataset.id);
     });
 
     async function openDetail(id) {
-      setField('no_nota', '—');
-      setField('borrow_date', '—');
-      setField('plant', '—');
-      setField('status', '—');
-      setField('peminjam', '—');
-      setField('created_at', '—');
-      setField('note', '');
-
       const itemsBody = document.getElementById('pinjamItemsBody');
       const itemsMeta = document.getElementById('pinjamItemsMeta');
-      itemsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Memuat items...</td></tr>`;
+      itemsBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Memuat items...</td></tr>';
       itemsMeta.textContent = 'Memuat...';
-
       modalDetail.show();
 
       try {
-        const res = await fetch(`${API}/${id}`);
+        const res = await fetch(`${PEMINJAMAN_API}/${id}`);
         const json = await res.json();
         if (!json?.success) throw new Error(json?.error?.message || 'Gagal memuat detail');
+
         const h = json.data?.header || {};
         const items = Array.isArray(json.data?.items) ? json.data.items : [];
+        const mapped = {
+          no_nota: h.nomor,
+          peminjam: h.peminjam_username,
+          tanggal: h.tanggal,
+          plant: h.plants,
+          status: h.status,
+          note: h.note,
+          created_at: h.created_at,
+        };
 
-        setField('no_nota', h.nomor || h.no_nota || '—');
-        setField('borrow_date', h.tanggal || h.borrow_date || '—');
-        setField('plant', h.plants || h.plant || '—');
-        setField('status', (h.status || '—').toUpperCase());
-        setField('peminjam', h.peminjam_username || h.peminjam || '—');
-        setField('created_at', h.created_at || '—');
-        setField('note', h.note || '');
-
+        if (formEl) {
+          formEl.querySelectorAll('input, textarea, select').forEach((el) => {
+            const name = el.getAttribute('name');
+            if (name && mapped[name] !== undefined) {
+              el.value = mapped[name] ?? '';
+            }
+          });
+        }
         renderDetailItems(items);
       } catch (err) {
         itemsBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">${esc(err.message)}</td></tr>`;
@@ -286,29 +295,31 @@
       }
     }
 
+
     function renderDetailItems(items) {
-      const itemsBody = document.getElementById('pinjamItemsBody');
-      const itemsMeta = document.getElementById('pinjamItemsMeta');
+      const body = document.getElementById('pinjamItemsBody');
+      const meta = document.getElementById('pinjamItemsMeta');
       if (!items.length) {
-        itemsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Tidak ada item</td></tr>`;
-        itemsMeta.textContent = '0 item';
+        body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada item</td></tr>';
+        meta.textContent = '0 item';
         return;
       }
-      itemsBody.innerHTML = items.map((it, i) => `
-      <tr>
-        <td class="text-center">${i + 1}</td>
-        <td>${esc(it.material ?? '')}</td>
-        <td>${esc(it.material_description ?? '')}</td>
-        <td>${esc(it.plant ?? '')}</td>
-        <td>${esc(it.storage_location ?? '')}</td>
-        <td class="text-end">${esc(it.qty ?? it.requested_qty ?? 1)}</td>
-        <td>${esc(it.uom ?? it.base_unit_of_measure ?? '')}</td>
-      </tr>`).join('');
-      itemsMeta.textContent = `${items.length} item`;
+      body.innerHTML = items.map((it, i) => `
+  <tr>
+    <td class="text-center">${i + 1}</td>
+    <td>${esc(it.material ?? '')}</td>
+    <td>${esc(it.material_description ?? '')}</td>
+    <td>${esc(it.plant ?? '')}</td>
+    <td>${esc(it.storage_location ?? '')}</td>
+    <td class="text-end">${esc(it.qty ?? it.requested_qty ?? 1)}</td>
+    <td>${esc(it.uom ?? it.base_unit_of_measure ?? '')}</td>
+  </tr>`).join('');
+      meta.textContent = `${items.length} item`;
     }
 
-    function badge(status) {
-      switch ((status || '').toLowerCase()) {
+
+    function badge(s) {
+      switch ((s || '').toLowerCase()) {
         case 'draft':
           return 'secondary';
         case 'submitted':
@@ -338,63 +349,123 @@
       } [m]));
     }
 
-    const btnCetak = document.getElementById('btnCetak');
+    async function initSearchBarang() {
+      const input = document.getElementById(formAdd.id + '_search_barang');
+      if (!input) return;
+      input.parentElement.style.position = 'relative';
+      const list = document.createElement('ul');
+      list.className = 'list-group position-absolute w-100';
+      list.style = 'z-index:1056; max-height:200px; overflow:auto; display:none;';
+      input.parentElement.appendChild(list);
+      const hiddenId = document.createElement('input');
+      hiddenId.type = 'hidden';
+      hiddenId.name = 'barang_id';
+      input.parentElement.appendChild(hiddenId);
+      let timer = null;
+      input.addEventListener('input', () => {
+        clearTimeout(timer);
+        const val = input.value.trim();
+        if (!val) {
+          list.style.display = 'none';
+          hiddenId.value = '';
+          return;
+        }
+        timer = setTimeout(() => searchBarang(val, list, hiddenId, input), 400);
+      });
+      document.addEventListener('click', e => {
+        if (!input.parentElement.contains(e.target)) list.style.display = 'none';
+      });
+    }
 
-    btnCetak.addEventListener('click', () => {
-      const params = new URLSearchParams();
-      const qVal = qInput.value.trim();
-      const plantVal = plantSel.value;
-
-      params.set('mode', 'range');
-      const now = new Date();
-      const fromDate = `${now.getFullYear()}-01-01`;
-      const toDate = `${now.getFullYear()}-12-31`;
-      params.set('from_date', fromDate);
-      params.set('to_date', toDate);
-
-      if (qVal) params.set('q', qVal);
-      if (plantVal) params.set('plant', plantVal);
-      params.set('sort_by', 'tanggal');
-      params.set('sort_dir', 'desc');
-      params.set('dl', '1');
-
-      const url = `<?= base_url('api/v1/peminjaman/report/pdf') ?>?${params.toString()}`;
-
-      btnCetak.disabled = true;
-      const oldHtml = btnCetak.innerHTML;
-      btnCetak.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mencetak...';
-
-      fetch(url, {
-          method: 'GET',
-          credentials: 'same-origin'
-        })
-        .then(res => {
-          if (!res.ok) throw new Error('Gagal membuat laporan');
-          return res.blob();
-        })
-        .then(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          const now = new Date();
-          const y = now.getFullYear();
-          const m = String(now.getMonth() + 1).padStart(2, '0');
-          const d = String(now.getDate()).padStart(2, '0');
-          a.href = blobUrl;
-          a.download = `Laporan_Bon_Pinjam_${y}${m}${d}.pdf`; // atau .xlsx tergantung backend
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(blobUrl);
-        })
-        .catch(err => alert(err.message))
-        .finally(() => {
-          btnCetak.disabled = false;
-          btnCetak.innerHTML = oldHtml;
+    async function searchBarang(keyword, list, hiddenId, input) {
+      try {
+        list.innerHTML = `<li class="list-group-item small text-muted">Mencari...</li>`;
+        list.style.display = 'block';
+        const res = await fetch(`${BARANG_API}?q=${encodeURIComponent(keyword)}&per_page=10`);
+        const j = await res.json();
+        if (!j.success) throw new Error('Gagal memuat barang');
+        const items = j.data || [];
+        if (!items.length) {
+          list.innerHTML = `<li class="list-group-item small text-muted">Tidak ditemukan</li>`;
+          return;
+        }
+        list.innerHTML = items.map(b => `
+        <li class="list-group-item list-group-item-action" data-id="${b.id}">
+          <div class="fw-semibold">${b.material} — ${b.material_description}</div>
+          <small class="text-muted">${b.plant ?? ''} | Stok: ${b.qty_unrestricted ?? '-'}</small>
+        </li>`).join('');
+        list.querySelectorAll('li[data-id]').forEach(li => {
+          li.addEventListener('click', () => {
+            hiddenId.value = li.dataset.id;
+            input.value = li.querySelector('.fw-semibold').textContent;
+            list.style.display = 'none';
+          });
         });
-    });
+      } catch (e) {
+        list.innerHTML = `<li class="list-group-item small text-danger">${e.message}</li>`;
+      }
+    }
 
+    if (btnAdd && modalAdd && formAdd) {
+      const errBox = formAdd.querySelector('[data-role="error"]');
+      btnAdd.addEventListener('click', async () => {
+        formAdd.reset();
+        errBox.classList.add('d-none');
+        await initSearchBarang();
+        modalAdd.show();
+      });
+
+      formAdd.addEventListener('submit', async e => {
+        e.preventDefault();
+        errBox.classList.add('d-none');
+        const fd = new FormData(formAdd);
+        const barangId = fd.get('barang_id');
+        const qty = parseFloat(fd.get('qty')) || 1;
+        if (!barangId || isNaN(barangId)) {
+          errBox.textContent = 'Silakan pilih barang dari hasil pencarian.';
+          errBox.classList.remove('d-none');
+          return;
+        }
+        const data = {
+          tanggal: fd.get('tanggal'),
+          due_date: fd.get('due_date'),
+          plant: fd.get('plant'),
+          note: fd.get('note'),
+          items: [{
+            barang_id: Number(barangId),
+            qty: qty
+          }]
+        };
+
+        const btn = formAdd.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        const old = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+
+        try {
+          const res = await fetch(PEMINJAMAN_API, {
+            method: formAdd.dataset.method || 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          });
+          const j = await res.json();
+          if (!j.success) throw new Error(j?.error?.message || 'Gagal menyimpan');
+          modalAdd.hide();
+          alert('Peminjaman berhasil ditambahkan!');
+          load(1);
+        } catch (err) {
+          errBox.textContent = err.message;
+          errBox.classList.remove('d-none');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = old;
+        }
+      });
+    }
 
     load(1);
-  })();
+  });
 </script>
 <?= $this->endSection() ?>
