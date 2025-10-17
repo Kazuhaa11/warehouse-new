@@ -18,8 +18,8 @@
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
     </form>
     <button type="button" class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalSatuan">
-        <i class="fas fa-plus"></i> Tambah Satuan
-      </button>
+      <i class="fas fa-plus"></i> Tambah Satuan
+    </button>
   </div>
 
   <div class="card-body">
@@ -116,42 +116,91 @@
   ],
 ]) ?>
 
+<div class="modal fade" id="modalBarangDetail" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <form id="modalBarangDetailForm" data-modal-form data-api="#" data-method="PUT">
+        <div class="modal-header">
+          <h5 class="modal-title">Detail Barang</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
 
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Material</label>
+              <input type="text" name="material" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Deskripsi</label>
+              <input type="text" name="material_description" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Plant</label>
+              <input type="text" name="plant" class="form-control">
+            </div>
 
-<?php
-echo view('components/modal/modal-form', [
-  'modalId' => 'modalBarangDetail',
-  'title' => 'Detail Barang',
-  'api' => '#',
-  'method' => 'PUT',
-  'submitText' => 'Update',
-  'size' => 'lg',
-  'split' => 3,
-  'fields' => [
-    ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'required' => true],
-    ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text'],
-    ['name' => 'plant', 'label' => 'Plant', 'type' => 'text'],
-    ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text'],
-    ['name' => 'material_type', 'label' => 'Material Type', 'type' => 'text'],
-    ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text'],
+            <div class="col-md-4">
+              <label class="form-label">UoM</label>
+              <input type="text" name="base_unit_of_measure" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Material Type</label>
+              <input type="text" name="material_type" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Material Group</label>
+              <input type="text" name="material_group" class="form-control">
+            </div>
 
-    [
-      'name' => 'storage_id',
-      'label' => 'Storage ID',
-      'type' => 'select',
-      'options' => []
-    ],
-    [
-      'name' => 'storage_info',
-      'label' => 'Info Storage (auto)',
-      'type' => 'textarea',
-      'placeholder' => 'Akan diisi otomatis dari /storages/{id}',
-      'readonly' => true,
-    ],
-  ],
-]);
-?>
+            <div class="col-md-6">
+              <label class="form-label">Storage ID</label>
+              <select name="storage_id" id="modalBarangDetailForm_storage_id" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Info Storage (auto)</label>
+              <textarea name="storage_info" id="modalBarangDetailForm_storage_info" class="form-control"
+                readonly></textarea>
+            </div>
 
+            <div class="col-12">
+              <label class="form-label">Foto Barang</label>
+              <div id="fotoCarouselWrapper" class="text-center mb-3">
+                <div id="fotoCarouselPlaceholder" class="text-muted py-3 border rounded">
+                  Barang belum memiliki gambar.
+                </div>
+
+                <div id="fotoCarousel" class="carousel slide d-none" data-bs-ride="carousel">
+                  <div class="carousel-inner" id="fotoCarouselInner"></div>
+
+                  <button class="carousel-control-prev" type="button" data-bs-target="#fotoCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#fotoCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-center mt-2">
+                <input type="file" id="uploadFotoInput" accept="image/*" hidden>
+                <button type="button" id="btnUploadFoto" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-upload me-1"></i> Upload Foto
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-sm btn-primary">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <?= $this->endSection() ?>
 
@@ -399,6 +448,8 @@ echo view('components/modal/modal-form', [
 
 
     async function openDetail(id) {
+      const uploadBtn = document.getElementById('btnUploadFoto');
+      const uploadInput = document.getElementById('uploadFotoInput');
       clearError();
       try {
         const res = await fetch(`${API_BARANG}/${id}`);
@@ -406,6 +457,9 @@ echo view('components/modal/modal-form', [
         if (!res.ok || !json.success) throw new Error(json?.error?.message || 'Gagal ambil detail');
 
         const b = json.data || json;
+        const carousel = document.getElementById('fotoCarousel');
+        const carouselInner = document.getElementById('fotoCarouselInner');
+        const placeholder = document.getElementById('fotoCarouselPlaceholder');
         detailForm.dataset.api = `${API_BARANG}/${id}`;
         detailForm.dataset.method = 'PUT';
 
@@ -441,6 +495,21 @@ echo view('components/modal/modal-form', [
         } else {
           setValue('storage_info', 'Tidak ada storage_id.');
         }
+        if (b.fotos && b.fotos.length > 0) {
+          placeholder.classList.add('d-none');
+          carousel.classList.remove('d-none');
+          carouselInner.innerHTML = b.fotos.map((f, i) => `
+            <div class="carousel-item ${i === 0 ? 'active' : ''}">
+              <img src="${'<?= base_url('uploads/barang') ?>/' + f.path}" 
+              class="d-block mx-auto" 
+              style="max-height:280px; maxobject-fit:contain;">
+            ${f.caption ? `<div class="carousel-caption d-none d-md-block"><small>${esc(f.caption)}</small></div>` : ''}
+        </div>
+        `).join('');
+        } else {
+          carousel.classList.add('d-none');
+          placeholder.classList.remove('d-none');
+        }
 
         new bootstrap.Modal(detailModalEl).show();
 
@@ -469,6 +538,60 @@ echo view('components/modal/modal-form', [
         }
       } catch (err) {
         alert(err.message || 'Gagal memuat detail.');
+      }
+
+      uploadBtn.onclick = () => uploadInput.click();
+
+      uploadInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('foto', file);
+
+        try {
+          const res = await fetch(`<?= base_url('api/v1/barang-foto') ?>/${id}`, {
+            method: 'POST',
+            body: formData
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json?.error?.message || 'Gagal upload');
+
+          alert('Foto berhasil diupload');
+          loadFotoBaru(id);
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          uploadInput.value = '';
+        }
+      };
+    }
+
+    async function loadFotoBaru(id) {
+      const carousel = document.getElementById('fotoCarousel');
+      const carouselInner = document.getElementById('fotoCarouselInner');
+      const placeholder = document.getElementById('fotoCarouselPlaceholder');
+
+      try {
+        const res = await fetch(`${API_BARANG}/${id}`);
+        const json = await res.json();
+        const b = json.data;
+        if (b.fotos && b.fotos.length > 0) {
+          placeholder.classList.add('d-none');
+          carousel.classList.remove('d-none');
+          carouselInner.innerHTML = b.fotos.map((f, i) => `
+        <div class="carousel-item ${i === 0 ? 'active' : ''}">
+          <img src="${'<?= base_url('uploads/barang') ?>/' + f.path}"
+            class="d-block mx-auto"
+            style="max-height:280px; object-fit:contain;">
+          ${f.caption ? `<div class="carousel-caption d-none d-md-block"><small>${esc(f.caption)}</small></div>` : ''}
+        </div>
+      `).join('');
+        } else {
+          carousel.classList.add('d-none');
+          placeholder.classList.remove('d-none');
+        }
+      } catch (err) {
+        console.error('Gagal memuat foto baru:', err);
       }
     }
 
@@ -510,7 +633,7 @@ echo view('components/modal/modal-form', [
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
-      } [m]));
+      }[m]));
     }
 
     function css(s) {

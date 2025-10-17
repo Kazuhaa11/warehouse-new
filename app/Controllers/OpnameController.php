@@ -11,11 +11,10 @@ class OpnameController extends BaseController
         return view('opname/index', [
             'title' => 'Stock Opname',
             'menu' => 'opname',
-            'apiSessions' => base_url('api/v1/stock-opname/sessions'), // dipakai JS
+            'apiSessions' => base_url('api/v1/stock-opname/sessions'), 
         ]);
     }
 
-    // Halaman items suatu sesi
     public function items(int $id)
     {
         return view('opname/items', [

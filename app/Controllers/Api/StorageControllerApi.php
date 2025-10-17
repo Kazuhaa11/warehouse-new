@@ -75,7 +75,7 @@ class StorageControllerApi extends BaseApiController
             'rack' => 'permit_empty|max_length[50]',
             'bin' => 'permit_empty|max_length[50]',
             'name' => 'permit_empty|max_length[100]',
-            'capacity' => 'permit_empty|integer',   
+            'capacity' => 'permit_empty|integer',
             'note' => 'permit_empty',
             'is_active' => 'permit_empty|in_list[0,1]',
             'created_by' => 'permit_empty|integer',
@@ -101,7 +101,7 @@ class StorageControllerApi extends BaseApiController
 
         $data['is_active'] = isset($data['is_active']) ? (int) $data['is_active'] : 1;
         $data['capacity'] = isset($data['capacity']) ? (int) $data['capacity'] : null;
-        $data['created_by'] = $data['created_by'] ?? null; 
+        $data['created_by'] = $data['created_by'] ?? null;
 
         try {
             $this->model->insert($data, true);
@@ -201,6 +201,7 @@ class StorageControllerApi extends BaseApiController
     {
         $id = (int) $id;
         $row = $this->model->find($id);
+
         if (!$row) {
             return $this->respond([
                 'success' => false,
@@ -211,14 +212,37 @@ class StorageControllerApi extends BaseApiController
         $db = \Config\Database::connect();
 
         try {
+            $barangWithStock = $db->table('barang')
+                ->select('id, material, qty_unrestricted, qty_transit_and_transfer, qty_blocked')
+                ->where('storage_id', $id)
+                ->where('(qty_unrestricted > 0 OR qty_transit_and_transfer > 0 OR qty_blocked > 0)', null, false)
+                ->get()
+                ->getResultArray();
+
+            if (!empty($barangWithStock)) {
+                $warning = "Tidak dapat menghapus storage karena masih ada barang dengan stok tersisa:\n";
+                foreach ($barangWithStock as $b) {
+                    $warning .= "- {$b['material']} (Unrestricted: {$b['qty_unrestricted']}, Transit: {$b['qty_transit_and_transfer']}, Blocked: {$b['qty_blocked']})\n";
+                }
+
+                return $this->respond([
+                    'success' => false,
+                    'error' => ['message' => nl2br($warning)]
+                ], 409);
+            }
+
             $db->transStart();
+
             $db->table('barang')
                 ->where('storage_id', $id)
                 ->set('storage_id', null)
                 ->update();
             $affectedBarang = $db->affectedRows();
 
-            $db->table('peminjaman_items')->where('storage_id', $id)->set('storage_id', null)->update();
+            $db->table('peminjaman_items')
+                ->where('storage_id', $id)
+                ->set('storage_id', null)
+                ->update();
             $affectedPeminjamanItems = $db->affectedRows();
 
             $ok = $this->model->delete($id, true);
@@ -226,14 +250,12 @@ class StorageControllerApi extends BaseApiController
                 $db->transRollback();
                 return $this->respond([
                     'success' => false,
-                    'error' => [
-                        'message' => 'Gagal menghapus',
-                        'details' => $this->model->errors() ?: null
-                    ]
+                    'error' => ['message' => 'Gagal menghapus storage']
                 ], 400);
             }
 
             $db->transComplete();
+
             if (!$db->transStatus()) {
                 return $this->respond([
                     'success' => false,
@@ -259,15 +281,10 @@ class StorageControllerApi extends BaseApiController
             }
             return $this->respond([
                 'success' => false,
-                'error' => [
-                    'message' => 'Gagal menghapus',
-                    'details' => $msg
-                ]
+                'error' => ['message' => 'Gagal menghapus', 'details' => $msg]
             ], $code);
         }
     }
-
-    
 
     public function presetStorLocDesc()
     {

@@ -67,17 +67,36 @@ class BarangApi extends BaseApiController
     public function show($id)
     {
         $db = \Config\Database::connect();
-        $row = $db->table('barang')->select(
-            'id, material, material_description, plant, material_group, storage_location, storage_location_desc,
-             df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
-             material_type, storage_id, import_batch, created_at, updated_at'
-        )->where('id', (int) $id)->get()->getRowArray();
+
+        $row = $db->table('barang')
+            ->select('
+            id, material, material_description, plant, material_group,
+            storage_location, storage_location_desc, df_stor_loc_level,
+            base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer,
+            qty_blocked, material_type, storage_id, import_batch,
+            created_at, updated_at
+        ')
+            ->where('id', (int) $id)
+            ->get()
+            ->getRowArray();
 
         if (!$row) {
             return $this->failMsg('Barang tidak ditemukan', 404);
         }
+
+        $fotos = $db->table('barang_foto')
+            ->select('id, path, caption, is_primary')
+            ->where('barang_id', (int) $id)
+            ->orderBy('is_primary', 'DESC')
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $row['fotos'] = $fotos;
+
         return $this->ok($row);
     }
+
 
     public function update($id)
     {
@@ -155,20 +174,20 @@ class BarangApi extends BaseApiController
         }
 
         $data = [
-            'material'                 => trim((string) ($p['material'] ?? '')),
-            'material_description'     => trim((string) ($p['material_description'] ?? '')),
-            'plant'                    => trim((string) ($p['plant'] ?? '')),
-            'material_group'           => trim((string) ($p['material_group'] ?? '')),
-            'storage_location'         => trim((string) ($p['storage_location'] ?? '')),
-            'storage_location_desc'    => trim((string) ($p['storage_location_desc'] ?? '')),
-            'df_stor_loc_level'        => null,
-            'base_unit_of_measure'     => trim((string) ($p['base_unit_of_measure'] ?? '')),
-            'qty_unrestricted'         => (string) ($p['qty_unrestricted'] ?? '0'),
+            'material' => trim((string) ($p['material'] ?? '')),
+            'material_description' => trim((string) ($p['material_description'] ?? '')),
+            'plant' => trim((string) ($p['plant'] ?? '')),
+            'material_group' => trim((string) ($p['material_group'] ?? '')),
+            'storage_location' => trim((string) ($p['storage_location'] ?? '')),
+            'storage_location_desc' => trim((string) ($p['storage_location_desc'] ?? '')),
+            'df_stor_loc_level' => null,
+            'base_unit_of_measure' => trim((string) ($p['base_unit_of_measure'] ?? '')),
+            'qty_unrestricted' => (string) ($p['qty_unrestricted'] ?? '0'),
             'qty_transit_and_transfer' => (string) ($p['qty_transit_and_transfer'] ?? '0'),
-            'qty_blocked'              => (string) ($p['qty_blocked'] ?? '0'),
-            'storage_id'               => (int) ($p['storage_id'] ?? 0) ?: null,
-            'material_type'            => trim((string) ($p['material_type'] ?? '')),
-            'import_batch'             => date('Ymd_His'),
+            'qty_blocked' => (string) ($p['qty_blocked'] ?? '0'),
+            'storage_id' => (int) ($p['storage_id'] ?? 0) ?: null,
+            'material_type' => trim((string) ($p['material_type'] ?? '')),
+            'import_batch' => date('Ymd_His'),
         ];
 
         if ($data['material'] === '') {

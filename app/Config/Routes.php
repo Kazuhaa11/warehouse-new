@@ -47,7 +47,8 @@ $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
 });
 
-$routes->group('api/v1', ['namespace' => 'App\Controllers\Api',
+$routes->group('api/v1', [
+    'namespace' => 'App\Controllers\Api',
 ], static function ($routes) {
     $routes->get('storages', 'StorageControllerApi::index', ['filter' => 'auth']);
     $routes->post('storages', 'StorageControllerApi::store', ['filter' => 'authadmin']);
@@ -59,7 +60,7 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api',
 
 $routes->group('api/v1/stock-opname', [
     'namespace' => 'App\Controllers\Api',
-    'filter' => 'authadmin',
+    'filter' => 'auth',
 ], static function ($routes) {
     $routes->get('sessions', 'StockOpnameController::index');
     $routes->post('sessions', 'StockOpnameController::create');
@@ -74,3 +75,9 @@ $routes->group('api/v1/stock-opname', [
 
     $routes->get('sessions/(:num)/recap', 'StockOpnameController::recap/$1');
 });
+
+$routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
+    $routes->post('barang-foto/(:num)', 'BarangFotoApi::upload/$1');
+    $routes->delete('barang-foto/(:num)', 'BarangFotoApi::delete/$1'); 
+});
+

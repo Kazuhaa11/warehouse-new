@@ -106,7 +106,7 @@ echo view('components/modal/modal-form', [
 
 <?= $this->section('scripts') ?>
 <script>
-  (function() {
+  (function () {
     const API_Storages = '<?= base_url('api/v1/storages') ?>';
     let page = 1,
       per_page = 50;
@@ -210,16 +210,24 @@ echo view('components/modal/modal-form', [
       const btnEdit = e.target.closest('button[data-edit]');
 
       if (btnDel) {
-        if (!confirm('Nonaktifkan data ini?')) return;
+        const id = btnDel.dataset.del;
+        if (!confirm('Yakin ingin menghapus storage ini?')) return;
+
         try {
-          const j = await apiFetch(`${API_Storages}/${btnDel.dataset.del}`, {
-            method: 'DELETE'
-          });
-          if (j.success) load();
-          else alert(j?.error?.message || 'Gagal menghapus');
+          const res = await fetch(`${API_Storages}/${id}`, { method: 'DELETE' });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.success) {
+            alert('✅ Storage berhasil dihapus.');
+            load();
+          } else {
+            const msg = data?.error?.message || `Gagal menghapus storage (status ${res.status}).`;
+            alert('⚠️ ' + msg.replace(/<br\s*\/?>/gi, '\n'));
+          }
         } catch (err) {
-          alert(err.message);
+          alert('❌ Terjadi kesalahan: ' + err.message);
         }
+
         return;
       }
 
@@ -313,7 +321,7 @@ echo view('components/modal/modal-form', [
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
-      } [m]));
+      }[m]));
     }
 
     load();
