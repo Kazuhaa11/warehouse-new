@@ -63,6 +63,14 @@ $request = service('request');
                             href="<?= base_url('admin/import-export') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-file-excel"></i></div>Import / Export
                         </a>
+                        <a class="nav-link <?= $menu === 'movement' ? 'active' : '' ?>"
+                            href="<?= base_url('admin/movement') ?>">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-bar"></i></div>Pergerakan Barang
+                        </a>
+                        <a class="nav-link <?= $menu === 'generateqr' ? 'active' : '' ?>"
+                            href="<?= base_url('admin/generate-qr') ?>">
+                            <div class="sb-nav-link-icon"><i class="fas fa-qrcode"></i></div>Generate QR Barang
+                        </a>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">

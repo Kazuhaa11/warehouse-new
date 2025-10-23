@@ -85,7 +85,7 @@ class BarangApi extends BaseApiController
         }
 
         $fotos = $db->table('barang_foto')
-            ->select('id, path, caption, is_primary')
+            ->select('id, path, is_primary')
             ->where('barang_id', (int) $id)
             ->orderBy('is_primary', 'DESC')
             ->orderBy('id', 'ASC')
@@ -164,8 +164,6 @@ class BarangApi extends BaseApiController
         }
     }
 
-
-    //create barang
     public function create()
     {
         $p = $this->request->getJSON(true);

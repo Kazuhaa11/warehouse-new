@@ -1,6 +1,7 @@
 <?= $this->extend('layouts/sbadmin_local') ?>
 
 <?= $this->section('content') ?>
+
 <div class="card mb-4">
   <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
     <form id="filterForm" class="d-flex flex-wrap gap-2 align-items-center">
@@ -9,6 +10,7 @@
           value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
         <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
       </div>
+
       <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
         <option value="">All Plant</option>
         <option value="1200">Plant 1200</option>
@@ -17,6 +19,7 @@
 
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
     </form>
+
     <button type="button" class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalSatuan">
       <i class="fas fa-plus"></i> Tambah Satuan
     </button>
@@ -66,7 +69,6 @@
   'fields' => [
     ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'placeholder' => 'Kode material unik', 'required' => true],
     ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text', 'placeholder' => 'Nama/Deskripsi'],
-
     [
       'name' => 'plant',
       'label' => 'Plant',
@@ -76,9 +78,7 @@
         ['value' => '1300', 'label' => 'Plant 1300']
       ]
     ],
-
     ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text', 'placeholder' => 'mis. MG01 / ELEC / PART'],
-
     [
       'name' => 'storage_location',
       'label' => 'Stor. Loc',
@@ -90,7 +90,6 @@
         ['value' => '3691', 'label' => '3691'],
       ]
     ],
-
     [
       'name' => 'storage_location_desc',
       'label' => 'Stor. Loc Desc',
@@ -100,14 +99,7 @@
         ['value' => 'PROD ENG INDUK', 'label' => 'PROD ENG INDUK'],
       ]
     ],
-
-    [
-      'name' => 'storage_id',
-      'label' => 'Storage ID',
-      'type' => 'select',
-      'options' => []
-    ],
-
+    ['name' => 'storage_id', 'label' => 'Storage ID', 'type' => 'select', 'options' => []],
     ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text', 'placeholder' => 'PCS / KG / L'],
     ['name' => 'qty_unrestricted', 'label' => 'Unrestricted', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
     ['name' => 'qty_transit_and_transfer', 'label' => 'Transit', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
@@ -117,7 +109,7 @@
 ]) ?>
 
 <div class="modal fade" id="modalBarangDetail" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+  <div class="modal-dialog modal-xl modal-dialog-centered" style="height:80lvh;">
     <div class="modal-content">
       <form id="modalBarangDetailForm" data-modal-form data-api="#" data-method="PUT">
         <div class="modal-header">
@@ -153,69 +145,106 @@
               <input type="text" name="material_group" class="form-control">
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label">Storage ID</label>
-              <select name="storage_id" id="modalBarangDetailForm_storage_id" class="form-select"></select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Info Storage (auto)</label>
-              <textarea name="storage_info" id="modalBarangDetailForm_storage_info" class="form-control"
-                readonly></textarea>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Foto Barang</label>
-              <div id="fotoCarouselWrapper" class="text-center mb-3">
-                <div id="fotoCarouselPlaceholder" class="text-muted py-3 border rounded">
-                  Barang belum memiliki gambar.
-                </div>
-
-                <div id="fotoCarousel" class="carousel slide d-none" data-bs-ride="carousel">
-                  <div class="carousel-inner" id="fotoCarouselInner"></div>
-
-                  <button class="carousel-control-prev" type="button" data-bs-target="#fotoCarousel"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                  </button>
-                  <button class="carousel-control-next" type="button" data-bs-target="#fotoCarousel"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                  </button>
+            <div class="col-md-4">
+              <div class="d-flex flex-column">
+                <label class="form-label">Storage ID</label>
+                <select name="storage_id" id="modalBarangDetailForm_storage_id" class="form-select"></select>
+                <div>
+                  <label class="form-label">Info Storage</label>
+                  <textarea name="storage_info" id="modalBarangDetailForm_storage_info" class="form-control"
+                    readonly></textarea>
                 </div>
               </div>
+            </div>
 
-              <div class="text-center mt-2">
-                <input type="file" id="uploadFotoInput" accept="image/*" hidden>
-                <button type="button" id="btnUploadFoto" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-upload me-1"></i> Upload Foto
+            <div class="mt-4 text-center col-md-8">
+              <label class="form-label d-block mb-2">Foto Barang</label>
+              <div id="fotoCarouselPlaceholder"
+                class="text-muted d-flex align-items-center justify-content-center border rounded mb-3"
+                style="width:250px;height:250px;background:#f8f9fa;">
+                Barang belum memiliki gambar.
+              </div>
+
+              <div id="fotoCarousel" class="carousel slide d-none mx-auto mb-3" data-bs-ride="carousel"
+                style="width:250px;">
+                <div class="carousel-inner" id="fotoCarouselInner"></div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#fotoCarousel" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#fotoCarousel" data-bs-slide="next">
+                  <span class="carousel-control-next-icon"></span>
+                  <span class="visually-hidden">Next</span>
                 </button>
               </div>
+
+              <input type="file" id="uploadFotoInput" accept="image/*" hidden>
+              <button type="button" id="btnUploadFoto" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-upload me-1"></i> Upload Foto
+              </button>
             </div>
           </div>
-        </div>
 
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-sm btn-primary">Update</button>
-        </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-outline-danger" id="btnDeleteBarang">
+              <i class="fas fa-trash me-1"></i> Hapus
+            </button>
+            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+          </div>
       </form>
     </div>
   </div>
 </div>
 
-<?= $this->endSection() ?>
 
+<?= $this->endSection() ?>
+<?= $this->section('styles') ?>
+<style>
+  #fotoCarousel {
+    width: 250px !important;
+    height: 250px !important;
+  }
+
+  #fotoCarousel .carousel-inner,
+  #fotoCarousel .carousel-item {
+    width: 100%;
+    height: 250px !important;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  #fotoCarousel .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  #fotoCarousel .carousel-control-prev,
+  #fotoCarousel .carousel-control-next {
+    width: 15%;
+    opacity: 0.8;
+    filter: invert(1) grayscale(1);
+  }
+</style>
+
+
+<?= $this->endSection() ?>
 <?= $this->section('scripts') ?>
 <script>
   (() => {
     const API_BARANG = '<?= base_url('api/v1/barang') ?>';
     const API_STORAGES = '<?= base_url('api/v1/storages') ?>';
+    const API_FOTO = '<?= base_url('api/v1/barang-foto') ?>';
     const PER_PAGE = 50;
 
     const form = document.getElementById('filterForm');
     const qInput = form.querySelector('input[name="q"]');
     const plantSel = form.querySelector('select[name="plant"]');
     const btnReset = document.getElementById('btnReset');
-
     const tbody = document.getElementById('tbody-barang');
     const pager = document.getElementById('pager');
     const metaText = document.getElementById('metaText');
@@ -228,6 +257,7 @@
       e.preventDefault();
       load(1);
     });
+
     btnReset.addEventListener('click', () => {
       qInput.value = '';
       plantSel.value = '';
@@ -245,7 +275,9 @@
 
       history.replaceState(null, '', '?' + params.toString());
 
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Memuat data...</td></tr>`;
+      tbody.innerHTML = `
+      <tr><td colspan="9" class="text-center text-muted">Memuat data...</td></tr>
+    `;
       pager.innerHTML = '';
       metaText.textContent = '—';
 
@@ -255,26 +287,26 @@
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
 
         const rows = json.data || [];
-        const meta = json.meta || {
-          page,
-          per_page: PER_PAGE,
-          total: 0,
-          total_pages: 1
-        };
+        const meta = json.meta || { page, per_page: PER_PAGE, total: 0, total_pages: 1 };
 
         renderRows(rows);
         renderPager(meta);
         metaText.textContent = `Halaman ${meta.page} / ${meta.total_pages} • ${rows.length} data ditampilkan • Total ${meta.total} data`;
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">${esc(err.message)}</td></tr>`;
+        tbody.innerHTML = `
+        <tr><td colspan="9" class="text-center text-danger">${esc(err.message)}</td></tr>
+      `;
       }
     }
 
     function renderRows(rows) {
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Tidak ada data</td></tr>`;
+        tbody.innerHTML = `
+        <tr><td colspan="9" class="text-center text-muted">Tidak ada data</td></tr>
+      `;
         return;
       }
+
       tbody.innerHTML = rows.map(r => `
       <tr>
         <td>${esc(r.material ?? '')}</td>
@@ -344,16 +376,6 @@
     const detailForm = detailModalEl.querySelector('form[data-modal-form]');
     const errBox = detailModalEl.querySelector('[data-role="error"]');
 
-    (() => {
-      const footer = detailModalEl.querySelector('.modal-footer');
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'btn btn-sm btn-outline-danger ms-auto';
-      delBtn.id = 'btnDeleteBarang';
-      delBtn.innerHTML = '<i class="fas fa-trash me-1"></i> Hapus';
-      footer.insertBefore(delBtn, footer.lastElementChild);
-    })();
-
     tbody.addEventListener('click', async (e) => {
       const btn = e.target.closest('.btn-detail');
       if (!btn) return;
@@ -364,13 +386,10 @@
     document.getElementById("modalSatuan").addEventListener("shown.bs.modal", async () => {
       const select = document.querySelector("#modalSatuanForm_storage_id");
       if (!select) return;
-
       if (select.options.length > 1) return;
-
       try {
         const res = await fetch(API_STORAGES);
         const json = await res.json();
-
         if (json.success && Array.isArray(json.data)) {
           json.data.forEach((item) => {
             const path = [item.zone, item.rack, item.bin].filter(Boolean).join(" / ");
@@ -395,7 +414,6 @@
         try {
           const res = await fetch(API_STORAGES);
           const json = await res.json();
-
           if (json.success && Array.isArray(json.data)) {
             json.data.forEach((item) => {
               const path = [item.zone, item.rack, item.bin].filter(Boolean).join(" / ");
@@ -412,14 +430,12 @@
       }
 
       info.setAttribute("readonly", true);
-
       select.addEventListener("change", async (e) => {
         const val = e.target.value;
         if (!val) {
           info.value = "Tidak ada storage dipilih.";
           return;
         }
-
         info.value = "Memuat info storage...";
         try {
           const res = await fetch(`${API_STORAGES}/${val}`);
@@ -428,7 +444,7 @@
             const s = js.data;
             const label = [
               s.name || s.title || "",
-              s.path ? `(${s.path})` : "",
+              s.path ? ` (${s.path})` : "",
               s.plant ? ` • Plant: ${s.plant}` : "",
               s.storage_location ? ` • SLoc: ${s.storage_location}` : "",
               s.zone ? ` • Zone: ${s.zone}` : "",
@@ -446,11 +462,48 @@
       });
     });
 
+    function renderFotoItems(fotos) {
+      return fotos.map((f, i) => `
+    <div class="carousel-item ${i === 0 ? 'active' : ''}">
+      <img src="<?= base_url('uploads/barang') ?>/${esc(String(f.path))}" class="d-block w-100" alt="Foto Barang" style="height:200px; object-fit:contain; o  ">
+    </div>
+  `).join('');
+    }
+
+    const carouselInner = document.getElementById('fotoCarouselInner');
+    carouselInner.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.btn-del-foto');
+      if (!btn) return;
+
+      const fotoId = btn.getAttribute('data-foto-id');
+      if (!fotoId) return;
+
+      if (!confirm('Hapus foto ini?')) return;
+
+      try {
+        const delRes = await fetch(`${API_FOTO}/${encodeURIComponent(fotoId)}`, { method: 'DELETE' });
+        const delJson = await delRes.json().catch(() => ({}));
+        if (!delRes.ok || delJson.success === false) {
+          throw new Error(delJson?.error?.message || 'Gagal menghapus foto');
+        }
+
+        const currentBarangId = (detailForm.dataset.api || '').split('/').pop();
+        if (currentBarangId) {
+          await loadFotoBaru(currentBarangId);
+        } else {
+          await load(1);
+        }
+      } catch (err) {
+        alert(err.message || 'Gagal menghapus foto.');
+      }
+    });
 
     async function openDetail(id) {
       const uploadBtn = document.getElementById('btnUploadFoto');
       const uploadInput = document.getElementById('uploadFotoInput');
+
       clearError();
+
       try {
         const res = await fetch(`${API_BARANG}/${id}`);
         const json = await res.json();
@@ -458,8 +511,8 @@
 
         const b = json.data || json;
         const carousel = document.getElementById('fotoCarousel');
-        const carouselInner = document.getElementById('fotoCarouselInner');
         const placeholder = document.getElementById('fotoCarouselPlaceholder');
+
         detailForm.dataset.api = `${API_BARANG}/${id}`;
         detailForm.dataset.method = 'PUT';
 
@@ -495,17 +548,11 @@
         } else {
           setValue('storage_info', 'Tidak ada storage_id.');
         }
+
         if (b.fotos && b.fotos.length > 0) {
           placeholder.classList.add('d-none');
           carousel.classList.remove('d-none');
-          carouselInner.innerHTML = b.fotos.map((f, i) => `
-            <div class="carousel-item ${i === 0 ? 'active' : ''}">
-              <img src="${'<?= base_url('uploads/barang') ?>/' + f.path}" 
-              class="d-block mx-auto" 
-              style="max-height:280px; maxobject-fit:contain;">
-            ${f.caption ? `<div class="carousel-caption d-none d-md-block"><small>${esc(f.caption)}</small></div>` : ''}
-        </div>
-        `).join('');
+          carouselInner.innerHTML = renderFotoItems(b.fotos);
         } else {
           carousel.classList.add('d-none');
           placeholder.classList.remove('d-none');
@@ -517,9 +564,7 @@
         del.onclick = async () => {
           if (!confirm('Hapus barang ini?')) return;
           try {
-            const r = await fetch(`${API_BARANG}/${id}`, {
-              method: 'DELETE'
-            });
+            const r = await fetch(`${API_BARANG}/${id}`, { method: 'DELETE' });
             const j = await r.json().catch(() => ({}));
             if (!r.ok || j.success === false) throw new Error(j?.error?.message || 'Gagal menghapus');
             bootstrap.Modal.getInstance(detailModalEl)?.hide();
@@ -529,48 +574,38 @@
           }
         };
 
-        window.addEventListener('modal:success', onModalSuccess, {
-          once: true
-        });
-
+        window.addEventListener('modal:success', onModalSuccess, { once: true });
         function onModalSuccess(ev) {
           if (ev.detail?.modalId === 'modalBarangDetail') load(1);
         }
+
+        uploadBtn.onclick = () => uploadInput.click();
+        uploadInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const formData = new FormData();
+          formData.append('foto', file);
+          try {
+            const res = await fetch(`${API_FOTO}/${id}`, { method: 'POST', body: formData });
+            const js = await res.json();
+            if (!js.success) throw new Error(js?.error?.message || 'Gagal upload');
+            alert('Foto berhasil diupload');
+            await loadFotoBaru(id);
+          } catch (err) {
+            alert(err.message || 'Gagal upload foto');
+          } finally {
+            uploadInput.value = '';
+          }
+        };
+
       } catch (err) {
         alert(err.message || 'Gagal memuat detail.');
       }
-
-      uploadBtn.onclick = () => uploadInput.click();
-
-      uploadInput.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append('foto', file);
-
-        try {
-          const res = await fetch(`<?= base_url('api/v1/barang-foto') ?>/${id}`, {
-            method: 'POST',
-            body: formData
-          });
-          const json = await res.json();
-          if (!json.success) throw new Error(json?.error?.message || 'Gagal upload');
-
-          alert('Foto berhasil diupload');
-          loadFotoBaru(id);
-        } catch (err) {
-          alert(err.message);
-        } finally {
-          uploadInput.value = '';
-        }
-      };
     }
 
     async function loadFotoBaru(id) {
       const carousel = document.getElementById('fotoCarousel');
-      const carouselInner = document.getElementById('fotoCarouselInner');
       const placeholder = document.getElementById('fotoCarouselPlaceholder');
-
       try {
         const res = await fetch(`${API_BARANG}/${id}`);
         const json = await res.json();
@@ -578,14 +613,7 @@
         if (b.fotos && b.fotos.length > 0) {
           placeholder.classList.add('d-none');
           carousel.classList.remove('d-none');
-          carouselInner.innerHTML = b.fotos.map((f, i) => `
-        <div class="carousel-item ${i === 0 ? 'active' : ''}">
-          <img src="${'<?= base_url('uploads/barang') ?>/' + f.path}"
-            class="d-block mx-auto"
-            style="max-height:280px; object-fit:contain;">
-          ${f.caption ? `<div class="carousel-caption d-none d-md-block"><small>${esc(f.caption)}</small></div>` : ''}
-        </div>
-      `).join('');
+          carouselInner.innerHTML = renderFotoItems(b.fotos);
         } else {
           carousel.classList.add('d-none');
           placeholder.classList.remove('d-none');
@@ -606,36 +634,27 @@
       const el = detailForm.querySelector(`[name="${css(name)}"]`);
       if (el) el.value = value ?? '';
     }
-
     function clearError() {
       if (errBox) {
         errBox.classList.add('d-none');
         errBox.textContent = '';
       }
     }
-
     function showError(msg) {
       if (errBox) {
         errBox.classList.remove('d-none');
         errBox.textContent = msg;
       }
     }
-
     function num(v) {
       const n = Number(v ?? 0);
       return isNaN(n) ? '0' : n.toLocaleString();
     }
-
     function esc(s) {
       return String(s).replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
       }[m]));
     }
-
     function css(s) {
       return String(s).replace(/"/g, '\\"');
     }
@@ -645,4 +664,5 @@
 </script>
 
 <script src="<?= base_url('sbadmin/js/modal-form.js') ?>"></script>
+
 <?= $this->endSection() ?>

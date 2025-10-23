@@ -31,6 +31,15 @@
             </div>
         </div>
     </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-secondary text-white mb-4">
+            <div class="card-body">Pergerakan Barang</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <span id="stat-pergerakan-barang">0</span>
+                <a class="small text-white stretched-link" href <?= '="' . base_url('admin/movement') . '"' ?>>View</a>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-3 mt-1">
         <div class="col-12">
@@ -41,6 +50,9 @@
         </div>
         <div class="col-12">
             <?= view('components/charts/stockopname_chart') ?>
+        </div>
+        <div class="col-12">
+            <?= view('components/charts/movement_chart') ?> 
         </div>
     </div>
 </div>

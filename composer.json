@@ -13,6 +13,7 @@
         "php": "^7.4 || ^8.0",
         "codeigniter4/framework": "^4.0",
         "dompdf/dompdf": "2",
+        "endroid/qr-code": "4.0",
         "firebase/php-jwt": "6",
         "phpoffice/phpspreadsheet": "1.29"
     },

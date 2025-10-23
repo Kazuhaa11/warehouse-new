@@ -20,6 +20,9 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('opname/(:num)', 'OpnameController::items/$1');
     $routes->get('storages', 'StorageController::index');
     $routes->get('import-export', 'ImportExportController::index');
+    $routes->get('movement', 'MovementController::index');
+    $routes->get('generate-qr', 'QrGeneratorController::index');
+    $routes->post('generate-qr', 'QrGeneratorController::generate');
 });
 
 
@@ -78,6 +81,10 @@ $routes->group('api/v1/stock-opname', [
 
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
     $routes->post('barang-foto/(:num)', 'BarangFotoApi::upload/$1');
-    $routes->delete('barang-foto/(:num)', 'BarangFotoApi::delete/$1'); 
+    $routes->delete('barang-foto/(:num)', 'BarangFotoApi::delete/$1');
 });
 
+$routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
+    $routes->get('barang/movement-list', 'BarangMovementApi::list');
+    $routes->get('barang/movement-trend', 'BarangMovementApi::trend');
+});

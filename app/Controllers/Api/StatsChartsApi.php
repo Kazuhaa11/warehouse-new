@@ -5,19 +5,19 @@ class StatsChartsApi extends BaseApiController
 {
     public function material()
     {
-        return $this->ok($this->monthlySeries('barang', 'created_at', 6));
+        return $this->ok($this->monthlySeries('barang', 'created_at', 12));
     }
 
     public function peminjaman()
     {
         $candidates = ['peminjaman', 'peminjaman_header'];
-        return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 6));
+        return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 12));
     }
 
     public function stockOpname()
     {
         $candidates = ['stock_opname', 'stock_opname_sessions', 'so_sessions'];
-        return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 6));
+        return $this->ok($this->monthlySeriesFirstExisting($candidates, 'created_at', 12));
     }
 
     private function monthlySeriesFirstExisting(array $candidates, string $dateCol, int $months): array

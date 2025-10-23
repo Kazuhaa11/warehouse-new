@@ -11,7 +11,6 @@ class BarangFotoModel extends Model
     protected $allowedFields = [
         'barang_id',
         'path',
-        'caption',
         'is_primary',
         'created_at'
     ];

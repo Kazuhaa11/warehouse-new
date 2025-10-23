@@ -35,7 +35,6 @@ class BarangFotoApi extends ResourceController
         $db->table('barang_foto')->insert([
             'barang_id' => $barangId,
             'path' => $newName,
-            'caption' => $this->request->getPost('caption'),
             'is_primary' => 0,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
