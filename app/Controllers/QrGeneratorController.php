@@ -18,6 +18,7 @@ class QrGeneratorController extends BaseController
         $offset = ($page - 1) * $perPage;
 
         $builder = $db->table('barang')->select('id, material, material_description');
+
         if ($q !== '') {
             $builder->groupStart()
                 ->like('material', $q)
@@ -30,7 +31,8 @@ class QrGeneratorController extends BaseController
         $barang = $builder
             ->orderBy('material', 'ASC')
             ->limit($perPage, $offset)
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
 
         $totalPages = ceil($total / $perPage);
 
@@ -43,17 +45,31 @@ class QrGeneratorController extends BaseController
             'total' => $total,
             'totalPages' => $totalPages,
             'q' => $q,
+            'error' => null, 
         ];
 
         return view('qrgenerator/generate_qr', $data);
     }
 
-
     public function generate()
     {
         $ids = (array) $this->request->getPost('barang_ids');
         if (!$ids) {
-            return redirect()->back()->with('error', 'Pilih minimal satu barang.');
+            $db = \Config\Database::connect();
+            $barang = $db->table('barang')->select('id, material, material_description')
+                ->orderBy('material', 'ASC')->limit(25)->get()->getResultArray();
+
+            return view('qrgenerator/generate_qr', [
+                'menu' => 'generateqr',
+                'title' => 'Generate QR Code Barang',
+                'barang' => $barang,
+                'page' => 1,
+                'perPage' => 25,
+                'total' => count($barang),
+                'totalPages' => 1,
+                'q' => '',
+                'error' => 'Pilih minimal satu barang.', 
+            ]);
         }
 
         $db = \Config\Database::connect();
@@ -67,7 +83,6 @@ class QrGeneratorController extends BaseController
         $labels = [];
         foreach ($items as $b) {
             $payload = "Material: {$b['material']}\nDesc: {$b['material_description']}";
-
             $qr = Builder::create()
                 ->writer(new PngWriter())
                 ->data($payload)
@@ -92,5 +107,4 @@ class QrGeneratorController extends BaseController
 
         return view('qrgenerator/qr_result', $data);
     }
-
 }

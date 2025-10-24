@@ -19,14 +19,23 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
+
+    public static function session($getShared = true)
+    {
+        if ($getShared) {
+            return new class {
+                public function set() {}
+                public function get()
+                {
+                    return null;
+                }
+                public function has()
+                {
+                    return false;
+                }
+                public function remove() {}
+                public function destroy() {}
+            };
+        }
+    }
 }

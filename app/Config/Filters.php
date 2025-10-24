@@ -47,7 +47,7 @@ class Filters extends BaseConfig
         'before' => [
             // Aktifkan CSRF hanya untuk non-API.
             // Jika kamu punya endpoint upload non-API, tambah di except.
-            'csrf' => ['except' => ['api/*', 'admin/import-export/upload']],
+            // 'csrf' => ['except' => ['api/*', 'admin/import-export/upload']],
             // 'invalidchars',
             // 'honeypot',
         ],

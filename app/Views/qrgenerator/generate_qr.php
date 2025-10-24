@@ -5,8 +5,9 @@
 <div class="card mb-4 shadow-sm position-relative">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <span><i class="fas fa-qrcode me-2"></i> Generate QR Code Barang</span>
-        <?php if (session('error')): ?>
-            <span class="text-danger small"><?= esc(session('error')) ?></span>
+
+        <?php if (!empty($error)): ?>
+            <span class="text-danger small"><?= esc($error) ?></span>
         <?php endif; ?>
     </div>
 
@@ -28,8 +29,6 @@
         </form>
 
         <form method="post" action="<?= base_url('admin/generate-qr') ?>" id="formGenerateQR">
-            <?= csrf_field() ?>
-
             <div class="table-responsive">
                 <table class="table table-bordered table-sm align-middle">
                     <thead class="table-light">
@@ -60,6 +59,7 @@
                     </tbody>
                 </table>
             </div>
+
             <?php if ($totalPages > 1): ?>
                 <div class="d-flex justify-content-between align-items-center flex-wrap mt-2 small">
                     <div>
@@ -97,18 +97,29 @@
         </form>
     </div>
 </div>
-<button id="btnGenerate" class="btn btn-primary shadow position-fixed" style="top: 85px; right: 30px; z-index: 1000;">
+
+<button id="btnGenerate" class="btn btn-primary shadow position-fixed"
+    style="top: 85px; right: 30px; z-index: 1000;">
     <i class="fas fa-qrcode me-1"></i> Generate
 </button>
 
 <script>
-    document.getElementById('selectAll')?.addEventListener('change', function () {
+    document.getElementById('selectAll')?.addEventListener('change', function() {
         document.querySelectorAll('input[name="barang_ids[]"]').forEach(cb => cb.checked = this.checked);
     });
-    document.getElementById('btnGenerate')?.addEventListener('click', function () {
+
+    document.getElementById('btnGenerate')?.addEventListener('click', function() {
         const checked = document.querySelectorAll('input[name="barang_ids[]"]:checked').length;
         if (checked === 0) {
-            alert('Pilih minimal satu barang untuk generate QR.');
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Pilih minimal satu barang untuk generate QR.'
+                });
+            } else {
+                alert('Pilih minimal satu barang untuk generate QR.');
+            }
             return;
         }
         document.getElementById('formGenerateQR').submit();

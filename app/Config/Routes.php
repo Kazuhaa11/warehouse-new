@@ -3,6 +3,8 @@
 use CodeIgniter\Router\RouteCollection;
 /** @var RouteCollection $routes */
 
+$routes->get('testsession', 'TestSession::index');
+
 $routes->get('/', 'Api\AuthApiController::loginPage');
 
 $routes->group('api/v1/auth', ['namespace' => 'App\Controllers\Api'], static function ($r) {

@@ -12,6 +12,9 @@ if (version_compare(PHP_VERSION, $minPhpVersion, '<')) {
     exit($message);
 }
 
+$sessionPath = '/tmp';
+ini_set('session.save_path', $sessionPath);
+
 // Path to the front controller (this file)
 define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR);
 
