@@ -25,6 +25,8 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('movement', 'MovementController::index');
     $routes->get('generate-qr', 'QrGeneratorController::index');
     $routes->post('generate-qr', 'QrGeneratorController::generate');
+    $routes->get('stock-predict', 'StockPredictController::index');
+    $routes->get('stock-predict-view', 'StockPredictController::view');
 });
 
 

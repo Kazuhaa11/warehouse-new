@@ -71,6 +71,10 @@ $request = service('request');
                             href="<?= base_url('admin/generate-qr') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-qrcode"></i></div>Generate QR Barang
                         </a>
+                        <a class="nav-link <?= $menu === 'stockpredict' ? 'active' : '' ?>"
+                            href="<?= base_url('admin/stock-predict-view') ?>">
+                            <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Stock Predict
+                        </a>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
