@@ -11,6 +11,10 @@ class BarangMovementApi extends ResourceController
     {
         $type = $this->request->getGet('type');
         $monthParam = $this->request->getGet('month');
+        $page = (int) ($this->request->getGet('page') ?? 1);
+        $perPage = (int) ($this->request->getGet('per_page') ?? 25);
+        $offset = ($page - 1) * $perPage;
+
         $params = [];
         $whereDate = '';
 
@@ -25,7 +29,14 @@ class BarangMovementApi extends ResourceController
         }
 
         $db = \Config\Database::connect();
-        $sql = "
+        $sqlBase = "
+        FROM barang b
+        LEFT JOIN peminjaman_items pi 
+            ON pi.material = b.material $whereDate
+        GROUP BY b.id
+    ";
+
+        $sqlSelect = "
         SELECT 
             b.id,
             b.material,
@@ -36,15 +47,12 @@ class BarangMovementApi extends ResourceController
             b.qty_unrestricted,
             COALESCE(SUM(pi.requested_qty), 0) AS total_keluar,
             (COALESCE(SUM(pi.requested_qty), 0) / NULLIF(AVG(NULLIF(b.qty_unrestricted, 0)), 0)) AS turnover
-        FROM barang b
-        LEFT JOIN peminjaman_items pi 
-            ON pi.material = b.material $whereDate
-        GROUP BY b.id
+        $sqlBase
     ";
 
-        $rows = $db->query($sql, $params)->getResultArray();
+        $rowsAll = $db->query($sqlSelect, $params)->getResultArray();
 
-        $filtered = array_filter($rows, function ($r) use ($type) {
+        $filtered = array_filter($rowsAll, function ($r) use ($type) {
             $t = (float) ($r['turnover'] ?? 0);
             if ($type === 'fast')
                 return $t > 1;
@@ -55,11 +63,21 @@ class BarangMovementApi extends ResourceController
             return true;
         });
 
+        $total = count($filtered);
+        $paged = array_slice(array_values($filtered), $offset, $perPage);
+
         return $this->respond([
             'success' => true,
-            'data' => array_values($filtered)
+            'data' => $paged,
+            'meta' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => ceil($total / $perPage)
+            ]
         ]);
     }
+
 
 
     public function trend()
