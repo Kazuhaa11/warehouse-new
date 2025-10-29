@@ -123,7 +123,6 @@
         </tr>
       `).join('');
 
-                // pagination UI
                 let pagHTML = `
         <div>Halaman ${meta.page} / ${meta.total_pages} &nbsp;·&nbsp; ${meta.per_page} data/hal &nbsp;·&nbsp; Total ${meta.total} data</div>
         <nav><ul class="pagination pagination-sm mb-0">
