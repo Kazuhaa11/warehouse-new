@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers\Api;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -15,52 +16,43 @@ class BarangMovementApi extends ResourceController
         $perPage = (int) ($this->request->getGet('per_page') ?? 25);
         $offset = ($page - 1) * $perPage;
 
-        $params = [];
-        $whereDate = '';
+        $db = \Config\Database::connect();
 
         if ($monthParam) {
             $monthDate = date('Y-m', strtotime($monthParam));
             $start = $monthDate . '-01';
             $end = date('Y-m-t', strtotime($start));
-            $whereDate = 'AND pi.created_at BETWEEN ? AND ?';
-            $params = [$start, $end];
         } else {
-            $whereDate = 'AND pi.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)';
+            $start = date('Y-m-01');
+            $end = date('Y-m-t');
         }
 
-        $db = \Config\Database::connect();
-        $sqlBase = "
-        FROM barang b
-        LEFT JOIN peminjaman_items pi 
-            ON pi.material = b.material $whereDate
-        GROUP BY b.id
-    ";
+        $sql = "
+            SELECT 
+                b.id,
+                b.material,
+                b.material_description,
+                b.plant,
+                b.storage_location,
+                b.storage_location_desc,
+                b.qty_unrestricted,
+                COALESCE(SUM(pi.requested_qty), 0) AS total_keluar
+            FROM barang b
+            LEFT JOIN peminjaman_items pi 
+                ON pi.material = b.material 
+                AND pi.created_at BETWEEN ? AND ?
+            GROUP BY b.id, b.material, b.material_description, b.plant, b.storage_location, b.storage_location_desc, b.qty_unrestricted
+            ORDER BY b.material ASC
+        ";
 
-        $sqlSelect = "
-        SELECT 
-            b.id,
-            b.material,
-            b.material_description,
-            b.plant,
-            b.storage_location,
-            b.storage_location_desc,
-            b.qty_unrestricted,
-            COALESCE(SUM(pi.requested_qty), 0) AS total_keluar,
-            (COALESCE(SUM(pi.requested_qty), 0) / NULLIF(AVG(NULLIF(b.qty_unrestricted, 0)), 0)) AS turnover
-        $sqlBase
-    ";
-
-        $rowsAll = $db->query($sqlSelect, $params)->getResultArray();
+        $rowsAll = $db->query($sql, [$start, $end])->getResultArray();
 
         $filtered = array_filter($rowsAll, function ($r) use ($type) {
-            $t = (float) ($r['turnover'] ?? 0);
-            if ($type === 'fast')
-                return $t > 1;
-            if ($type === 'slow')
-                return $t > 0.1 && $t <= 1;
-            if ($type === 'dead')
-                return $t <= 0.1;
-            return true;
+            $keluar = (float) ($r['total_keluar'] ?? 0);
+            if ($type === 'fast') return $keluar >= 3;
+            if ($type === 'slow') return $keluar > 0 && $keluar < 3;
+            if ($type === 'dead') return $keluar == 0;
+            return true; 
         });
 
         $total = count($filtered);
@@ -77,8 +69,6 @@ class BarangMovementApi extends ResourceController
             ]
         ]);
     }
-
-
 
     public function trend()
     {

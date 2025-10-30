@@ -62,8 +62,7 @@
             <?php if ($totalPages > 1): ?>
                 <div class="d-flex justify-content-between align-items-center flex-wrap mt-2 small">
                     <div>
-                        Halaman <?= $page ?> / <?= $totalPages ?> &nbsp;·&nbsp;
-                        <?= $perPage ?> data ditampilkan &nbsp;·&nbsp;
+                        Halaman <?= $page ?> / <?= $totalPages ?> :
                         Total <?= $total ?> data
                     </div>
 

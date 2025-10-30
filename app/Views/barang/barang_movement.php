@@ -51,9 +51,8 @@
                         <th>Plant</th>
                         <th>Stor. Loc</th>
                         <th>Stor. Loc Desc</th>
-                        <th class="text-end">Unrestricted</th>
+                        <th class="text-end">Stok</th>
                         <th class="text-end">Keluar (Bulan)</th>
-                        <th class="text-end">Turnover Rate</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,12 +118,11 @@
           <td>${r.storage_location_desc ?? '-'}</td>
           <td class="text-end">${Number(r.qty_unrestricted || 0).toLocaleString()}</td>
           <td class="text-end">${Number(r.total_keluar || 0).toLocaleString()}</td>
-          <td class="text-end">${parseFloat(r.turnover || 0).toFixed(2)}</td>
         </tr>
       `).join('');
 
                 let pagHTML = `
-        <div>Halaman ${meta.page} / ${meta.total_pages} &nbsp;·&nbsp; ${meta.per_page} data/hal &nbsp;·&nbsp; Total ${meta.total} data</div>
+        <div>Halaman ${meta.page} / ${meta.total_pages} : Total ${meta.total} data</div>
         <nav><ul class="pagination pagination-sm mb-0">
       `;
                 if (meta.page > 1)

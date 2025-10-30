@@ -26,11 +26,8 @@
                         <th style="width:50px;">No</th>
                         <th>Material</th>
                         <th>Deskripsi</th>
-                        <th>Kelas</th>
                         <th>Safety Stock</th>
-                        <th>ROP</th>
                         <th>Jumlah Order(PCS)</th>
-                        <th>Disarankan Order</th>
                         <th>Stok Saat Ini</th>
                         <th>Tanggal Pesan</th>
                         <th>Status</th>
@@ -83,11 +80,8 @@
           <td>${i++}</td>
           <td>${d.material}</td>
           <td class="text-start">${d.description}</td>
-          <td><span class="badge bg-info text-dark">${d.class}</span></td>
           <td>${Number(d.safety_stock).toFixed(2)}</td>
-          <td>${Number(d.rop_rounded).toLocaleString()}</td>
           <td>${Number(d.eoq).toLocaleString()}</td>
-          <td>${Number(d.order_qty_suggested).toLocaleString()}</td>
           <td>${Number(d.current_stock).toLocaleString()}</td>
           <td>${d.next_order_date}</td>
           <td><span class="badge ${badgeClass}">${d.order_status}</span></td>
@@ -97,7 +91,7 @@
             }
 
             let pagHTML = `
-      <div>Halaman ${meta.page} / ${meta.total_pages} &nbsp;·&nbsp; ${meta.per_page} data/hal &nbsp;·&nbsp; Total ${meta.total} data</div>
+      <div>Halaman ${meta.page} / ${meta.total_pages} : Total ${meta.total} data</div>
       <nav>
         <ul class="pagination pagination-sm mb-0">
     `;
