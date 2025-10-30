@@ -344,7 +344,7 @@ class PeminjamanApi extends BaseApiController
         try {
             helper('peminjaman_report');
 
-            $mode = $this->request->getGet('mode') ?: 'range';
+            $mode = $this->request->getGet('mode') ?: 'all';
             $fromDate = $this->request->getGet('from_date');
             $toDate = $this->request->getGet('to_date');
             $month = (int) ($this->request->getGet('month') ?? 0);
@@ -352,21 +352,22 @@ class PeminjamanApi extends BaseApiController
             $plant = $this->request->getGet('plant');
             $sortBy = $this->request->getGet('sort_by') ?: 'tanggal';
             $sortDir = strtolower($this->request->getGet('sort_dir') ?: 'desc');
-
             $dl = (int) $this->request->getGet('dl') === 1;
             $inline = !$dl;
 
-            if (!in_array($sortBy, ['tanggal', 'no_nota'], true))
+            if (!in_array($sortBy, ['tanggal', 'no_nota'], true)) {
                 $sortBy = 'tanggal';
-            if (!in_array($sortDir, ['asc', 'desc'], true))
+            }
+            if (!in_array($sortDir, ['asc', 'desc'], true)) {
                 $sortDir = 'desc';
+            }
 
             $b = $this->db->table('peminjaman p')
                 ->select("
                 p.id,
                 p.no_nota,
                 DATE(p.borrow_date) AS tanggal,
-                DATE(p.due_date)    AS due_date,
+                DATE(p.due_date) AS due_date,
                 p.status,
                 p.note,
                 u.username AS peminjam_username,
@@ -376,26 +377,21 @@ class PeminjamanApi extends BaseApiController
                 ->join('peminjaman_items pi', 'pi.peminjaman_id = p.id', 'left')
                 ->join('barang b', 'b.id = pi.barang_id', 'left');
 
-            if ($mode === 'range') {
-                if (
-                    !$fromDate || !$toDate
-                    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fromDate)
-                    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $toDate)
-                ) {
-                    return $this->failMsg('Rentang tanggal tidak valid (YYYY-MM-DD).', 422);
-                }
+            if ($fromDate && $toDate) {
                 $b->where('DATE(p.borrow_date) >=', $fromDate)
                     ->where('DATE(p.borrow_date) <=', $toDate);
-            } else {
-                if ($month < 1 || $month > 12 || $year < 1970) {
-                    return $this->failMsg('Bulan/tahun tidak valid.', 422);
-                }
+            }
+            elseif ($month > 0 && $year >= 1970) {
                 $b->where('MONTH(p.borrow_date)', $month)
                     ->where('YEAR(p.borrow_date)', $year);
             }
+            else {
+                $b->where('p.borrow_date >=', date('Y-m-d', strtotime('-12 months')));
+            }
 
-            if (!empty($plant))
+            if (!empty($plant)) {
                 $b->where('b.plant', $plant);
+            }
 
             $sortBy === 'no_nota'
                 ? $b->orderBy('p.no_nota', $sortDir)
@@ -410,8 +406,10 @@ class PeminjamanApi extends BaseApiController
                     ->select('pi.peminjaman_id, pi.material, pi.requested_qty, pi.uom, pi.storage_location, b.material_description')
                     ->join('barang b', 'b.id = pi.barang_id', 'left')
                     ->whereIn('pi.peminjaman_id', $ids)
-                    ->orderBy('pi.peminjaman_id', 'ASC')->orderBy('pi.id', 'ASC')
-                    ->get()->getResultArray();
+                    ->orderBy('pi.peminjaman_id', 'ASC')
+                    ->orderBy('pi.id', 'ASC')
+                    ->get()
+                    ->getResultArray();
                 foreach ($rows as $r) {
                     $itemsByHeader[$r['peminjaman_id']][] = $r;
                 }
@@ -429,6 +427,4 @@ class PeminjamanApi extends BaseApiController
             return $this->failMsg('Gagal membuat laporan', 500, $e->getMessage());
         }
     }
-
-
 }

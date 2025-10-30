@@ -114,7 +114,7 @@
 
 <?= $this->section('scripts') ?>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const PEMINJAMAN_API = '<?= base_url('api/v1/peminjaman') ?>';
     const BARANG_API = '<?= base_url('api/v1/barang') ?>';
     const PER_PAGE = 50;
@@ -346,7 +346,7 @@
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
-      } [m]));
+      }[m]));
     }
 
     async function initSearchBarang() {
@@ -466,6 +466,39 @@
     }
 
     load(1);
+
+    const btnCetak = document.getElementById("btnCetak");
+    if (btnCetak) {
+      btnCetak.addEventListener("click", async () => {
+        try {
+          btnCetak.disabled = true;
+          btnCetak.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-1"></span> Mencetak...';
+          const url = `${PEMINJAMAN_API}/report/pdf?dl=1`;
+
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Gagal membuat laporan PDF");
+
+          const blob = await res.blob();
+          const fileUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.download = `Laporan_Bon_Pinjam_${new Date()
+            .toISOString()
+            .slice(0, 10)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(fileUrl);
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          btnCetak.disabled = false;
+          btnCetak.innerHTML =
+            '<i class="fas fa-file-invoice me-1"></i> Cetak Laporan';
+        }
+      });
+    }
   });
 </script>
 <?= $this->endSection() ?>
