@@ -5,6 +5,13 @@
 <div class="card mb-4 shadow-sm position-relative">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <span><i class="fas fa-qrcode me-2"></i> Generate QR Code Barang</span>
+        <div class="input-group input-group-sm" style="max-width:300px;">
+            <input type="text" name="q" class="form-control form-control-sm"
+                placeholder="Cari material / deskripsi..." value="<?= esc($q) ?>">
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
 
         <?php if (!empty($error)): ?>
             <span class="text-danger small"><?= esc($error) ?></span>
@@ -13,14 +20,6 @@
 
     <div class="card-body">
         <form method="get" class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-            <div class="input-group input-group-sm" style="max-width:300px;">
-                <input type="text" name="q" class="form-control form-control-sm"
-                    placeholder="Cari material / deskripsi..." value="<?= esc($q) ?>">
-                <button class="btn btn-primary" type="submit">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-
             <?php if ($q): ?>
                 <a href="<?= base_url('admin/generate-qr') ?>" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-times"></i> Reset
