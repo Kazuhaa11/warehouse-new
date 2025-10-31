@@ -1,6 +1,6 @@
 <?php  ?>
 <div class="card mb-4">
-  <div class="card-header"><i class="fas fa-chart-area me-2"></i> Stock Opname (6 Bulan)</div>
+  <div class="card-header"><i class="fas fa-chart-area me-2"></i> Stock Opname (12 Bulan)</div>
   <div class="card-body">
     <canvas id="chartStockOpname" height="120"></canvas>
   </div>

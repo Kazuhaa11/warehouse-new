@@ -1,6 +1,6 @@
 <?php ?>
 <div class="card mb-4">
-    <div class="card-header"><i class="fas fa-chart-line me-2"></i> Tren Material (6 Bulan)</div>
+    <div class="card-header"><i class="fas fa-chart-line me-2"></i> Tren Material (12 Bulan)</div>
     <div class="card-body">
         <canvas id="chartMaterial" height="120"></canvas>
     </div>
