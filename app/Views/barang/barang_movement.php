@@ -81,12 +81,12 @@
             const type = typeSel.value;
             const month = monthSel.value;
             if (!type && !month) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Silakan lakukan filter terlebih dahulu</td></tr>`;
+                tbody.innerHTML = <tr><td colspan="8" class="text-center text-muted">Silakan lakukan filter terlebih dahulu</td></tr>;
                 pagination.innerHTML = '';
                 return;
             }
 
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
+            tbody.innerHTML = <tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>;
             pagination.innerHTML = '';
 
             try {
@@ -104,7 +104,7 @@
                 const meta = json.meta || { page: 1, total_pages: 1, total: rows.length, per_page: 25 };
 
                 if (rows.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Tidak ada data</td></tr>`;
+                    tbody.innerHTML = <tr><td colspan="8" class="text-center text-muted">Tidak ada data</td></tr>;
                     pagination.innerHTML = '';
                     return;
                 }
@@ -126,14 +126,14 @@
         <nav><ul class="pagination pagination-sm mb-0">
       `;
                 if (meta.page > 1)
-                    pagHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${meta.page - 1}">&laquo;</a></li>`;
+                    pagHTML += <li class="page-item"><a class="page-link" href="#" data-page="${meta.page - 1}">&laquo;</a></li>;
                 const start = Math.max(1, meta.page - 2);
                 const end = Math.min(meta.total_pages, meta.page + 2);
                 for (let i = start; i <= end; i++)
-                    pagHTML += `<li class="page-item ${i === meta.page ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+                    pagHTML += <li class="page-item ${i === meta.page ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>;
                 if (meta.page < meta.total_pages)
-                    pagHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${meta.page + 1}">&raquo;</a></li>`;
-                pagHTML += `</ul></nav>`;
+                    pagHTML += <li class="page-item"><a class="page-link" href="#" data-page="${meta.page + 1}">&raquo;</a></li>;
+                pagHTML += </ul></nav>;
                 pagination.innerHTML = pagHTML;
 
                 pagination.querySelectorAll('a.page-link').forEach(a => {
@@ -144,7 +144,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Gagal memuat data</td></tr>`;
+                tbody.innerHTML = <tr><td colspan="8" class="text-center text-danger">Gagal memuat data</td></tr>;
             }
         }
 
