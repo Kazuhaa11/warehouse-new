@@ -30,7 +30,7 @@
 <style>
     .qr-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 8mm;
     }
 
@@ -43,26 +43,26 @@
     }
 
     .qr-title {
-        font-weight: 700;
-        font-size: 12pt;
+        font-weight: 400;
+        font-size: 6pt;
         margin-bottom: 3mm;
     }
 
     .qr-desc {
-        font-size: 9pt;
+        font-size: 6pt;
         color: #666;
         margin-top: 2mm;
     }
 
     .qr-card img {
-        width: 45mm;
-        height: 45mm;
+        width: 15mm;
+        height: 15mm;
         object-fit: contain;
     }
 
     @page {
         size: A4;
-        margin: 10mm;
+        margin: 5mm;
     }
 
     @media print {
@@ -79,11 +79,11 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: calc(210mm - 20mm);
+            width: calc(210mm - 20mm); 
         }
 
         .qr-grid {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 8mm;
         }
 

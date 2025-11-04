@@ -35,7 +35,7 @@ class StockPredictController extends Controller
         $results = [];
 
         foreach ($rows as $data) {
-            $ADD = (float) ($data['avg_daily_demand'] ?? 0);
+            $ADD = (float) ($data['avg_daily_demand'] ?? 0); 
             $σd  = (float) ($data['stddev_daily_demand'] ?? 0);
             $LT  = $defaultLeadTime;
             $σLT = 0;
@@ -57,7 +57,6 @@ class StockPredictController extends Controller
 
             $SafetyStock = is_nan($SafetyStock) || $SafetyStock < 0 ? 0 : $SafetyStock;
             $ROP = is_nan($ROP) || $ROP < 0 ? 0 : $ROP;
-            $σDDLT = is_nan($σDDLT) ? 0 : $σDDLT;
 
             if ($SafetyStock <= 0) $SafetyStock = 5;
             if ($ROP <= 0) $ROP = 10;
@@ -74,51 +73,62 @@ class StockPredictController extends Controller
             $totalOut = $ADD * $daysCount;
             $EOQ = ($totalOut > 0 && $ADD > 0) ? sqrt($totalOut * $ADD) : 0;
 
-            $EOQ = is_nan($EOQ) || $EOQ < 0 ? 0 : $EOQ;
-
             $packSize = 10;
-            $ropRounded = ceil($ROP / $packSize) * $packSize;
+            $ROP_rounded = ceil($ROP / $packSize) * $packSize;
             $MOQ = max(10, ceil($MOQ / $packSize) * $packSize);
 
             $current = (float) ($data['current_stock'] ?? 0);
-            if ($current <= $ropRounded) {
-                $status = 'Pesan Sekarang';
+
+            if ($ADD <= 0) {
+                $status = "Belum Ada Data Pemakaian";
                 $daysUntilOrder = 0;
+                $nextOrderDate = date('Y-m-d');
             } else {
-                $daysUntilOrder = ($ADD > 0)
-                    ? round(($current - $ropRounded) / max($ADD, 1), 1)
-                    : 0;
-                $status = $ADD > 0
-                    ? "Pesan dalam {$daysUntilOrder} hari lagi"
-                    : "Belum Ada Data Pemakaian";
+                if ($current <= $SafetyStock) {
+                    $status = "Pesan Sekarang";
+                    $daysUntilOrder = 0;
+                    $nextOrderDate = date('Y-m-d');
+                } else {
+                    $daysUntilOrder = (int) ceil(($current - $SafetyStock) / max($ADD, 1));
+                    $status = "Stok Aman ({$daysUntilOrder} hari lagi)";
+                    $nextOrderDate = date('Y-m-d', strtotime("+{$daysUntilOrder} days"));
+                }
             }
 
             $orderQtySuggested = max($MOQ, $EOQ);
 
-            foreach (['SafetyStock', 'ROP', 'EOQ', 'MOQ', 'orderQtySuggested', 'current'] as $var) {
-                if (!isset($$var) || is_nan($$var)) $$var = 0;
-            }
+            $roundHalf = fn($v) => (int) floor($v + 0.5);
+
+            $SafetyStock = $roundHalf($SafetyStock);
+            $ROP = $roundHalf($ROP);
+            $ROP_rounded = $roundHalf($ROP_rounded);
+            $EOQ = $roundHalf($EOQ);
+            $MOQ = $roundHalf($MOQ);
+            $orderQtySuggested = $roundHalf($orderQtySuggested);
+            $current = $roundHalf($current);
+            $ADD = $roundHalf($ADD);
+            $σd = $roundHalf($σd);
+            $daysUntilOrder = $roundHalf($daysUntilOrder);
 
             $results[] = [
                 'barang_id' => $data['barang_id'],
                 'material' => $data['material'],
                 'description' => $data['material_description'],
                 'class' => $class,
-                'avg_daily_demand' => round($ADD, 2),
-                'stddev_daily_demand' => round($σd, 2),
-                'safety_stock' => round($SafetyStock, 2),
-                'rop' => round($ROP, 2),
-                'rop_rounded' => $ropRounded,
-                'eoq' => round($EOQ, 2),
+                'avg_daily_demand' => $ADD,
+                'stddev_daily_demand' => $σd,
+                'safety_stock' => $SafetyStock,
+                'rop' => $ROP,
+                'rop_rounded' => $ROP_rounded,
+                'eoq' => $EOQ,
                 'moq_dynamic' => $MOQ,
-                'order_qty_suggested' => round($orderQtySuggested, 2),
+                'order_qty_suggested' => $orderQtySuggested,
                 'current_stock' => $current,
                 'days_until_order' => $daysUntilOrder,
-                'next_order_date' => date('Y-m-d', strtotime("+{$daysUntilOrder} days")),
+                'next_order_date' => $nextOrderDate,
                 'order_status' => $status,
             ];
         }
-
 
         $meta = [
             'page' => $page,
