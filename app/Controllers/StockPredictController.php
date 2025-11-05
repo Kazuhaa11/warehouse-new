@@ -36,9 +36,9 @@ class StockPredictController extends Controller
 
         foreach ($rows as $data) {
             $ADD = (float) ($data['avg_daily_demand'] ?? 0); 
-            $σd  = (float) ($data['stddev_daily_demand'] ?? 0);
+            $od  = (float) ($data['stddev_daily_demand'] ?? 0);
             $LT  = $defaultLeadTime;
-            $σLT = 0;
+            $oLT = 0;
 
             if ($ADD >= 50) $class = 'Fast';
             elseif ($ADD >= 10) $class = 'Slow';
@@ -51,8 +51,8 @@ class StockPredictController extends Controller
             };
 
             $DDLT   = $ADD * $LT;
-            $σDDLT  = sqrt(($LT * pow($σd, 2)) + (pow($ADD, 2) * pow($σLT, 2)));
-            $SafetyStock = $Z * $σDDLT;
+            $odDLT  = sqrt(($LT * pow($od, 2)) + (pow($ADD, 2) * pow($oLT, 2)));
+            $SafetyStock = $Z * $odDLT;
             $ROP = $DDLT + $SafetyStock;
 
             $SafetyStock = is_nan($SafetyStock) || $SafetyStock < 0 ? 0 : $SafetyStock;
@@ -107,7 +107,7 @@ class StockPredictController extends Controller
             $orderQtySuggested = $roundHalf($orderQtySuggested);
             $current = $roundHalf($current);
             $ADD = $roundHalf($ADD);
-            $σd = $roundHalf($σd);
+            $od = $roundHalf($od);
             $daysUntilOrder = $roundHalf($daysUntilOrder);
 
             $results[] = [
@@ -116,7 +116,7 @@ class StockPredictController extends Controller
                 'description' => $data['material_description'],
                 'class' => $class,
                 'avg_daily_demand' => $ADD,
-                'stddev_daily_demand' => $σd,
+                'stddev_daily_demand' => $od,
                 'safety_stock' => $SafetyStock,
                 'rop' => $ROP,
                 'rop_rounded' => $ROP_rounded,
