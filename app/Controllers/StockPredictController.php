@@ -35,14 +35,17 @@ class StockPredictController extends Controller
         $results = [];
 
         foreach ($rows as $data) {
-            $ADD = (float) ($data['avg_daily_demand'] ?? 0); 
-            $od  = (float) ($data['stddev_daily_demand'] ?? 0);
-            $LT  = $defaultLeadTime;
+            $ADD = (float) ($data['avg_daily_demand'] ?? 0);
+            $od = (float) ($data['stddev_daily_demand'] ?? 0);
+            $LT = $defaultLeadTime;
             $oLT = 0;
 
-            if ($ADD >= 50) $class = 'Fast';
-            elseif ($ADD >= 10) $class = 'Slow';
-            else $class = 'Dead';
+            if ($ADD >= 50)
+                $class = 'Fast';
+            elseif ($ADD >= 10)
+                $class = 'Slow';
+            else
+                $class = 'Dead';
 
             $Z = match ($class) {
                 'Fast' => 1.65,
@@ -50,16 +53,18 @@ class StockPredictController extends Controller
                 default => 0.84,
             };
 
-            $DDLT   = $ADD * $LT;
-            $odDLT  = sqrt(($LT * pow($od, 2)) + (pow($ADD, 2) * pow($oLT, 2)));
+            $DDLT = $ADD * $LT;
+            $odDLT = sqrt(($LT * pow($od, 2)) + (pow($ADD, 2) * pow($oLT, 2)));
             $SafetyStock = $Z * $odDLT;
             $ROP = $DDLT + $SafetyStock;
 
             $SafetyStock = is_nan($SafetyStock) || $SafetyStock < 0 ? 0 : $SafetyStock;
             $ROP = is_nan($ROP) || $ROP < 0 ? 0 : $ROP;
 
-            if ($SafetyStock <= 0) $SafetyStock = 5;
-            if ($ROP <= 0) $ROP = 10;
+            if ($SafetyStock <= 0)
+                $SafetyStock = 5;
+            if ($ROP <= 0)
+                $ROP = 10;
 
             if ($class === 'Fast') {
                 $MOQ = ceil(1.5 * $ROP);
