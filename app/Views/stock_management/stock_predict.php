@@ -128,7 +128,19 @@
             });
         } catch (err) {
             loading.style.display = "none";
-            tbody.innerHTML = `<tr><td colspan="11" class="text-danger">Gagal memuat data: ${err.message}</td></tr>`;
+            if (err instanceof SyntaxError) {
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-muted">Tidak ada data.</td>
+            </tr>
+        `;
+            } else {
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-danger">Gagal memuat data: ${err.message}</td>
+            </tr>
+        `;
+            }
         }
     }
 

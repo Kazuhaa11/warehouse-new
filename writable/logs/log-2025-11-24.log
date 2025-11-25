@@ -1,0 +1,49 @@
+CRITICAL - 2025-11-24 04:26:28 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/change_password.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/change_password.php')
+ 2 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/change_password', [], true)
+ 3 APPPATH/Controllers/ChangePasswordController.php(13): view('admin/change_password', [...])
+ 4 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->index()
+ 5 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-24 04:26:34 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/change_password.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/change_password.php')
+ 2 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/change_password', [], true)
+ 3 APPPATH/Controllers/ChangePasswordController.php(13): view('admin/change_password', [...])
+ 4 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->index()
+ 5 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-24 04:28:15 --> Error: Call to undefined method class@anonymous::setFlashdata()
+in SYSTEMPATH/HTTP/RedirectResponse.php on line 134.
+ 1 APPPATH/Controllers/ChangePasswordController.php(41): CodeIgniter\HTTP\RedirectResponse->with('error', 'Data user tidak ditemukan.')
+ 2 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->process()
+ 3 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-24 04:30:43 --> CodeIgniter\Database\Exceptions\DataException: Allowed fields must be specified for model: "App\Models\UserIdentityModel"
+in SYSTEMPATH/BaseModel.php on line 1297.
+ 1 SYSTEMPATH/BaseModel.php(1297): CodeIgniter\Database\Exceptions\DataException::forInvalidAllowedFields('App\\Models\\UserIdentityModel')
+ 2 SYSTEMPATH/BaseModel.php(968): CodeIgniter\BaseModel->doProtectFields([...])
+ 3 SYSTEMPATH/Model.php(812): CodeIgniter\BaseModel->update([...], [...])
+ 4 APPPATH/Controllers/ChangePasswordController.php(64): CodeIgniter\Model->update('6', [...])
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->process()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-24 04:31:52 --> Error: Call to undefined method class@anonymous::setFlashdata()
+in SYSTEMPATH/HTTP/RedirectResponse.php on line 134.
+ 1 APPPATH/Controllers/ChangePasswordController.php(67): CodeIgniter\HTTP\RedirectResponse->with('success', 'Password berhasil diubah!')
+ 2 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->process()
+ 3 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-24 04:31:57 --> Error: Call to undefined method class@anonymous::setFlashdata()
+in SYSTEMPATH/HTTP/RedirectResponse.php on line 134.
+ 1 APPPATH/Controllers/ChangePasswordController.php(58): CodeIgniter\HTTP\RedirectResponse->with('error', 'Password lama salah!')
+ 2 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\ChangePasswordController->process()
+ 3 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChangePasswordController))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()

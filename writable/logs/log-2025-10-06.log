@@ -1,0 +1,25 @@
+ERROR - 2025-10-06 02:02:22 --> mysqli_sql_exception: Column 'material_group' cannot be null in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('\n              ...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('\n              ...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('\n              ...')
+#3 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/BarangApi.php(202): CodeIgniter\Database\BaseConnection->query('\n              ...', Array)
+#4 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\BarangApi->create()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\BarangApi))
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /opt/lampp/htdocs/warehouse-new/public/index.php(79): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2025-10-06 06:13:24 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "[object Object]"
+in SYSTEMPATH/Router/Router.php on line 704.
+ 1 SYSTEMPATH/Router/Router.php(195): CodeIgniter\Router\Router->checkDisallowedChars('admin/[object Object]')
+ 2 SYSTEMPATH/CodeIgniter.php(825): CodeIgniter\Router\Router->handle('admin/[object Object]')
+ 3 SYSTEMPATH/CodeIgniter.php(450): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-06 06:13:28 --> CodeIgniter\HTTP\Exceptions\BadRequestException: The URI you submitted has disallowed characters: "[object Object]"
+in SYSTEMPATH/Router/Router.php on line 704.
+ 1 SYSTEMPATH/Router/Router.php(195): CodeIgniter\Router\Router->checkDisallowedChars('admin/[object Object]')
+ 2 SYSTEMPATH/CodeIgniter.php(825): CodeIgniter\Router\Router->handle('admin/[object Object]')
+ 3 SYSTEMPATH/CodeIgniter.php(450): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(79): CodeIgniter\CodeIgniter->run()

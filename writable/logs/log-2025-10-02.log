@@ -1,0 +1,32 @@
+ERROR - 2025-10-02 04:22:02 --> Error connecting to the database: mysqli_sql_exception: Access denied for user 'prime'@'localhost' to database 'warehouse_polytron' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:185
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(185): mysqli->real_connect('localhost', 'prime', 'prime2025', 'warehouse_polyt...', 3306, '', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(392): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(575): CodeIgniter\Database\BaseConnection->initialize()
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Model.php(271): CodeIgniter\Database\BaseBuilder->get()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/BaseModel.php(679): CodeIgniter\Model->doFirst()
+#6 /opt/lampp/htdocs/warehouse-new/app/Models/UserIdentityModel.php(32): CodeIgniter\BaseModel->first()
+#7 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/AuthApiController.php(50): App\Models\UserIdentityModel->findByEmailOrUsername('admin@gmail.com')
+#8 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\AuthApiController->login()
+#9 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\AuthApiController))
+#10 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 /opt/lampp/htdocs/warehouse-new/public/index.php(79): CodeIgniter\CodeIgniter->run()
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Access denied for user '****'@'localhost' to database 'warehouse_polytron' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:229
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(392): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(575): CodeIgniter\Database\BaseConnection->initialize()
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Model.php(271): CodeIgniter\Database\BaseBuilder->get()
+#4 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/BaseModel.php(679): CodeIgniter\Model->doFirst()
+#5 /opt/lampp/htdocs/warehouse-new/app/Models/UserIdentityModel.php(32): CodeIgniter\BaseModel->first()
+#6 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/AuthApiController.php(50): App\Models\UserIdentityModel->findByEmailOrUsername('admin@gmail.com')
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\AuthApiController->login()
+#8 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\AuthApiController))
+#9 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 /opt/lampp/htdocs/warehouse-new/public/index.php(79): CodeIgniter\CodeIgniter->run()
+#11 {main}
+ERROR - 2025-10-02 04:22:02 --> Auth login error: Unable to connect to the database.
+Main connection [MySQLi]: Access denied for user '****'@'localhost' to database 'warehouse_polytron' at APPPATH/Controllers/Api/AuthApiController.php:114

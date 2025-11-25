@@ -27,6 +27,8 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->post('generate-qr', 'QrGeneratorController::generate');
     $routes->get('stock-predict', 'StockPredictController::index');
     $routes->get('stock-predict-view', 'StockPredictController::view');
+    $routes->get('change-password', 'ChangePasswordController::index');
+     $routes->post('change-password', 'ChangePasswordController::process');
 });
 
 
@@ -92,3 +94,4 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
     $routes->get('barang/movement-list', 'BarangMovementApi::list');
     $routes->get('barang/movement-trend', 'BarangMovementApi::trend');
 });
+

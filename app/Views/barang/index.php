@@ -157,7 +157,7 @@
               </div>
             </div>
 
-            <div class="mt-4 text-center col-md-8">
+            <div class="mt-4 d-flex flex-column align-items-center justify-content-center col-md-8">
               <label class="form-label d-block mb-2">Foto Barang</label>
               <div id="fotoCarouselPlaceholder"
                 class="text-muted d-flex align-items-center justify-content-center border rounded mb-3"
@@ -287,7 +287,12 @@
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
 
         const rows = json.data || [];
-        const meta = json.meta || { page, per_page: PER_PAGE, total: 0, total_pages: 1 };
+        const meta = json.meta || {
+          page,
+          per_page: PER_PAGE,
+          total: 0,
+          total_pages: 1
+        };
 
         renderRows(rows);
         renderPager(meta);
@@ -481,7 +486,9 @@
       if (!confirm('Hapus foto ini?')) return;
 
       try {
-        const delRes = await fetch(`${API_FOTO}/${encodeURIComponent(fotoId)}`, { method: 'DELETE' });
+        const delRes = await fetch(`${API_FOTO}/${encodeURIComponent(fotoId)}`, {
+          method: 'DELETE'
+        });
         const delJson = await delRes.json().catch(() => ({}));
         if (!delRes.ok || delJson.success === false) {
           throw new Error(delJson?.error?.message || 'Gagal menghapus foto');
@@ -564,7 +571,9 @@
         del.onclick = async () => {
           if (!confirm('Hapus barang ini?')) return;
           try {
-            const r = await fetch(`${API_BARANG}/${id}`, { method: 'DELETE' });
+            const r = await fetch(`${API_BARANG}/${id}`, {
+              method: 'DELETE'
+            });
             const j = await r.json().catch(() => ({}));
             if (!r.ok || j.success === false) throw new Error(j?.error?.message || 'Gagal menghapus');
             bootstrap.Modal.getInstance(detailModalEl)?.hide();
@@ -574,7 +583,10 @@
           }
         };
 
-        window.addEventListener('modal:success', onModalSuccess, { once: true });
+        window.addEventListener('modal:success', onModalSuccess, {
+          once: true
+        });
+
         function onModalSuccess(ev) {
           if (ev.detail?.modalId === 'modalBarangDetail') load(1);
         }
@@ -586,7 +598,10 @@
           const formData = new FormData();
           formData.append('foto', file);
           try {
-            const res = await fetch(`${API_FOTO}/${id}`, { method: 'POST', body: formData });
+            const res = await fetch(`${API_FOTO}/${id}`, {
+              method: 'POST',
+              body: formData
+            });
             const js = await res.json();
             if (!js.success) throw new Error(js?.error?.message || 'Gagal upload');
             alert('Foto berhasil diupload');
@@ -634,27 +649,36 @@
       const el = detailForm.querySelector(`[name="${css(name)}"]`);
       if (el) el.value = value ?? '';
     }
+
     function clearError() {
       if (errBox) {
         errBox.classList.add('d-none');
         errBox.textContent = '';
       }
     }
+
     function showError(msg) {
       if (errBox) {
         errBox.classList.remove('d-none');
         errBox.textContent = msg;
       }
     }
+
     function num(v) {
       const n = Number(v ?? 0);
       return isNaN(n) ? '0' : n.toLocaleString();
     }
+
     function esc(s) {
       return String(s).replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-      }[m]));
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      } [m]));
     }
+
     function css(s) {
       return String(s).replace(/"/g, '\\"');
     }
