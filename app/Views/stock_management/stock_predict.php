@@ -88,22 +88,22 @@
                 else if (status.includes("hari")) badgeClass = "bg-warning text-dark";
 
                 const row = `
-          <tr>
-            <td>${i++}</td>
-            <td>${d.material}</td>
-            <td class="text-start">${d.description}</td>
-            <td>${safetyStock}</td>
-            <td>${eoq}</td>
-            <td>${currentStock}</td>
-            <td>${d.next_order_date}</td>
-            <td><span class="badge ${badgeClass}">${status}</span></td>
-          </tr>`;
-                tbody.insertAdjacentHTML("beforeend", row);
-            }
+                    <tr>
+                        <td>${i++}</td>
+                        <td>${d.material}</td>
+                        <td class="text-start">${d.description}</td>
+                        <td>${safetyStock}</td>
+                        <td>${eoq}</td>
+                        <td>${currentStock}</td>
+                        <td>${d.next_order_date}</td>
+                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                    </tr>`;
+                            tbody.insertAdjacentHTML("beforeend", row);
+                        }
 
-            let pagHTML = `
-        <div>Halaman ${meta.page} / ${meta.total_pages} · Total ${meta.total} data</div>
-        <nav><ul class="pagination pagination-sm mb-0">`;
+                        let pagHTML = `
+                    <div>Halaman ${meta.page} / ${meta.total_pages} · Total ${meta.total} data</div>
+                    <nav><ul class="pagination pagination-sm mb-0">`;
 
             if (meta.page > 1) {
                 pagHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${meta.page - 1}">&laquo;</a></li>`;
