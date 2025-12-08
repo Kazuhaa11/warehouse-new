@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers\Api;
 
 use App\Controllers\Api\BaseApiController;
@@ -45,6 +46,8 @@ class PeminjamanApi extends BaseApiController
                 p.no_nota AS nomor,
                 DATE(p.borrow_date) AS tanggal,
                 p.status,
+                p.pic,
+                p.sub_bagian,
                 p.note,
                 p.peminjam_id,
                 u.username AS peminjam_username,
@@ -99,6 +102,8 @@ class PeminjamanApi extends BaseApiController
                 DATE(p.borrow_date) AS tanggal,
                 DATE(p.due_date)    AS jatuh_tempo,
                 p.status,
+                p.pic,
+                p.sub_bagian,
                 p.note,
                 p.peminjam_id,
                 u.username AS peminjam_username,
@@ -151,6 +156,8 @@ class PeminjamanApi extends BaseApiController
             $plant = $p['plant'] ?? null;
             $note = $p['note'] ?? null;
             $items = is_array($p['items'] ?? null) ? $p['items'] : [];
+            $pic = $p['pic'] ?? null;
+            $subBagian = $p['sub_bagian'] ?? null;
 
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
                 return $this->fail('Format tanggal harus YYYY-MM-DD', 400);
@@ -172,6 +179,8 @@ class PeminjamanApi extends BaseApiController
             $this->db->table('peminjaman')->insert([
                 'no_nota' => $no,
                 'peminjam_id' => $peminjamId,
+                'pic' => $pic,
+                'sub_bagian' => $subBagian,
                 'borrow_date' => $tanggal . ' 00:00:00',
                 'due_date' => $dueDate ? $dueDate . ' 00:00:00' : null,
                 'status' => 'draft',
@@ -214,10 +223,6 @@ class PeminjamanApi extends BaseApiController
                 if ($qty > $qtyUnrestricted) {
                     throw new \InvalidArgumentException("Item ke-" . ($i + 1) . ": stok tidak mencukupi, sisa $qtyUnrestricted");
                 }
-                $this->db->table('barang')
-                    ->where('id', (int) $barang['id'])
-                    ->set('qty_unrestricted', 'qty_unrestricted - ' . $qty, false)
-                    ->update();
 
                 $rows[] = [
                     'peminjaman_id' => $peminjamanIdNew,
@@ -269,7 +274,6 @@ class PeminjamanApi extends BaseApiController
                     'items' => $detail,
                 ],
             ]);
-
         } catch (\InvalidArgumentException $e) {
             $this->db->transRollback();
             log_message('warning', '[PeminjamanApi] ' . $e->getMessage());
@@ -303,40 +307,173 @@ class PeminjamanApi extends BaseApiController
         return null;
     }
 
-    private function setStatus(int $id, string $status)
-    {
-        $allowed = ['draft', 'submitted', 'approved', 'rejected', 'loaned', 'returned', 'lost'];
-        if (!in_array($status, $allowed, true)) {
-            return $this->failMsg('Status tidak valid', 422);
-        }
-
-        $exists = $this->db->table('peminjaman')->select('id')->where('id', $id)->get()->getRowArray();
-        if (!$exists) {
-            return $this->failMsg('Data tidak ditemukan', 404);
-        }
-
-        $this->db->table('peminjaman')->where('id', $id)->update(['status' => $status]);
-        return $this->ok(['id' => $id, 'status' => $status]);
-    }
-
-    public function setSubmitted($id)
-    {
-        return $this->setStatus((int) $id, 'submitted');
-    }
-
     public function setApproved($id)
     {
-        return $this->setStatus((int) $id, 'approved');
+        $id = (int) $id;
+
+        $this->db->transBegin();
+
+        try {
+            $items = $this->db->table('peminjaman_items')
+                ->where('peminjaman_id', $id)
+                ->get()
+                ->getResultArray();
+
+            if (!$items) {
+                return $this->failMsg('Items tidak ditemukan', 404);
+            }
+
+            foreach ($items as $it) {
+                $qty = (float) $it['requested_qty'];
+
+                $this->db->table('barang')
+                    ->where('id', $it['barang_id'])
+                    ->set('qty_unrestricted', "qty_unrestricted - {$qty}", false)
+                    ->update();
+            }
+
+            $this->db->table('peminjaman')
+                ->where('id', $id)
+                ->update([
+                    'status'      => 'approved',
+                    'approved_at' => date('Y-m-d H:i:s')
+                ]);
+
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->failServerError("Gagal menyetujui peminjaman");
+            }
+
+            $this->db->transCommit();
+
+            return $this->ok([
+                'id' => $id,
+                'status' => 'approved',
+                'approved_at' => date('Y-m-d H:i:s')
+            ]);
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            log_message('error', 'setApproved error: ' . $e->getMessage());
+            return $this->failServerError("Terjadi kesalahan server");
+        }
     }
 
     public function setReturned($id)
     {
-        return $this->setStatus((int) $id, 'returned');
+        $id = (int) $id;
+
+        $this->db->transBegin();
+
+        try {
+            $row = $this->db->table('peminjaman')
+                ->select('status')
+                ->where('id', $id)
+                ->get()
+                ->getRowArray();
+
+            if (!$row) {
+                return $this->failMsg('Data tidak ditemukan', 404);
+            }
+
+            if ($row['status'] === 'returned') {
+                return $this->failMsg('Peminjaman sudah berstatus returned (stok tidak ditambah ulang)', 400);
+            }
+
+            $items = $this->db->table('peminjaman_items')
+                ->where('peminjaman_id', $id)
+                ->get()
+                ->getResultArray();
+
+            if (!$items) {
+                return $this->failMsg('Items tidak ditemukan', 404);
+            }
+
+            foreach ($items as $it) {
+                $qty = (float) $it['requested_qty'];
+
+                $this->db->table('barang')
+                    ->where('id', $it['barang_id'])
+                    ->set('qty_unrestricted', "qty_unrestricted + {$qty}", false)
+                    ->update();
+            }
+
+            $this->db->table('peminjaman')
+                ->where('id', $id)
+                ->update([
+                    'status'      => 'returned',
+                    'returned_at' => date('Y-m-d H:i:s'),
+                    'return_date' => date('Y-m-d H:i:s'),
+                ]);
+
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->failServerError("Gagal mengembalikan peminjaman");
+            }
+
+            $this->db->transCommit();
+
+            return $this->ok([
+                'id' => $id,
+                'status' => 'returned',
+                'returned_at' => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            log_message('error', 'setReturned error: ' . $e->getMessage());
+            return $this->failServerError("Terjadi kesalahan server");
+        }
     }
 
-    public function setRejected($id)
+    public function setSuccess($id)
     {
-        return $this->setStatus((int) $id, 'rejected');
+        $id = (int) $id;
+
+        $this->db->transBegin();
+
+        try {
+            $row = $this->db->table('peminjaman')
+                ->select('status')
+                ->where('id', $id)
+                ->get()
+                ->getRowArray();
+
+            if (!$row) {
+                return $this->failMsg('Data tidak ditemukan', 404);
+            }
+
+            $current = strtolower($row['status']);
+
+            if (!in_array($current, ['approved'], true)) {
+                return $this->failMsg(
+                    "Transaksi hanya bisa diselesaikan jika status = approved. (Status sekarang: {$current})",
+                    400
+                );
+            }
+
+            $this->db->table('peminjaman')
+                ->where('id', $id)
+                ->update([
+                    'status'     => 'success',
+                    'success_at' => date('Y-m-d H:i:s'),
+                ]);
+
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->failServerError("Gagal menyelesaikan peminjaman");
+            }
+
+            $this->db->transCommit();
+
+            return $this->ok([
+                'id' => $id,
+                'status' => 'success',
+                'success_at' => date('Y-m-d H:i:s'),
+            ]);
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            log_message('error', 'setSuccess error: ' . $e->getMessage());
+            return $this->failServerError("Terjadi kesalahan server");
+        }
     }
 
     public function reportPdf()
@@ -380,12 +517,10 @@ class PeminjamanApi extends BaseApiController
             if ($fromDate && $toDate) {
                 $b->where('DATE(p.borrow_date) >=', $fromDate)
                     ->where('DATE(p.borrow_date) <=', $toDate);
-            }
-            elseif ($month > 0 && $year >= 1970) {
+            } elseif ($month > 0 && $year >= 1970) {
                 $b->where('MONTH(p.borrow_date)', $month)
                     ->where('YEAR(p.borrow_date)', $year);
-            }
-            else {
+            } else {
                 $b->where('p.borrow_date >=', date('Y-m-d', strtotime('-12 months')));
             }
 
@@ -422,7 +557,6 @@ class PeminjamanApi extends BaseApiController
             );
 
             return peminjaman_report_send_pdf($html, 'laporan-peminjaman.pdf', $inline);
-
         } catch (\Throwable $e) {
             return $this->failMsg('Gagal membuat laporan', 500, $e->getMessage());
         }

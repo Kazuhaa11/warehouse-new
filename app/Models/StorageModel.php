@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -15,6 +16,7 @@ class StorageModel extends Model
         'zone',
         'rack',
         'bin',
+        'dak',
         'name',
         'capacity',
         'is_active',
@@ -22,7 +24,7 @@ class StorageModel extends Model
         'created_by',
     ];
 
-    protected $useTimestamps = true;         
+    protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
@@ -33,7 +35,12 @@ class StorageModel extends Model
     {
         $b = $this->builder();
         $b->select('storages.*');
-        $b->select('CONCAT_WS(" / ", NULLIF(zone,""), NULLIF(rack,""), NULLIF(bin,"")) AS path', false);
+        $b->select('CONCAT_WS(" / ", 
+            NULLIF(zone,""), 
+            NULLIF(rack,""), 
+            NULLIF(bin,""), 
+            NULLIF(dak,"")
+        ) AS path', false);
 
         if ($filters['active'] === null || $filters['active'] === '') {
             $b->where('storages.is_active', 1);
@@ -51,6 +58,9 @@ class StorageModel extends Model
             $b->where('storages.rack', $filters['rack']);
         if (!empty($filters['bin']))
             $b->where('storages.bin', $filters['bin']);
+        if (!empty($filters['dak']))
+            $b->where('storages.dak', $filters['dak']);
+
 
         if (!empty($filters['q'])) {
             $q = trim($filters['q']);
@@ -60,6 +70,7 @@ class StorageModel extends Model
                 ->orLike('storages.bin', $q)
                 ->orLike('storages.name', $q)
                 ->orLike('storages.note', $q)
+                ->orLike('storages.dak', $q)
                 ->orLike('storages.storage_location_desc', $q)
                 ->groupEnd();
         }

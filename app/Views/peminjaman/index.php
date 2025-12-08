@@ -32,6 +32,8 @@
           <tr>
             <th>No Nota</th>
             <th>Tanggal</th>
+            <th>PIC</th>
+            <th>Sub Bagian</th>
             <th>Plant</th>
             <th>Status</th>
             <th>Catatan</th>
@@ -77,7 +79,7 @@
   'method' => 'POST',
   'submitText' => 'Simpan',
   'size' => 'lg',
-  'split' => 2,
+  'split' => 4,
   'fields' => [
     ['name' => 'tanggal', 'label' => 'Tanggal Peminjaman', 'type' => 'date', 'required' => true],
     [
@@ -90,8 +92,21 @@
         ['value' => '1300', 'label' => 'Plant 1300'],
       ]
     ],
+    [
+      'name' => 'pic',
+      'label' => 'PIC',
+      'type' => 'text',
+      'placeholder' => 'Nama PIC...',
+      'required' => true
+    ],
+    [
+      'name' => 'sub_bagian',
+      'label' => 'Sub Bagian',
+      'type' => 'text',
+      'placeholder' => 'Sub bagian peminjam...',
+      'required' => false
+    ],
     ['name' => 'due_date', 'label' => 'Tanggal Jatuh Tempo', 'type' => 'date'],
-    ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
     [
       'name' => 'search_barang',
       'label' => 'Cari Barang',
@@ -107,14 +122,17 @@
       'value' => '1',
       'required' => true
     ],
+    ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
   ],
 ]) ?>
 
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<?= $this->section('scripts') ?>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function() {
+
     const PEMINJAMAN_API = '<?= base_url('api/v1/peminjaman') ?>';
     const BARANG_API = '<?= base_url('api/v1/barang') ?>';
     const PER_PAGE = 50;
@@ -126,10 +144,12 @@
     const tbody = document.getElementById('tbody-pinjam');
     const pager = document.getElementById('pager');
     const metaText = document.getElementById('metaText');
+
     const modalDetailEl = document.getElementById('modalDetailPinjam');
     const modalDetail = new bootstrap.Modal(modalDetailEl);
     const formEl = modalDetailEl.querySelector('form[data-modal-form]');
     const formId = formEl ? formEl.id : 'modalDetailPinjamForm';
+
     const btnAdd = document.getElementById('btnAdd');
     const modalAddEl = document.getElementById('modalAddPinjam');
     const modalAdd = modalAddEl ? new bootstrap.Modal(modalAddEl) : null;
@@ -139,39 +159,41 @@
       if (!formEl) return;
       formEl.querySelectorAll('input, textarea').forEach(el => el.readOnly = true);
       formEl.querySelectorAll('select').forEach(el => el.disabled = true);
+
       const submitBtn = formEl.querySelector('button[type="submit"]');
       if (submitBtn) {
         submitBtn.type = 'button';
         submitBtn.setAttribute('data-bs-dismiss', 'modal');
         submitBtn.innerHTML = '<i class="fas fa-times me-1"></i> Tutup';
       }
+
       const body = modalDetailEl.querySelector('.modal-body');
       if (!document.getElementById('pinjamItemsBody')) {
         const wrap = document.createElement('div');
         wrap.innerHTML = `
-      <hr class="my-3">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="mb-0">Items</h6>
-        <small class="text-muted" id="pinjamItemsMeta">—</small>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered align-middle">
-          <thead class="table-light">
-            <tr>
-              <th style="width:60px">#</th>
-              <th>Material</th>
-              <th>Deskripsi</th>
-              <th style="width:120px">Plant</th>
-              <th style="width:140px">Storage Loc</th>
-              <th style="width:100px" class="text-end">Qty</th>
-              <th style="width:120px">UoM</th>
-            </tr>
-          </thead>
-          <tbody id="pinjamItemsBody">
-            <tr><td colspan="7" class="text-center text-muted">—</td></tr>
-          </tbody>
-        </table>
-      </div>`;
+        <hr class="my-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0">Items</h6>
+          <small class="text-muted" id="pinjamItemsMeta">—</small>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width:60px">#</th>
+                <th>Material</th>
+                <th>Deskripsi</th>
+                <th style="width:120px">Plant</th>
+                <th style="width:140px">Storage Loc</th>
+                <th style="width:100px" class="text-end">Qty</th>
+                <th style="width:120px">UoM</th>
+              </tr>
+            </thead>
+            <tbody id="pinjamItemsBody">
+              <tr><td colspan="7" class="text-center text-muted">—</td></tr>
+            </tbody>
+          </table>
+        </div>`;
         body.appendChild(wrap);
       }
     })();
@@ -180,11 +202,13 @@
       e.preventDefault();
       load(1);
     });
+
     btnReset.addEventListener('click', () => {
       qInput.value = '';
       plantSel.value = '';
       load(1);
     });
+
 
     async function load(page = 1) {
       const params = new URLSearchParams();
@@ -192,20 +216,20 @@
       if (plantSel.value) params.set('plant', plantSel.value);
       params.set('per_page', PER_PAGE);
       params.set('page', page);
+
       tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Memuat data...</td></tr>`;
       pager.innerHTML = '';
       metaText.textContent = '—';
+
       try {
         const res = await fetch(`${PEMINJAMAN_API}?${params.toString()}`);
         const json = await res.json();
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
+
         renderRows(json.data || []);
-        renderPager(json.meta || {
-          page,
-          total_pages: 1,
-          total: 0
-        });
-        metaText.textContent = `Halaman ${json.meta.page} / ${json.meta.total_pages} • ${json.data.length} data • Total ${json.meta.total}`;
+        renderPager(json.meta);
+        metaText.textContent =
+          `Halaman ${json.meta.page} / ${json.meta.total_pages} • ${json.data.length} data • Total ${json.meta.total}`;
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${esc(err.message)}</td></tr>`;
       }
@@ -216,19 +240,38 @@
         tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>`;
         return;
       }
+
       tbody.innerHTML = rows.map(r => `
       <tr>
         <td>${esc(r.nomor ?? r.no_nota ?? '')}</td>
         <td>${esc(r.tanggal ?? r.borrow_date ?? '')}</td>
+        <td>${esc(r.pic ?? '')}</td>
+        <td>${esc(r.sub_bagian ?? '')}</td>
         <td>${esc(r.plant ?? r.plants ?? '')}</td>
-        <td><span class="badge text-bg-${badge(r.status)}">${esc(r.status)}</span></td>
+        <td>
+          <div class="dropdown">
+            <button class="badge text-bg-${badge(r.status)} dropdown-toggle border-0"
+                    data-bs-toggle="dropdown" aria-expanded="false"
+                    style="cursor:pointer; padding:6px 12px; font-size:12px;">
+              ${esc(r.status)}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-sm">
+              <li><a class="dropdown-item" href="#" data-action="approve" data-id="${r.id}">Set Approved</a></li>
+              <li><a class="dropdown-item" href="#" data-action="returned" data-id="${r.id}">Set Returned</a></li>
+              <li><a class="dropdown-item" href="#" data-action="success" data-id="${r.id}">Set Success</a></li>
+            </ul>
+          </div>
+        </td>
         <td>${esc(r.note ?? '')}</td>
+
         <td class="text-center">
-          <button type="button" class="btn btn-sm btn-outline-primary" data-id="${esc(r.id)}" data-action="detail">
+          <button type="button" class="btn btn-sm btn-outline-primary" 
+                  data-id="${esc(r.id)}" data-action="detail">
             <i class="fas fa-eye"></i>
           </button>
         </td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
     }
 
     function renderPager(meta) {
@@ -237,30 +280,77 @@
       pager.innerHTML = '';
 
       function item(p, label = p, disabled = false, active = false) {
-        return `<li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-      <a class="page-link" href="#" data-p="${p}">${label}</a></li>`;
+        return `
+        <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+          <a class="page-link" href="#" data-p="${p}">${label}</a>
+        </li>`;
       }
+
       pager.insertAdjacentHTML('beforeend', item(current - 1, '&laquo;', current <= 1));
-      for (let p = 1; p <= total; p++) pager.insertAdjacentHTML('beforeend', item(p, p, false, p === current));
+      for (let p = 1; p <= total; p++) {
+        pager.insertAdjacentHTML('beforeend', item(p, p, false, p === current));
+      }
       pager.insertAdjacentHTML('beforeend', item(current + 1, '&raquo;', current >= total));
-      pager.querySelectorAll('a.page-link').forEach(a => a.addEventListener('click', e => {
-        e.preventDefault();
-        const p = parseInt(a.dataset.p, 10);
-        if (!isNaN(p)) load(p);
-      }));
+
+      pager.querySelectorAll('a.page-link').forEach(a => {
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          const p = parseInt(a.dataset.p, 10);
+          if (!isNaN(p)) load(p);
+        });
+      });
     }
 
-    tbody.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-action="detail"]');
-      if (!btn) return;
-      openDetail(btn.dataset.id);
+    tbody.addEventListener('click', (e) => {
+      const detailBtn = e.target.closest('button[data-action="detail"]');
+      if (detailBtn) {
+        openDetail(detailBtn.dataset.id);
+        return;
+      }
+
+      const a = e.target.closest('a[data-action]');
+      if (a) {
+        e.preventDefault();
+        updateStatus(a.dataset.id, a.dataset.action);
+        return;
+      }
     });
+
+
+    async function updateStatus(id, action) {
+      let url = '';
+
+      if (action === 'approve') url = `${PEMINJAMAN_API}/${id}/approve`;
+      if (action === 'returned') url = `${PEMINJAMAN_API}/${id}/returned`;
+      if (action === 'success') url = `${PEMINJAMAN_API}/${id}/success`;
+
+      if (!url) return alert("Aksi tidak valid");
+
+      if (!confirm(`Yakin ingin menjalankan aksi: ${action.toUpperCase()} ?`)) return;
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST'
+        });
+        const j = await res.json();
+
+        if (!j.success) throw new Error(j?.error?.message || "Gagal update status");
+
+        alert("Status berhasil diperbarui!");
+        load(1);
+
+      } catch (err) {
+        alert(err.message);
+      }
+    }
 
     async function openDetail(id) {
       const itemsBody = document.getElementById('pinjamItemsBody');
       const itemsMeta = document.getElementById('pinjamItemsMeta');
+
       itemsBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Memuat items...</td></tr>';
       itemsMeta.textContent = 'Memuat...';
+
       modalDetail.show();
 
       try {
@@ -270,6 +360,7 @@
 
         const h = json.data?.header || {};
         const items = Array.isArray(json.data?.items) ? json.data.items : [];
+
         const mapped = {
           no_nota: h.nomor,
           peminjam: h.peminjam_username,
@@ -281,59 +372,58 @@
         };
 
         if (formEl) {
-          formEl.querySelectorAll('input, textarea, select').forEach((el) => {
+          formEl.querySelectorAll('input, textarea, select').forEach(el => {
             const name = el.getAttribute('name');
             if (name && mapped[name] !== undefined) {
               el.value = mapped[name] ?? '';
             }
           });
         }
+
         renderDetailItems(items);
+
       } catch (err) {
-        itemsBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">${esc(err.message)}</td></tr>`;
+        itemsBody.innerHTML =
+          `<tr><td colspan="7" class="text-center text-danger">${esc(err.message)}</td></tr>`;
         itemsMeta.textContent = '—';
       }
     }
 
-
     function renderDetailItems(items) {
       const body = document.getElementById('pinjamItemsBody');
       const meta = document.getElementById('pinjamItemsMeta');
+
       if (!items.length) {
         body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada item</td></tr>';
         meta.textContent = '0 item';
         return;
       }
+
       body.innerHTML = items.map((it, i) => `
-  <tr>
-    <td class="text-center">${i + 1}</td>
-    <td>${esc(it.material ?? '')}</td>
-    <td>${esc(it.material_description ?? '')}</td>
-    <td>${esc(it.plant ?? '')}</td>
-    <td>${esc(it.storage_location ?? '')}</td>
-    <td class="text-end">${esc(it.qty ?? it.requested_qty ?? 1)}</td>
-    <td>${esc(it.uom ?? it.base_unit_of_measure ?? '')}</td>
-  </tr>`).join('');
+      <tr>
+        <td class="text-center">${i + 1}</td>
+        <td>${esc(it.material ?? '')}</td>
+        <td>${esc(it.material_description ?? '')}</td>
+        <td>${esc(it.plant ?? '')}</td>
+        <td>${esc(it.storage_location ?? '')}</td>
+        <td class="text-end">${esc(it.qty ?? it.requested_qty ?? 1)}</td>
+        <td>${esc(it.uom ?? it.base_unit_of_measure ?? '')}</td>
+      </tr>
+    `).join('');
+
       meta.textContent = `${items.length} item`;
     }
-
 
     function badge(s) {
       switch ((s || '').toLowerCase()) {
         case 'draft':
           return 'secondary';
-        case 'submitted':
-          return 'info';
         case 'approved':
+          return 'info';
+        case 'success':
           return 'success';
         case 'returned':
           return 'primary';
-        case 'rejected':
-          return 'danger';
-        case 'loaned':
-          return 'warning';
-        case 'lost':
-          return 'dark';
         default:
           return 'light';
       }
@@ -346,22 +436,26 @@
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
-      }[m]));
+      } [m]));
     }
 
     async function initSearchBarang() {
       const input = document.getElementById(formAdd.id + '_search_barang');
       if (!input) return;
+
       input.parentElement.style.position = 'relative';
       const list = document.createElement('ul');
       list.className = 'list-group position-absolute w-100';
       list.style = 'z-index:1056; max-height:200px; overflow:auto; display:none;';
       input.parentElement.appendChild(list);
+
       const hiddenId = document.createElement('input');
       hiddenId.type = 'hidden';
       hiddenId.name = 'barang_id';
       input.parentElement.appendChild(hiddenId);
+
       let timer = null;
+
       input.addEventListener('input', () => {
         clearTimeout(timer);
         const val = input.value.trim();
@@ -372,28 +466,38 @@
         }
         timer = setTimeout(() => searchBarang(val, list, hiddenId, input), 400);
       });
+
       document.addEventListener('click', e => {
-        if (!input.parentElement.contains(e.target)) list.style.display = 'none';
+        if (!input.parentElement.contains(e.target))
+          list.style.display = 'none';
       });
     }
+
 
     async function searchBarang(keyword, list, hiddenId, input) {
       try {
         list.innerHTML = `<li class="list-group-item small text-muted">Mencari...</li>`;
         list.style.display = 'block';
+
         const res = await fetch(`${BARANG_API}?q=${encodeURIComponent(keyword)}&per_page=10`);
         const j = await res.json();
         if (!j.success) throw new Error('Gagal memuat barang');
+
         const items = j.data || [];
         if (!items.length) {
           list.innerHTML = `<li class="list-group-item small text-muted">Tidak ditemukan</li>`;
           return;
         }
-        list.innerHTML = items.map(b => `
-        <li class="list-group-item list-group-item-action" data-id="${b.id}">
-          <div class="fw-semibold">${b.material} — ${b.material_description}</div>
-          <small class="text-muted">${b.plant ?? ''} | Stok: ${b.qty_unrestricted ?? '-'}</small>
-        </li>`).join('');
+
+        list.innerHTML = items
+          .map(b => `
+          <li class="list-group-item list-group-item-action" data-id="${b.id}">
+            <div class="fw-semibold">${b.material} — ${b.material_description}</div>
+            <small class="text-muted">${b.plant ?? ''} | Stok: ${b.qty_unrestricted ?? '-'}</small>
+          </li>
+        `)
+          .join('');
+
         list.querySelectorAll('li[data-id]').forEach(li => {
           li.addEventListener('click', () => {
             hiddenId.value = li.dataset.id;
@@ -401,6 +505,7 @@
             list.style.display = 'none';
           });
         });
+
       } catch (e) {
         list.innerHTML = `<li class="list-group-item small text-danger">${e.message}</li>`;
       }
@@ -408,6 +513,7 @@
 
     if (btnAdd && modalAdd && formAdd) {
       const errBox = formAdd.querySelector('[data-role="error"]');
+
       btnAdd.addEventListener('click', async () => {
         formAdd.reset();
         errBox.classList.add('d-none');
@@ -418,18 +524,23 @@
       formAdd.addEventListener('submit', async e => {
         e.preventDefault();
         errBox.classList.add('d-none');
+
         const fd = new FormData(formAdd);
         const barangId = fd.get('barang_id');
         const qty = parseFloat(fd.get('qty')) || 1;
+
         if (!barangId || isNaN(barangId)) {
           errBox.textContent = 'Silakan pilih barang dari hasil pencarian.';
           errBox.classList.remove('d-none');
           return;
         }
+
         const data = {
           tanggal: fd.get('tanggal'),
           due_date: fd.get('due_date'),
           plant: fd.get('plant'),
+          pic: fd.get('pic'),
+          sub_bagian: fd.get('sub_bagian'),
           note: fd.get('note'),
           items: [{
             barang_id: Number(barangId),
@@ -440,7 +551,8 @@
         const btn = formAdd.querySelector('button[type="submit"]');
         btn.disabled = true;
         const old = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        btn.innerHTML =
+          '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
 
         try {
           const res = await fetch(PEMINJAMAN_API, {
@@ -450,22 +562,25 @@
             },
             body: JSON.stringify(data)
           });
+
           const j = await res.json();
           if (!j.success) throw new Error(j?.error?.message || 'Gagal menyimpan');
+
           modalAdd.hide();
           alert('Peminjaman berhasil ditambahkan!');
           load(1);
+
         } catch (err) {
           errBox.textContent = err.message;
           errBox.classList.remove('d-none');
+
         } finally {
           btn.disabled = false;
           btn.innerHTML = old;
         }
+
       });
     }
-
-    load(1);
 
     const btnCetak = document.getElementById("btnCetak");
     if (btnCetak) {
@@ -474,22 +589,23 @@
           btnCetak.disabled = true;
           btnCetak.innerHTML =
             '<span class="spinner-border spinner-border-sm me-1"></span> Mencetak...';
-          const url = `${PEMINJAMAN_API}/report/pdf?dl=1`;
 
+          const url = `${PEMINJAMAN_API}/report/pdf?dl=1`;
           const res = await fetch(url);
+
           if (!res.ok) throw new Error("Gagal membuat laporan PDF");
 
           const blob = await res.blob();
           const fileUrl = window.URL.createObjectURL(blob);
+
           const a = document.createElement("a");
           a.href = fileUrl;
-          a.download = `Laporan_Bon_Pinjam_${new Date()
-            .toISOString()
-            .slice(0, 10)}.pdf`;
+          a.download = `Laporan_Bon_Pinjam_${new Date().toISOString().slice(0, 10)}.pdf`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           window.URL.revokeObjectURL(fileUrl);
+
         } catch (err) {
           alert(err.message);
         } finally {
@@ -499,6 +615,10 @@
         }
       });
     }
+
+    load(1);
+
   });
 </script>
+<?= $this->endSection() ?>
 <?= $this->endSection() ?>

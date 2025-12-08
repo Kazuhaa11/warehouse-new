@@ -28,31 +28,50 @@ class BarangMovementApi extends ResourceController
         }
 
         $sql = "
-            SELECT 
-                b.id,
-                b.material,
-                b.material_description,
-                b.plant,
-                b.storage_location,
-                b.storage_location_desc,
-                b.qty_unrestricted,
-                COALESCE(SUM(pi.requested_qty), 0) AS total_keluar
-            FROM barang b
-            LEFT JOIN peminjaman_items pi 
-                ON pi.material = b.material 
-                AND pi.created_at BETWEEN ? AND ?
-            GROUP BY b.id, b.material, b.material_description, b.plant, b.storage_location, b.storage_location_desc, b.qty_unrestricted
-            ORDER BY b.material ASC
-        ";
+        SELECT 
+            b.id,
+            b.material,
+            b.material_description,
+            b.plant,
+            b.storage_location,
+            b.storage_location_desc,
+            b.qty_unrestricted,
+
+            COALESCE(SUM(
+                CASE 
+                    WHEN p.status IN ('approved', 'success')
+                         AND p.approved_at BETWEEN ? AND ?
+                    THEN pi.requested_qty
+                    ELSE 0
+                END
+            ), 0) AS total_keluar
+
+        FROM barang b
+
+        LEFT JOIN peminjaman_items pi 
+            ON pi.material = b.material
+
+        LEFT JOIN peminjaman p
+            ON p.id = pi.peminjaman_id
+
+        GROUP BY 
+            b.id, b.material, b.material_description,
+            b.plant, b.storage_location, b.storage_location_desc,
+            b.qty_unrestricted
+
+        ORDER BY b.material ASC
+    ";
 
         $rowsAll = $db->query($sql, [$start, $end])->getResultArray();
 
         $filtered = array_filter($rowsAll, function ($r) use ($type) {
             $keluar = (float) ($r['total_keluar'] ?? 0);
+
             if ($type === 'fast') return $keluar >= 3;
             if ($type === 'slow') return $keluar > 0 && $keluar < 3;
             if ($type === 'dead') return $keluar == 0;
-            return true; 
+
+            return true;
         });
 
         $total = count($filtered);
@@ -78,32 +97,49 @@ class BarangMovementApi extends ResourceController
         $dataFast = $dataSlow = $dataDead = [];
 
         for ($i = 11; $i >= 0; $i--) {
+
             $start = date('Y-m-01', strtotime("-$i months"));
-            $end = date('Y-m-01', strtotime("-$i months +1 month"));
-            $label = date('M Y', strtotime($start));
-            $labels[] = $label;
+            $end   = date('Y-m-t', strtotime("-$i months"));
+
+            $labels[] = date('M Y', strtotime($start));
 
             $sql = "
-                SELECT 
-                    (COALESCE(SUM(pi.requested_qty), 0) / NULLIF(AVG(NULLIF(b.qty_unrestricted, 0)), 0)) AS turnover
-                FROM barang b
-                LEFT JOIN peminjaman_items pi 
-                    ON pi.material = b.material
-                    AND pi.created_at >= ? AND pi.created_at < ?
-                GROUP BY b.id
-            ";
+            SELECT 
+                b.id,
+                b.material,
+                b.material_description,
+                b.qty_unrestricted,
+
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.status IN ('approved','success')
+                             AND p.approved_at BETWEEN ? AND ?
+                        THEN pi.requested_qty
+                        ELSE 0 
+                    END
+                ),0) AS total_keluar
+
+            FROM barang b
+
+            LEFT JOIN peminjaman_items pi
+                ON pi.material = b.material  -- samakan dengan LIST
+
+            LEFT JOIN peminjaman p
+                ON p.id = pi.peminjaman_id
+
+            GROUP BY b.id, b.material, b.material_description, b.qty_unrestricted
+        ";
 
             $rows = $db->query($sql, [$start, $end])->getResultArray();
 
             $fast = $slow = $dead = 0;
+
             foreach ($rows as $r) {
-                $rate = (float) ($r['turnover'] ?? 0);
-                if ($rate > 1)
-                    $fast++;
-                elseif ($rate > 0.1)
-                    $slow++;
-                else
-                    $dead++;
+                $keluar = (float)$r['total_keluar'];
+
+                if ($keluar >= 3) $fast++;
+                elseif ($keluar > 0) $slow++;
+                else $dead++;
             }
 
             $dataFast[] = $fast;
@@ -115,9 +151,9 @@ class BarangMovementApi extends ResourceController
             'success' => true,
             'data' => [
                 'labels' => $labels,
-                'fast' => $dataFast,
-                'slow' => $dataSlow,
-                'dead' => $dataDead,
+                'fast'   => $dataFast,
+                'slow'   => $dataSlow,
+                'dead'   => $dataDead
             ]
         ]);
     }

@@ -39,6 +39,7 @@
             <th>Zone</th>
             <th>Rack</th>
             <th>Bin</th>
+            <th>Dak</th>
             <th>Name</th>
             <th>Path</th>
             <th style="width:120px">Aksi</th>
@@ -97,6 +98,7 @@ echo view('components/modal/modal-form', [
     ['name' => 'zone', 'label' => 'Zone', 'type' => 'text', 'placeholder' => 'cth: Z-1'],
     ['name' => 'rack', 'label' => 'Rack', 'type' => 'text', 'placeholder' => 'cth: R-01'],
     ['name' => 'bin', 'label' => 'Bin', 'type' => 'text', 'placeholder' => 'cth: B-05'],
+    ['name' => 'dak', 'label' => 'Dak', 'type' => 'text', 'placeholder' => 'cth: B-05'],
     ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'placeholder' => 'Nama lokasi (opsional)'],
     ['name' => 'note', 'label' => 'Note', 'type' => 'textarea', 'placeholder' => 'Catatan'],
   ]
@@ -159,6 +161,7 @@ echo view('components/modal/modal-form', [
         <td>${esc(r.zone ?? '')}</td>
         <td>${esc(r.rack ?? '')}</td>
         <td>${esc(r.bin ?? '')}</td>
+        <td>${esc(r.dak ?? '')}</td>
         <td>${esc(r.name ?? '')}</td>
         <td>${esc(r.path ?? '')}</td>
         <td class="text-nowrap">
@@ -258,6 +261,7 @@ echo view('components/modal/modal-form', [
           F('zone').value = d.zone ?? '';
           F('rack').value = d.rack ?? '';
           F('bin').value = d.bin ?? '';
+          F('dak').value = d.dak ?? '';
           F('name').value = d.name ?? '';
           F('note').value = d.note ?? '';
 
