@@ -37,6 +37,8 @@ class PeminjamanApi extends BaseApiController
     {
         $q = trim((string) $this->request->getGet('q'));
         $plant = trim((string) $this->request->getGet('plant'));
+        $status = $this->request->getGet('status');
+        $status = ($status === null || $status === "") ? null : trim((string) $status);
         $page = max(1, (int) ($this->request->getGet('page') ?? 1));
         $perPage = min(200, max(1, (int) ($this->request->getGet('per_page') ?? 50)));
 
@@ -73,9 +75,17 @@ class PeminjamanApi extends BaseApiController
         }
         if ($plant !== '') {
             $b->where('b.plant', $plant);
+        } else {
+            $b->groupStart();
+            $b->where('b.plant IS NOT NULL', null, false);
+            $b->groupEnd();
+        }
+        if (!empty($status)) {
+            $b->where('p.status', $status);
         }
 
         $count = clone $b;
+        $count->groupBy('p.id');
         $total = (int) ($count->select('COUNT(DISTINCT p.id) AS c', false)->get()->getRow('c') ?? 0);
 
         $rows = $b->groupBy('p.id')
@@ -133,7 +143,17 @@ class PeminjamanApi extends BaseApiController
         $row['plants'] = $plants['plants'] ?? null;
 
         $items = $this->db->table('peminjaman_items pi')
-            ->select('pi.id, pi.barang_id, pi.material, pi.requested_qty AS qty, pi.uom, pi.storage_location')
+            ->select('
+                    pi.id,
+                    pi.barang_id,
+                    pi.material,
+                    pi.requested_qty AS qty,
+                    pi.uom,
+                    pi.storage_location,
+                    b.material_description,
+                    b.plant
+                ')
+            ->join('barang b', 'b.id = pi.barang_id', 'left')
             ->where('pi.peminjaman_id', $id)
             ->get()->getResultArray();
 
@@ -487,6 +507,7 @@ class PeminjamanApi extends BaseApiController
             $month = (int) ($this->request->getGet('month') ?? 0);
             $year = (int) ($this->request->getGet('year') ?? 0);
             $plant = $this->request->getGet('plant');
+            $status = $this->request->getGet('status');
             $sortBy = $this->request->getGet('sort_by') ?: 'tanggal';
             $sortDir = strtolower($this->request->getGet('sort_dir') ?: 'desc');
             $dl = (int) $this->request->getGet('dl') === 1;
@@ -507,6 +528,8 @@ class PeminjamanApi extends BaseApiController
                 DATE(p.due_date) AS due_date,
                 p.status,
                 p.note,
+                p.pic,
+                p.sub_bagian,
                 u.username AS peminjam_username,
                 GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR ',') AS plants
             ", false)
@@ -522,6 +545,10 @@ class PeminjamanApi extends BaseApiController
                     ->where('YEAR(p.borrow_date)', $year);
             } else {
                 $b->where('p.borrow_date >=', date('Y-m-d', strtotime('-12 months')));
+            }
+
+            if (!empty($status)) {
+                $b->where('p.status', $status);
             }
 
             if (!empty($plant)) {

@@ -34,7 +34,7 @@
             <th>Kode</th>
             <th>Jadwal</th>
             <th>Final</th>
-            <th>Catatan</th>
+            <th>Nama PIC</th>
             <th style="width:1%;">Aksi</th>
           </tr>
         </thead>
@@ -59,7 +59,7 @@
   'split' => 1,
   'fields' => [
     ['name' => 'scheduled_at', 'label' => 'Jadwal Opname', 'type' => 'datetime-local', 'required' => false],
-    ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea', 'placeholder' => 'Catatan (opsional)'],
+    ['name' => 'pic', 'label' => 'PIC', 'type' => 'text'],
   ],
 ]) ?>
 <?= $this->endSection() ?>
@@ -151,7 +151,7 @@
             <td class="fw-semibold">${s.code ?? '-'}</td>
             <td>${fmtDateTime(s.scheduled_at)}</td>
             <td>${isFinal ? ('✅ ' + fmtDateTime(s.finalized_at)) : '—'}</td>
-            <td>${(s.note ?? '').toString().replace(/</g, '&lt;')}</td>
+            <td>${(s.pic ?? '').toString().replace(/</g, '&lt;')}</td>
             <td class="text-nowrap">
               <a class="btn btn-sm btn-outline-primary me-1" href="${itemsUrl}">
                 <i class="fas fa-list me-1"></i> Items

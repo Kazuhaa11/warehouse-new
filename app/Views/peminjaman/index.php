@@ -8,11 +8,25 @@
         value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
       <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
     </div>
-    <select class="form-select form-select-sm" name="plant" style="min-width:120px">
-      <option value="">All Plant</option>
-      <option value="1200">Plant 1200</option>
-      <option value="1300">Plant 1300</option>
-    </select>
+    <div class="row g-2">
+      <div class="col-6">
+        <select class="form-select form-select-sm" name="plant">
+          <option value="">All Plant</option>
+          <option value="1200">Plant 1200</option>
+          <option value="1300">Plant 1300</option>
+        </select>
+      </div>
+
+      <div class="col-6">
+        <select class="form-select form-select-sm" name="status" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="approved">Approved</option>
+          <option value="returned">Returned</option>
+          <option value="success">Success</option>
+        </select>
+      </div>
+    </div>
     <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
   </form>
   <button id="btnCetak" class="btn btn-success ms-auto btn-sm">
@@ -42,7 +56,7 @@
         </thead>
         <tbody id="tbody-pinjam">
           <tr>
-            <td colspan="6" class="text-center text-muted">Memuat data...</td>
+            <td colspan="8" class="text-center text-muted">Memuat data...</td>
           </tr>
         </tbody>
       </table>
@@ -65,7 +79,6 @@
   'split' => 4,
   'fields' => [
     ['name' => 'no_nota', 'label' => 'No Nota', 'type' => 'text'],
-    ['name' => 'borrow_date', 'label' => 'Tanggal', 'type' => 'text'],
     ['name' => 'plant', 'label' => 'Plant', 'type' => 'text'],
     ['name' => 'status', 'label' => 'Status', 'type' => 'text'],
     ['name' => 'peminjam', 'label' => 'Peminjam', 'type' => 'text'],
@@ -129,7 +142,6 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<?= $this->section('scripts') ?>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
 
@@ -140,6 +152,7 @@
     const form = document.getElementById('filterForm');
     const qInput = form.querySelector('input[name="q"]');
     const plantSel = form.querySelector('select[name="plant"]');
+    const statusSel = form.querySelector('select[name="status"]');
     const btnReset = document.getElementById('btnReset');
     const tbody = document.getElementById('tbody-pinjam');
     const pager = document.getElementById('pager');
@@ -190,7 +203,7 @@
               </tr>
             </thead>
             <tbody id="pinjamItemsBody">
-              <tr><td colspan="7" class="text-center text-muted">—</td></tr>
+              <tr><td colspan="8" class="text-center text-muted">—</td></tr>
             </tbody>
           </table>
         </div>`;
@@ -206,18 +219,32 @@
     btnReset.addEventListener('click', () => {
       qInput.value = '';
       plantSel.value = '';
+      statusSel.value = '';
+      load(1);
+    });
+
+    statusSel.addEventListener('change', () => {
       load(1);
     });
 
 
     async function load(page = 1) {
       const params = new URLSearchParams();
-      if (qInput.value.trim()) params.set('q', qInput.value.trim());
-      if (plantSel.value) params.set('plant', plantSel.value);
-      params.set('per_page', PER_PAGE);
-      params.set('page', page);
 
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Memuat data...</td></tr>`;
+      if (qInput.value.trim() !== "") {
+        params.set("q", qInput.value.trim());
+      }
+      if (plantSel.value && plantSel.value.trim() !== "") {
+        params.set("plant", plantSel.value);
+      }
+      if (statusSel.value && statusSel.value.trim() !== "") {
+        params.set("status", statusSel.value);
+      }
+
+      params.set("per_page", PER_PAGE);
+      params.set("page", page);
+
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
       pager.innerHTML = '';
       metaText.textContent = '—';
 
@@ -228,16 +255,20 @@
 
         renderRows(json.data || []);
         renderPager(json.meta);
+
         metaText.textContent =
           `Halaman ${json.meta.page} / ${json.meta.total_pages} • ${json.data.length} data • Total ${json.meta.total}`;
+
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${esc(err.message)}</td></tr>`;
+        tbody.innerHTML =
+          `<tr><td colspan="8" class="text-center text-danger">${esc(err.message)}</td></tr>`;
       }
     }
 
+
     function renderRows(rows) {
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Tidak ada data</td></tr>`;
         return;
       }
 
@@ -247,7 +278,7 @@
         <td>${esc(r.tanggal ?? r.borrow_date ?? '')}</td>
         <td>${esc(r.pic ?? '')}</td>
         <td>${esc(r.sub_bagian ?? '')}</td>
-        <td>${esc(r.plant ?? r.plants ?? '')}</td>
+        <td>${esc(r.plants ?? '')}</td>
         <td>
           <div class="dropdown">
             <button class="badge text-bg-${badge(r.status)} dropdown-toggle border-0"
@@ -590,9 +621,19 @@
           btnCetak.innerHTML =
             '<span class="spinner-border spinner-border-sm me-1"></span> Mencetak...';
 
-          const url = `${PEMINJAMAN_API}/report/pdf?dl=1`;
-          const res = await fetch(url);
+          const params = new URLSearchParams();
+          params.set("dl", "1");
 
+          if (plantSel.value) {
+            params.set("plant", plantSel.value);
+          }
+          if (statusSel.value && statusSel.value.trim() !== "") {
+            params.set("status", statusSel.value.trim());
+          }
+
+          const url = `${PEMINJAMAN_API}/report/pdf?${params.toString()}`;
+
+          const res = await fetch(url);
           if (!res.ok) throw new Error("Gagal membuat laporan PDF");
 
           const blob = await res.blob();
@@ -615,10 +656,7 @@
         }
       });
     }
-
     load(1);
-
   });
 </script>
-<?= $this->endSection() ?>
 <?= $this->endSection() ?>

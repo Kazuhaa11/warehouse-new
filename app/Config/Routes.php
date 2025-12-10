@@ -88,6 +88,8 @@ $routes->group('api/v1/stock-opname', [
     $routes->post('sessions/(:num)/items/import', 'StockOpnameController::importItems/$1');
 
     $routes->get('sessions/(:num)/recap', 'StockOpnameController::recap/$1');
+    $routes->post('sessions/(:num)/download', 'StockOpnameController::download/$1');
+
 });
 
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
