@@ -444,7 +444,7 @@ class PeminjamanApi extends BaseApiController
         }
     }
 
-    public function setSuccess($id)
+    public function setReserved($id)
     {
         $id = (int) $id;
 
@@ -473,7 +473,7 @@ class PeminjamanApi extends BaseApiController
             $this->db->table('peminjaman')
                 ->where('id', $id)
                 ->update([
-                    'status'     => 'success',
+                    'status'     => 'reserved',
                     'success_at' => date('Y-m-d H:i:s'),
                 ]);
 

@@ -23,7 +23,7 @@
           <option value="draft">Draft</option>
           <option value="approved">Approved</option>
           <option value="returned">Returned</option>
-          <option value="success">Success</option>
+          <option value="reserved">Reserved</option>
         </select>
       </div>
     </div>
@@ -35,6 +35,11 @@
   <button id="btnAdd" class="btn btn-primary btn-sm">
     <i class="fas fa-plus me-1"></i> Tambah Peminjaman
   </button>
+  <button id="btnImport" class="btn btn-warning btn-sm ms-2">
+    <i class="fas fa-file-upload me-1"></i> Import Excel
+  </button>
+
+  <input type="file" id="excelInput" accept=".xlsx" class="d-none" />
 </div>
 
 <div class="card">
@@ -289,7 +294,7 @@
             <ul class="dropdown-menu dropdown-menu-sm">
               <li><a class="dropdown-item" href="#" data-action="approve" data-id="${r.id}">Set Approved</a></li>
               <li><a class="dropdown-item" href="#" data-action="returned" data-id="${r.id}">Set Returned</a></li>
-              <li><a class="dropdown-item" href="#" data-action="success" data-id="${r.id}">Set Success</a></li>
+              <li><a class="dropdown-item" href="#" data-action="reserved" data-id="${r.id}">Set Reserved</a></li>
             </ul>
           </div>
         </td>
@@ -353,7 +358,7 @@
 
       if (action === 'approve') url = `${PEMINJAMAN_API}/${id}/approve`;
       if (action === 'returned') url = `${PEMINJAMAN_API}/${id}/returned`;
-      if (action === 'success') url = `${PEMINJAMAN_API}/${id}/success`;
+      if (action === 'reserved') url = `${PEMINJAMAN_API}/${id}/reserved`;
 
       if (!url) return alert("Aksi tidak valid");
 
@@ -451,7 +456,7 @@
           return 'secondary';
         case 'approved':
           return 'info';
-        case 'success':
+        case 'reserved':
           return 'success';
         case 'returned':
           return 'primary';

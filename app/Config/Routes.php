@@ -58,7 +58,7 @@ $routes->group('api/v1', static function ($routes) {
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
     $routes->post('peminjaman/(:num)/approve', 'Api\PeminjamanApi::setApproved/$1');
     $routes->post('peminjaman/(:num)/returned', 'Api\PeminjamanApi::setReturned/$1');
-    $routes->post('peminjaman/(:num)/success', 'Api\PeminjamanApi::setSuccess/$1');
+    $routes->post('peminjaman/(:num)/reserved', 'Api\PeminjamanApi::setReserved/$1');
 });
 
 $routes->group('api/v1', [

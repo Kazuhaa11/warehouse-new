@@ -13,24 +13,48 @@ class QrGeneratorController extends BaseController
         return <<<ZPL
             ^XA
             ^DFR:QR_LABEL.ZPL
-            ^LH35,10
-            ^PR4
-            ^PW500
-            ^FT0,40
-            ^A0N,35,35
-            ^FN1^FS
+            ^PW600
+            ^L    H0,0
+            ^PR3
 
-            ^FO0,80
-            ^BQN,2,5
+            ^FO10,0
+            ^BQN,3,4
             ^FN3^FS
 
-            ^FT0,300
-            ^A0N,30,30
-            ^FN2^FS
-            ^XZ
+            ^FO180,5
+            ^A0N,30,38
+            ^FB380,2,0,L,0
+            ^FN1^FS
 
+            ^FO181,5
+            ^A0N,30,38
+            ^FB380,2,0,L,0
+            ^FN1^FS
+
+            ^FO180,6
+            ^A0N,30,38
+            ^FB380,2,0,L,0
+            ^FN1^FS
+
+            ^FO180,45
+            ^A0N,30,38
+            ^FB380,3,0,L,0
+            ^FN2^FS
+
+            ^FO181,45
+            ^A0N,30,38
+            ^FB380,3,0,L,0
+            ^FN2^FS
+
+            ^FO180,46
+            ^A0N,30,38
+            ^FB380,3,0,L,0
+            ^FN2^FS
+
+            ^XZ
             ZPL;
     }
+
 
     public function index()
     {
@@ -103,10 +127,10 @@ class QrGeneratorController extends BaseController
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             $zpl = "^XA\n";
-            $zpl .= "^XFR:QR_LABEL.ZPL\n"; 
-            $zpl .= "^FN1^FD{$b['material']}^FS\n";                
-            $zpl .= "^FN2^FD{$b['material_description']}^FS\n";      
-            $zpl .= "^FN3^FDLA,{$payload}^FS\n";                    
+            $zpl .= "^XFR:QR_LABEL.ZPL\n";
+            $zpl .= "^FN1^FD{$b['material']}^FS\n";
+            $zpl .= "^FN2^FD{$b['material_description']}^FS\n";
+            $zpl .= "^FN3^FDLA,{$payload}^FS\n";
             $zpl .= "^XZ\n\n";
 
             $zplAll .= $zpl;
