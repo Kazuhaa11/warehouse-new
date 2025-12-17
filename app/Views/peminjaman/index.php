@@ -35,10 +35,6 @@
   <button id="btnAdd" class="btn btn-primary btn-sm">
     <i class="fas fa-plus me-1"></i> Tambah Peminjaman
   </button>
-  <button id="btnImport" class="btn btn-warning btn-sm ms-2">
-    <i class="fas fa-file-upload me-1"></i> Import Excel
-  </button>
-
   <input type="file" id="excelInput" accept=".xlsx" class="d-none" />
 </div>
 

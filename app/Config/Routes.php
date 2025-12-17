@@ -31,6 +31,7 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('stock-predict-view', 'StockPredictController::view');
     $routes->get('change-password', 'ChangePasswordController::index');
     $routes->post('change-password', 'ChangePasswordController::process');
+    $routes->get('reservasi', 'ReservasiController::index');
 });
 
 
@@ -61,6 +62,14 @@ $routes->group('api/v1', static function ($routes) {
     $routes->post('peminjaman/(:num)/reserved', 'Api\PeminjamanApi::setReserved/$1');
 });
 
+$routes->group('api/v1', static function ($routes) {
+    $routes->get('reservasi', 'Api\ReservasiApi::index', ['filter' => 'auth']);
+    $routes->get('reservasi/(:num)', 'Api\ReservasiApi::show/$1', ['filter' => 'auth']);
+    $routes->post('reservasi/import', 'Api\ReservasiApi::importExcel', ['filter' => 'authadmin']);
+    $routes->put('reservasi/(:num)', 'Api\ReservasiApi::update/$1', ['filter' => 'authadmin']);
+});
+
+
 $routes->group('api/v1', [
     'namespace' => 'App\Controllers\Api',
 ], static function ($routes) {
@@ -89,7 +98,6 @@ $routes->group('api/v1/stock-opname', [
 
     $routes->get('sessions/(:num)/recap', 'StockOpnameController::recap/$1');
     $routes->post('sessions/(:num)/download', 'StockOpnameController::download/$1');
-
 });
 
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {

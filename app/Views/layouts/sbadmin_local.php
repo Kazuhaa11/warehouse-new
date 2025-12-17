@@ -60,6 +60,10 @@ $request = service('request');
                             href="<?= base_url('admin/peminjaman') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Bon Pinjam
                         </a>
+                        <a class="nav-link <?= $menu === 'reservasi' ? 'active' : '' ?>"
+                            href="<?= base_url('admin/reservasi') ?>">
+                            <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Reservasi List
+                        </a>
                         <a class="nav-link <?= $menu === 'opname' ? 'active' : '' ?>"
                             href="<?= base_url('admin/opname') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-clipboard-check"></i></div>Stock Opname
