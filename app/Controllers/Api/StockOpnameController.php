@@ -59,7 +59,7 @@ class StockOpnameController extends BaseApiController
             $row = [
                 'code' => $code,
                 'scheduled_at' => $p['scheduled_at'] ?? null,
-                'note' => $p['note'] ?? null,
+                'pic' => $p['pic'] ?? null,
                 'created_by' => $uid,
             ];
 
@@ -75,7 +75,6 @@ class StockOpnameController extends BaseApiController
                 'success' => true,
                 'data' => $created,
             ]);
-
         } catch (\Throwable $e) {
             log_message('error', '[StockOpnameController::create] ' . $e->getMessage());
             return $this->failServerError('Terjadi kesalahan pada server.');
@@ -132,7 +131,7 @@ class StockOpnameController extends BaseApiController
 
         switch ($sort) {
             case 'diff_asc':
-                $base->orderBy('(counted_qty - (qty_unrestricted + qty_transit_and_transfer + qty_blocked))', 'ASC', false);
+                $base->orderBy('diff_qty', 'ASC');
                 break;
             case 'counted_asc':
                 $base->orderBy('counted_qty', 'ASC');
@@ -141,7 +140,7 @@ class StockOpnameController extends BaseApiController
                 $base->orderBy('counted_qty', 'DESC');
                 break;
             default:
-                $base->orderBy('(counted_qty - (qty_unrestricted + qty_transit_and_transfer + qty_blocked))', 'DESC', false);
+                $base->orderBy('diff_qty', 'DESC');
         }
 
         $rows = $base->limit($per, ($page - 1) * $per)->get()->getResultArray();
@@ -281,26 +280,20 @@ class StockOpnameController extends BaseApiController
             $writer->save($filepath);
 
             $this->sessions->update($id, ['finalized_at' => date('Y-m-d H:i:s')]);
-            $this->db->table('stock_opname_items')->truncate();
 
-            if (ob_get_length())
-                ob_end_clean();
+            if (ob_get_length()) ob_end_clean();
             header('Content-Description: File Transfer');
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
-            header('Content-Transfer-Encoding: binary');
             header('Content-Length: ' . filesize($filepath));
             flush();
             readfile($filepath);
-            exit; 
-
+            exit;
         } catch (\Throwable $e) {
             log_message('error', '[StockOpnameController::finalize] ' . $e->getMessage());
             return $this->failServerError('Gagal finalize: ' . $e->getMessage());
         }
     }
-
-
 
     public function recap($id)
     {
@@ -336,5 +329,35 @@ class StockOpnameController extends BaseApiController
             'skipped' => $skip,
             'errors' => $errs,
         ], empty($errs) ? 200 : 207);
+    }
+    public function download($id)
+    {
+        $sess = $this->sessions->find($id);
+        if (!$sess) {
+            return $this->failNotFound('Sesi tidak ditemukan');
+        }
+
+        try {
+            $excel = new StockOpnameExcel();
+            [$headers, $rows] = $excel->exportRows((int) $id);
+            $ss = $excel->makeSpreadsheet($headers, $rows);
+
+            @is_dir(WRITEPATH . 'exports') || @mkdir(WRITEPATH . 'exports', 0775, true);
+            $filename = 'StockOpname_Final_' . $id . '.xlsx';
+            $filepath = WRITEPATH . 'exports/' . $filename;
+
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss);
+            $writer->save($filepath);
+
+            if (ob_get_length()) ob_end_clean();
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
+            header('Content-Length: ' . filesize($filepath));
+            flush();
+            readfile($filepath);
+            exit;
+        } catch (\Throwable $e) {
+            return $this->failServerError('Gagal download: ' . $e->getMessage());
+        }
     }
 }

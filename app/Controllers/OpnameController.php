@@ -26,6 +26,7 @@ class OpnameController extends BaseController
                 'items' => base_url("api/v1/stock-opname/sessions/{$id}/items"),
                 'finalize' => base_url("api/v1/stock-opname/sessions/{$id}/finalize"),
                 'recap' => base_url("api/v1/stock-opname/sessions/{$id}/recap"),
+                'download' => base_url("api/v1/stock-opname/sessions/{$id}/download"),
             ],
         ]);
     }

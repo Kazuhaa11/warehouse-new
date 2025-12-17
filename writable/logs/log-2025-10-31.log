@@ -1,0 +1,114 @@
+ERROR - 2025-10-31 03:33:06 --> mysqli_sql_exception: Unknown column 'status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-10-31 03:33:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 2 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-31 03:33:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 4 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-31 03:33:06 --> [Caused by] mysqli_sql_exception: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 5 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+ERROR - 2025-10-31 03:33:09 --> mysqli_sql_exception: Unknown column 'status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-10-31 03:33:09 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 2 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-31 03:33:09 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 4 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-31 03:33:09 --> [Caused by] mysqli_sql_exception: Unknown column 'status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN (\'draft\',\'submitted\',\'approved\',\'loaned\',\'returned\')')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1700): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `v_barang_demand_summary`
+WHERE `status` IN :status:', [...], false)
+ 5 APPPATH/Controllers/StockPredictController.php(28): CodeIgniter\Database\BaseBuilder->countAllResults(false)
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()

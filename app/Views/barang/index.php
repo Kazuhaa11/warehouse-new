@@ -34,10 +34,11 @@
             <th>Deskripsi</th>
             <th>Plant</th>
             <th>Stor. Loc</th>
-            <th>Stor. Loc Desc</th>
-            <th class="text-end">Unrestricted</th>
-            <th class="text-end">Transit</th>
-            <th class="text-end">Blocked</th>
+            <th>Lokasi Barang</th>
+            <th>Unrestricted</th>
+            <th>Di Bon Pinjam</th>
+            <th>Stock Terakhir</th>
+            <th>UoM</th>
             <th style="width:100px">Aksi</th>
           </tr>
         </thead>
@@ -157,7 +158,7 @@
               </div>
             </div>
 
-            <div class="mt-4 text-center col-md-8">
+            <div class="mt-4 d-flex flex-column align-items-center justify-content-center col-md-8">
               <label class="form-label d-block mb-2">Foto Barang</label>
               <div id="fotoCarouselPlaceholder"
                 class="text-muted d-flex align-items-center justify-content-center border rounded mb-3"
@@ -287,7 +288,12 @@
         if (!json.success) throw new Error(json?.error?.message || 'Gagal memuat');
 
         const rows = json.data || [];
-        const meta = json.meta || { page, per_page: PER_PAGE, total: 0, total_pages: 1 };
+        const meta = json.meta || {
+          page,
+          per_page: PER_PAGE,
+          total: 0,
+          total_pages: 1
+        };
 
         renderRows(rows);
         renderPager(meta);
@@ -299,10 +305,23 @@
       }
     }
 
+    function formatLokasi(r) {
+      const head = `${r.plant ?? ''}.${r.storage_location ?? ''}`;
+      const zone = r.stor_zone || '';
+      const rack = r.stor_rack || '';
+      const bin = r.stor_bin || '';
+      const dak = r.stor_dak || '';
+
+      const tail = [zone, rack, bin, dak].filter(Boolean).join('/');
+
+      return tail ? `${head}.${tail}` : head;
+    }
+
+
     function renderRows(rows) {
       if (!rows.length) {
         tbody.innerHTML = `
-        <tr><td colspan="9" class="text-center text-muted">Tidak ada data</td></tr>
+        <tr><td colspan="10" class="text-center text-muted">Tidak ada data</td></tr>
       `;
         return;
       }
@@ -313,11 +332,12 @@
         <td>${esc(r.material_description ?? '')}</td>
         <td>${esc(r.plant ?? '')}</td>
         <td>${esc(r.storage_location ?? '')}</td>
-        <td>${esc(r.storage_location_desc ?? '')}</td>
-        <td class="text-end">${num(r.qty_unrestricted)}</td>
-        <td class="text-end">${num(r.qty_transit_and_transfer)}</td>
-        <td class="text-end">${num(r.qty_blocked)}</td>
-        <td class="text-center">
+        <td>${(formatLokasi(r)?? '')}</td>
+        <td>${num(r.qty_unrestricted)}</td>
+        <td>${num(r.qty_dipinjam ?? 0)}</td>
+        <td>${num(r.qty_unrestricted)}</td>
+        <td>${esc(r.base_unit_of_measure ?? '')}</td>
+        <td>
           <button class="btn btn-outline-primary btn-sm btn-detail" data-id="${r.id}" title="Detail">
             <i class="fas fa-eye"></i>
           </button>
@@ -445,11 +465,10 @@
             const label = [
               s.name || s.title || "",
               s.path ? ` (${s.path})` : "",
-              s.plant ? ` • Plant: ${s.plant}` : "",
-              s.storage_location ? ` • SLoc: ${s.storage_location}` : "",
               s.zone ? ` • Zone: ${s.zone}` : "",
               s.rack ? ` • Rack: ${s.rack}` : "",
-              s.bin ? ` • Bin: ${s.bin}` : ""
+              s.bin ? ` • Bin: ${s.bin}` : "",
+              s.dak ? ` • Dak: ${s.dak}` : ""
             ].filter(Boolean).join(" ");
             info.value = label || "Storage ditemukan tetapi tanpa detail.";
           } else {
@@ -481,7 +500,9 @@
       if (!confirm('Hapus foto ini?')) return;
 
       try {
-        const delRes = await fetch(`${API_FOTO}/${encodeURIComponent(fotoId)}`, { method: 'DELETE' });
+        const delRes = await fetch(`${API_FOTO}/${encodeURIComponent(fotoId)}`, {
+          method: 'DELETE'
+        });
         const delJson = await delRes.json().catch(() => ({}));
         if (!delRes.ok || delJson.success === false) {
           throw new Error(delJson?.error?.message || 'Gagal menghapus foto');
@@ -532,10 +553,11 @@
             if (rs.ok) {
               const s = js.data || js;
               const label = [
-                s.zone ? ` • Zone: ${s.zone}` : '',
-                s.rack ? ` • Rack: ${s.rack}` : '',
-                s.bin ? ` • Bin: ${s.bin}` : '',
-                s.plant ? ` • Plant: ${s.plant}` : '',
+                s.zone ? ` •Zone: ${s.zone}` : '',
+                s.rack ? ` •Rack: ${s.rack}` : '',
+                s.bin ? ` •Bin: ${s.bin}` : '',
+                s.plant ? ` •Plant: ${s.plant}` : '',
+                s.dak ? ` •Dak: ${s.dak}` : '',
                 s.storage_location ? ` • SLoc: ${s.storage_location}` : ''
               ].filter(Boolean).join('');
               setValue('storage_info', label || 'Storage ditemukan tetapi tanpa detail.');
@@ -564,7 +586,9 @@
         del.onclick = async () => {
           if (!confirm('Hapus barang ini?')) return;
           try {
-            const r = await fetch(`${API_BARANG}/${id}`, { method: 'DELETE' });
+            const r = await fetch(`${API_BARANG}/${id}`, {
+              method: 'DELETE'
+            });
             const j = await r.json().catch(() => ({}));
             if (!r.ok || j.success === false) throw new Error(j?.error?.message || 'Gagal menghapus');
             bootstrap.Modal.getInstance(detailModalEl)?.hide();
@@ -574,7 +598,10 @@
           }
         };
 
-        window.addEventListener('modal:success', onModalSuccess, { once: true });
+        window.addEventListener('modal:success', onModalSuccess, {
+          once: true
+        });
+
         function onModalSuccess(ev) {
           if (ev.detail?.modalId === 'modalBarangDetail') load(1);
         }
@@ -586,7 +613,10 @@
           const formData = new FormData();
           formData.append('foto', file);
           try {
-            const res = await fetch(`${API_FOTO}/${id}`, { method: 'POST', body: formData });
+            const res = await fetch(`${API_FOTO}/${id}`, {
+              method: 'POST',
+              body: formData
+            });
             const js = await res.json();
             if (!js.success) throw new Error(js?.error?.message || 'Gagal upload');
             alert('Foto berhasil diupload');
@@ -630,31 +660,46 @@
       }
     });
 
+    window.addEventListener("modal:success", (ev) => {
+      if (ev.detail?.modalId === "modalBarangDetailForm") {
+        load(1); 
+      }
+    });
+
     function setValue(name, value) {
       const el = detailForm.querySelector(`[name="${css(name)}"]`);
       if (el) el.value = value ?? '';
     }
+
     function clearError() {
       if (errBox) {
         errBox.classList.add('d-none');
         errBox.textContent = '';
       }
     }
+
     function showError(msg) {
       if (errBox) {
         errBox.classList.remove('d-none');
         errBox.textContent = msg;
       }
     }
+
     function num(v) {
       const n = Number(v ?? 0);
       return isNaN(n) ? '0' : n.toLocaleString();
     }
+
     function esc(s) {
       return String(s).replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-      }[m]));
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      } [m]));
     }
+
     function css(s) {
       return String(s).replace(/"/g, '\\"');
     }

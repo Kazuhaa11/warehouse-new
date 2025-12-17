@@ -24,7 +24,7 @@ class BarangFotoApi extends ResourceController
         }
 
         $newName = $file->getRandomName();
-        $path = WRITEPATH . '../public/uploads/barang/';
+        $path = FCPATH . 'uploads/barang/';
 
         if (!is_dir($path))
             mkdir($path, 0777, true);

@@ -1,0 +1,27 @@
+CRITICAL - 2025-10-27 09:13:03 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/stock_predict_view.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/stock_predict_view.php')
+ 2 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/stock_predict_view', [], true)
+ 3 APPPATH/Controllers/StockPredictController.php(111): view('admin/stock_predict_view')
+ 4 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->view()
+ 5 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-27 09:14:23 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "stock_management/stock_predict_view.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('stock_management/stock_predict_view.php')
+ 2 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('stock_management/stock_predict_view', [], true)
+ 3 APPPATH/Controllers/StockPredictController.php(111): view('stock_management/stock_predict_view')
+ 4 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\StockPredictController->view()
+ 5 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\StockPredictController))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-10-27 09:28:47 --> ErrorException: Cannot declare class App\Controllers\StockPredictController, because the name is already in use
+in APPPATH/Views/stock_management/stock_predict.php on line 8.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+CRITICAL - 2025-10-27 09:29:02 --> ErrorException: Cannot declare class App\Controllers\StockPredictController, because the name is already in use
+in APPPATH/Views/stock_management/stock_predict.php on line 8.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+CRITICAL - 2025-10-27 09:29:03 --> ErrorException: Cannot declare class App\Controllers\StockPredictController, because the name is already in use
+in APPPATH/Views/stock_management/stock_predict.php on line 8.
+ 1 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()

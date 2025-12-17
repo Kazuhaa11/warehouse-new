@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -9,13 +10,26 @@ class UserIdentityModel extends Model
     protected $table = 'auth_identities';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
+    protected $allowedFields = [
+        'user_id',
+        'type',
+        'name',
+        'secret',
+        'secret2',
+        'expires',
+        'extra',
+        'force_reset',
+        'last_used_at',
+        'created_at',
+        'updated_at',
+    ];
 
     public function findByEmailOrUsername(string $identity): ?array
     {
         $row = $this->where('type', 'email_password')
             ->groupStart()
-            ->where('secret', $identity)   
-            ->orWhere('name', $identity)   
+            ->where('secret', $identity)
+            ->orWhere('name', $identity)
             ->groupEnd()
             ->orderBy('id', 'DESC')
             ->first();
@@ -45,7 +59,7 @@ class UserIdentityModel extends Model
         if ($role === null && $db->tableExists('auth_groups_users')) {
             try {
                 $agu = $db->table('auth_groups_users')
-                    ->select('`group`') 
+                    ->select('`group`')
                     ->where('user_id', $userId)
                     ->orderBy('id', 'DESC')
                     ->limit(1)

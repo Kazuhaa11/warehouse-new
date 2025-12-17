@@ -51,10 +51,47 @@ class BarangApi extends BaseApiController
         $count = clone $b;
         $total = (int) $count->select('COUNT(*) AS c')->get()->getRow('c');
 
-        $rows = $b->select('id, material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, material_type, import_batch, created_at, updated_at')
-            ->orderBy('material', 'ASC')
+        $rows = $b->select("
+            barang.id,
+            barang.material,
+            barang.material_description,
+            barang.plant,
+            barang.storage_location,
+            barang.storage_location_desc,
+            barang.material_group,
+            barang.base_unit_of_measure,
+            barang.qty_unrestricted,
+            barang.qty_transit_and_transfer,
+            barang.qty_blocked,
+            barang.material_type,
+            barang.storage_id,
+            barang.import_batch,
+            barang.created_at,
+            barang.updated_at,
+
+            s.zone AS stor_zone,
+            s.rack AS stor_rack,
+            s.bin AS stor_bin,
+            s.dak AS stor_dak
+        ")
+            ->join('storages s', 's.id = barang.storage_id', 'left')
+            ->orderBy('barang.material', 'ASC')
             ->limit($per, ($page - 1) * $per)
-            ->get()->getResultArray();
+            ->get()
+            ->getResultArray();
+
+        foreach ($rows as &$r) {
+            $dip = $db->table('peminjaman_items pi')
+                ->select('SUM(pi.requested_qty) AS qty_dipinjam')
+                ->join('peminjaman p', 'p.id = pi.peminjaman_id')
+                ->where('pi.barang_id', $r['id'])
+                ->whereIn('p.status', ['draft', 'approved', 'returned', 'success'])
+                ->get()
+                ->getRowArray();
+
+            $r['qty_dipinjam'] = (float) ($dip['qty_dipinjam'] ?? 0);
+        }
+        unset($r);
 
         return $this->ok($rows, [
             'page' => $page,
@@ -63,6 +100,7 @@ class BarangApi extends BaseApiController
             'total_pages' => (int) ceil($total / $per),
         ]);
     }
+
 
     public function show($id)
     {
@@ -94,9 +132,18 @@ class BarangApi extends BaseApiController
 
         $row['fotos'] = $fotos;
 
+        $dip = $db->table('peminjaman_items pi')
+            ->select('SUM(pi.requested_qty) AS qty_dipinjam')
+            ->join('peminjaman p', 'p.id = pi.peminjaman_id')
+            ->where('pi.barang_id', $id)
+            ->whereIn('p.status', ['draft', 'approved', 'returned', 'success'])
+            ->get()
+            ->getRowArray();
+
+        $row['qty_dipinjam'] = (float) ($dip['qty_dipinjam'] ?? 0);
+
         return $this->ok($row);
     }
-
 
     public function update($id)
     {

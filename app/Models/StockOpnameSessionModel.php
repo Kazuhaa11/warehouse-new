@@ -9,7 +9,7 @@ class StockOpnameSessionModel extends Model
     protected $table = 'stock_opname_sessions';
     protected $primaryKey = 'id';
     protected $useTimestamps = true;
-    protected $allowedFields = ['code', 'scheduled_at', 'finalized_at', 'created_by', 'note'];
+    protected $allowedFields = ['code', 'scheduled_at', 'finalized_at', 'created_by', 'pic'];
     protected $returnType = 'array';
 
     public function nextCode(): string

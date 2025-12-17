@@ -28,6 +28,7 @@ class StorageControllerApi extends BaseApiController
                 'zone' => $this->request->getGet('zone'),
                 'rack' => $this->request->getGet('rack'),
                 'bin' => $this->request->getGet('bin'),
+                'dak' => $this->request->getGet('dak'),
                 'active' => $this->request->getGet('active'),
             ];
 
@@ -57,7 +58,7 @@ class StorageControllerApi extends BaseApiController
         if (!$row) {
             return $this->respond(['success' => false, 'error' => ['message' => 'Storage tidak ditemukan']], 404);
         }
-        $parts = array_filter([$row['zone'] ?? '', $row['rack'] ?? '', $row['bin'] ?? ''], fn($v) => $v !== '' && $v !== null);
+        $parts = array_filter([$row['zone'] ?? '', $row['rack'] ?? '', $row['bin'] ?? '',  $row['dak'] ?? ''], fn($v) => $v !== '' && $v !== null);
         $row['path'] = implode(' / ', $parts);
 
         return $this->respond(['success' => true, 'data' => $row]);
@@ -74,6 +75,7 @@ class StorageControllerApi extends BaseApiController
             'zone' => 'permit_empty|max_length[50]',
             'rack' => 'permit_empty|max_length[50]',
             'bin' => 'permit_empty|max_length[50]',
+            'dak' => 'permit_empty|max_length[50]',
             'name' => 'permit_empty|max_length[100]',
             'capacity' => 'permit_empty|integer',
             'note' => 'permit_empty',
@@ -133,7 +135,7 @@ class StorageControllerApi extends BaseApiController
             $payload = $this->request->getRawInput() ?? [];
         }
 
-        foreach (['zone', 'rack', 'bin', 'name', 'note', 'storage_location_desc'] as $k) {
+        foreach (['zone', 'rack', 'bin', 'dak', 'name', 'note', 'storage_location_desc'] as $k) {
             if (array_key_exists($k, $payload) && $payload[$k] === '') {
                 $payload[$k] = null;
             }
@@ -152,6 +154,7 @@ class StorageControllerApi extends BaseApiController
             'zone',
             'rack',
             'bin',
+            'dak',
             'name',
             'capacity',
             'is_active',
@@ -170,10 +173,11 @@ class StorageControllerApi extends BaseApiController
         $zone = $data['zone'] ?? $row['zone'];
         $rack = $data['rack'] ?? $row['rack'];
         $bin = $data['bin'] ?? $row['bin'];
-        if (($zone === null || $zone === '') && ($rack === null || $rack === '') && ($bin === null || $bin === '')) {
+        $dak = $data['dak'] ?? $row['dak'];
+        if (($zone === null || $zone === '') && ($rack === null || $rack === '') && ($bin === null || $bin === '') && ($dak === null || $dak === '')) {
             return $this->respond([
                 'success' => false,
-                'error' => ['message' => 'Minimal isi salah satu dari Zone / Rack / Bin'],
+                'error' => ['message' => 'Minimal isi salah satu dari Zone / Rack / Bin/ Dak'],
             ], 422);
         }
 

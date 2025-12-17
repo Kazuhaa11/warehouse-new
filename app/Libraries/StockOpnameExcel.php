@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Libraries;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -77,7 +78,7 @@ class StockOpnameExcel
             $u = $this->toDecimal($this->calc($sheet, $col, 'qty_unrestricted', $r));
             $tt = $this->toDecimal($this->calc($sheet, $col, 'qty_transit_and_transfer', $r));
             $b = $this->toDecimal($this->calc($sheet, $col, 'qty_blocked', $r));
-            $cnt = $this->toDecimal($this->calc($sheet, $col, 'counted_qty', $r)); 
+            $cnt = $this->toDecimal($this->calc($sheet, $col, 'counted_qty', $r));
 
             $row = [
                 'session_id' => $sessionId,
@@ -138,10 +139,25 @@ class StockOpnameExcel
     {
         $db = \Config\Database::connect();
 
-        $rows = $db->table('stock_opname_items')
-            ->where('session_id', $sessionId)
-            ->orderBy('id', 'ASC')
+        $rows = $db->table('stock_opname_items i')
+            ->select('
+                        i.*, 
+                        b.material_description AS b_desc,
+                        b.plant AS b_plant,
+                        b.material_group AS b_group,
+                        b.storage_location_desc AS b_sloc_desc,
+                        b.df_stor_loc_level AS b_loc_level,
+                        b.base_unit_of_measure AS b_uom,
+                        b.qty_unrestricted AS b_unrestricted,
+                        b.qty_transit_and_transfer AS b_tt,
+                        b.qty_blocked AS b_blocked,
+                        b.material_type AS b_type
+                    ')
+            ->join('barang b', 'b.material = i.material AND b.storage_location = i.storage_location', 'left')
+            ->where('i.session_id', $sessionId)
+            ->orderBy('i.id', 'ASC')
             ->get()->getResultArray();
+
 
         $headers = [
             'Material',
@@ -149,17 +165,13 @@ class StockOpnameExcel
             'Plant',
             'Material Group',
             'Storage Location',
-            'Descr. of Storage Loc.',
-            'DF stor. loc. level',
             'Base Unit of Measure',
             'Unrestricted',
-            'Transit and Transfer',
-            'Blocked',
-            'Counted',  
-            'Diff',     
-            'Material Type',
+            'Counted',
+            'Diff',
             'Note',
         ];
+
 
         $data = [];
         foreach ($rows as $r) {
@@ -170,21 +182,19 @@ class StockOpnameExcel
             $diff = $cnt - ($u + $tt + $b);
 
             $data[] = [
-                $r['material'] ?? '',
-                $r['material_description'] ?? '',
-                $r['plant'] ?? '',
-                $r['material_group'] ?? '',
-                $r['storage_location'] ?? '',
-                $r['storage_location_desc'] ?? '',
-                $r['df_stor_loc_level'] ?? '',
-                $r['base_unit_of_measure'] ?? '',
-                $u,
-                $tt,
-                $b,
-                $cnt,
-                $diff,
-                $r['material_type'] ?? '',
-                $r['note'] ?? '',
+                $r['material'],
+                $r['material_description'] ?: $r['b_desc'],
+                $r['plant'] ?: $r['b_plant'],
+                $r['material_group'] ?: $r['b_group'],
+                $r['storage_location'],
+                $r['base_unit_of_measure'] ?: $r['b_uom'],
+                floatval($r['qty_unrestricted'] ?: $r['b_unrestricted']),
+                floatval($r['counted_qty']),
+                floatval($r['counted_qty'] - (($r['qty_unrestricted'] ?: $r['b_unrestricted'])
+                    + ($r['qty_transit_and_transfer'] ?: $r['b_tt'])
+                    + ($r['qty_blocked'] ?: $r['b_blocked'])
+                )),
+                $r['note']
             ];
         }
 

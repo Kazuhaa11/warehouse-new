@@ -17,7 +17,7 @@
             </p>
             <input type="file" name="file" accept=".xlsx,.xls,.csv" class="form-control" required>
           </div>
-          <button class="btn btn-primary btn-sm" type="submit">
+          <button class="btn btn-primary btn-sm mt-2" type="submit">
             <i class="fas fa-upload me-1"></i> Upload & Import
           </button>
         </form>

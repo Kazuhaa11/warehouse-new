@@ -1,6 +1,7 @@
 <?php
 
 use CodeIgniter\Router\RouteCollection;
+
 /** @var RouteCollection $routes */
 
 $routes->get('testsession', 'TestSession::index');
@@ -25,8 +26,12 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('movement', 'MovementController::index');
     $routes->get('generate-qr', 'QrGeneratorController::index');
     $routes->post('generate-qr', 'QrGeneratorController::generate');
+    $routes->post('generate-qr/download-zpl', 'QrGeneratorController::downloadZpl');
     $routes->get('stock-predict', 'StockPredictController::index');
     $routes->get('stock-predict-view', 'StockPredictController::view');
+    $routes->get('change-password', 'ChangePasswordController::index');
+    $routes->post('change-password', 'ChangePasswordController::process');
+    $routes->get('reservasi', 'ReservasiController::index');
 });
 
 
@@ -52,7 +57,18 @@ $routes->group('api/v1', static function ($routes) {
     $routes->post('peminjaman', 'Api\PeminjamanApi::create', ['filter' => 'auth']);
     $routes->get('peminjaman/(:num)', 'Api\PeminjamanApi::show/$1', ['filter' => 'auth']);
     $routes->get('peminjaman/report/pdf', 'Api\PeminjamanApi::reportPdf', ['filter' => 'authadmin']);
+    $routes->post('peminjaman/(:num)/approve', 'Api\PeminjamanApi::setApproved/$1');
+    $routes->post('peminjaman/(:num)/returned', 'Api\PeminjamanApi::setReturned/$1');
+    $routes->post('peminjaman/(:num)/reserved', 'Api\PeminjamanApi::setReserved/$1');
 });
+
+$routes->group('api/v1', static function ($routes) {
+    $routes->get('reservasi', 'Api\ReservasiApi::index', ['filter' => 'auth']);
+    $routes->get('reservasi/(:num)', 'Api\ReservasiApi::show/$1', ['filter' => 'auth']);
+    $routes->post('reservasi/import', 'Api\ReservasiApi::importExcel', ['filter' => 'authadmin']);
+    $routes->put('reservasi/(:num)', 'Api\ReservasiApi::update/$1', ['filter' => 'authadmin']);
+});
+
 
 $routes->group('api/v1', [
     'namespace' => 'App\Controllers\Api',
@@ -81,6 +97,7 @@ $routes->group('api/v1/stock-opname', [
     $routes->post('sessions/(:num)/items/import', 'StockOpnameController::importItems/$1');
 
     $routes->get('sessions/(:num)/recap', 'StockOpnameController::recap/$1');
+    $routes->post('sessions/(:num)/download', 'StockOpnameController::download/$1');
 });
 
 $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {

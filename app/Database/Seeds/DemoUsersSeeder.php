@@ -45,8 +45,7 @@ class DemoUsersSeeder extends Seeder
             echo "OK: user#$uid ($email) dibuat sebagai $role\n";
         };
 
-        // === bikin 2 akun contoh ===
-        $create('admin@gmail.com', 'admin', 'admin',  'admin123'); // login web: aud=web
-        $create('user@gmail.com',  'user',  'mobile', 'user123');  // login mobile: aud=mobile
+        $create('user@gmail.com',  'user',  'mobile', 'user123');
+        $create('test@gmail.com', 'test',  'admin', 'test123');
     }
 }

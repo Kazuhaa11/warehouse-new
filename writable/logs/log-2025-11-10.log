@@ -1,0 +1,32 @@
+CRITICAL - 2025-11-10 01:25:17 --> CodeIgniter\HTTP\Exceptions\HTTPException: Could not move file "phpp06fKV" to "/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/". Reason: 
+in SYSTEMPATH/HTTP/Files/UploadedFile.php on line 152.
+ 1 SYSTEMPATH/HTTP/Files/UploadedFile.php(152): CodeIgniter\HTTP\Exceptions\HTTPException::forMoveFailed('phpp06fKV', '/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '')
+ 2 APPPATH/Controllers/Api/BarangFotoApi.php(32): CodeIgniter\HTTP\Files\UploadedFile->move('/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '1762737917_fb56a4482b97159d5afc.png')
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\BarangFotoApi->upload(24279)
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\BarangFotoApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-10 01:25:23 --> CodeIgniter\HTTP\Exceptions\HTTPException: Could not move file "phpDTlWQJ" to "/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/". Reason: 
+in SYSTEMPATH/HTTP/Files/UploadedFile.php on line 152.
+ 1 SYSTEMPATH/HTTP/Files/UploadedFile.php(152): CodeIgniter\HTTP\Exceptions\HTTPException::forMoveFailed('phpDTlWQJ', '/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '')
+ 2 APPPATH/Controllers/Api/BarangFotoApi.php(32): CodeIgniter\HTTP\Files\UploadedFile->move('/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '1762737923_79379dec18b8c916d703.png')
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\BarangFotoApi->upload(24279)
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\BarangFotoApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-10 01:31:32 --> CodeIgniter\HTTP\Exceptions\HTTPException: Could not move file "phpHj5YTO" to "/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/". Reason: 
+in SYSTEMPATH/HTTP/Files/UploadedFile.php on line 152.
+ 1 SYSTEMPATH/HTTP/Files/UploadedFile.php(152): CodeIgniter\HTTP\Exceptions\HTTPException::forMoveFailed('phpHj5YTO', '/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '')
+ 2 APPPATH/Controllers/Api/BarangFotoApi.php(32): CodeIgniter\HTTP\Files\UploadedFile->move('/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '1762738292_703f06e62a627d04314c.png')
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\BarangFotoApi->upload(24279)
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\BarangFotoApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-11-10 01:31:51 --> CodeIgniter\HTTP\Exceptions\HTTPException: Could not move file "phpZcfoMn" to "/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/". Reason: 
+in SYSTEMPATH/HTTP/Files/UploadedFile.php on line 152.
+ 1 SYSTEMPATH/HTTP/Files/UploadedFile.php(152): CodeIgniter\HTTP\Exceptions\HTTPException::forMoveFailed('phpZcfoMn', '/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '')
+ 2 APPPATH/Controllers/Api/BarangFotoApi.php(32): CodeIgniter\HTTP\Files\UploadedFile->move('/opt/lampp/htdocs/warehouse-new/writable/../public/uploads/barang/', '1762738311_692dd0a9af99d60ca722.png')
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\BarangFotoApi->upload(24279)
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\BarangFotoApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()

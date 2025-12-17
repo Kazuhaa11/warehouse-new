@@ -1,0 +1,48 @@
+ERROR - 2025-12-10 01:31:45 --> [DEBUG FILTER] q= plant= status=draft page=1 per_page=50
+ERROR - 2025-12-10 01:31:45 --> [DEBUG SQL] SELECT p.id,
+            p.no_nota AS nomor,
+            DATE(p.borrow_date) AS tanggal,
+            p.status,
+            p.pic,
+            p.sub_bagian,
+            p.note,
+            p.peminjam_id,
+            u.username AS peminjam_username,
+            GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR ',') AS plants
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `p`.`status` = 'draft'
+ERROR - 2025-12-10 01:31:50 --> [DEBUG FILTER] q= plant= status=approved page=1 per_page=50
+ERROR - 2025-12-10 01:31:50 --> [DEBUG SQL] SELECT p.id,
+            p.no_nota AS nomor,
+            DATE(p.borrow_date) AS tanggal,
+            p.status,
+            p.pic,
+            p.sub_bagian,
+            p.note,
+            p.peminjam_id,
+            u.username AS peminjam_username,
+            GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR ',') AS plants
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `p`.`status` = 'approved'
+ERROR - 2025-12-10 01:31:52 --> [DEBUG FILTER] q= plant= status=returned page=1 per_page=50
+ERROR - 2025-12-10 01:31:52 --> [DEBUG SQL] SELECT p.id,
+            p.no_nota AS nomor,
+            DATE(p.borrow_date) AS tanggal,
+            p.status,
+            p.pic,
+            p.sub_bagian,
+            p.note,
+            p.peminjam_id,
+            u.username AS peminjam_username,
+            GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR ',') AS plants
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `p`.`status` = 'returned'

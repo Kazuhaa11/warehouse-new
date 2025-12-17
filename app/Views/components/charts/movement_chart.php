@@ -13,55 +13,122 @@
 </div>
 
 <script>
-    (function () {
+    (function() {
         let trendChart = null;
 
         async function onReady() {
             try {
                 const res = await fetch("<?= base_url('api/v1/barang/movement-trend') ?>");
                 const trend = await res.json();
-                if (!trend.success) throw new Error('Gagal load chart data');
+                if (!trend.success) throw new Error("Gagal load chart data");
 
                 const t = trend.data;
-                const ctxBar = document.getElementById('chartMovementBar').getContext('2d');
-                trendChart = new Chart(ctxBar, {
-                    type: 'bar',
+
+                const ctx = document.getElementById("chartMovementBar").getContext("2d");
+
+                if (trendChart) trendChart.destroy();
+
+                trendChart = new Chart(ctx, {
+                    type: "bar",
                     data: {
-                        labels: t.labels,
-                        datasets: [
-                            { label: 'Fast Moving', data: t.fast, backgroundColor: '#28a745' },
-                            { label: 'Slow Moving', data: t.slow, backgroundColor: '#ffc107' },
-                            { label: 'Dead Item', data: t.dead, backgroundColor: '#dc3545' }
-                        ]
+                        labels: t.labels, 
+                        datasets: [{
+                                label: "Fast Moving",
+                                data: t.fast,
+                                backgroundColor: "#28a745",
+                            },
+                            {
+                                label: "Slow Moving",
+                                data: t.slow,
+                                backgroundColor: "#ffc107",
+                            },
+                            {
+                                label: "Dead Item",
+                                data: t.dead,
+                                backgroundColor: "#dc3545",
+                            },
+                        ],
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+
                         plugins: {
-                            legend: { position: 'bottom' },
-                            title: { display: true, text: 'Tren Pergerakan Barang (12 Bulan Terakhir)' }
+                            legend: {
+                                position: "bottom",
+                            },
+                            title: {
+                                display: true,
+                                text: "Tren Fast / Slow / Dead Movement (12 Bulan Terakhir)",
+                                padding: {
+                                    top: 10,
+                                    bottom: 10
+                                },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return `${ctx.dataset.label}: ${ctx.parsed.y}`;
+                                    },
+                                },
+                            },
                         },
+
                         scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                },
+                            },
                         },
-                        onClick: async (evt, elements) => {
+
+                        onClick: (evt, elements) => {
                             if (!elements.length) return;
-                            const el = elements[0];
-                            const datasetIndex = el.datasetIndex;
-                            const labelIndex = el.index;
-                            const categoryLabel = trendChart.data.datasets[datasetIndex].label;
-                            const month = trendChart.data.labels[labelIndex];
-                            console.log(`Klik: ${month} - ${categoryLabel}`);
-                        }
-                    }
+
+                            const bar = elements[0];
+                            const datasetIndex = bar.datasetIndex;
+                            const labelIndex = bar.index;
+
+                            const selectedCategory = trendChart.data.datasets[datasetIndex].label;
+                            const selectedMonth = trendChart.data.labels[labelIndex];
+
+                            const typeMap = {
+                                "Fast Moving": "fast",
+                                "Slow Moving": "slow",
+                                "Dead Item": "dead",
+                            };
+
+                            const typeValue = typeMap[selectedCategory];
+
+                            console.log("CLICK:", selectedMonth, typeValue);
+
+                            const monthSel = document.getElementById("filterMonth");
+                            const typeSel = document.getElementById("filterType");
+
+                            if (monthSel && typeSel) {
+                                monthSel.value = selectedMonth; // ex: "Oct 2025"
+                                typeSel.value = typeValue;
+
+                                monthSel.dispatchEvent(new Event("change"));
+                                typeSel.dispatchEvent(new Event("change"));
+                            }
+                        },
+                    },
                 });
             } catch (err) {
-                console.warn('movement chart:', err.message);
+                console.warn("movement chart:", err.message);
             }
         }
 
         if (window.Chart) onReady();
-        else document.addEventListener('chartjs:ready', onReady, { once: true });
+        else document.addEventListener("chartjs:ready", onReady, {
+            once: true
+        });
+
     })();
 </script>

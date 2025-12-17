@@ -27,7 +27,16 @@ $request = service('request');
                 <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"><i
                         class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#" id="btnLogout">Logout</a></li>
+                    <li>
+                        <a class="dropdown-item" href="<?= base_url('admin/change-password') ?>">
+                            <i class="fas fa-key me-2"></i> Ubah Password
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" id="btnLogout">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </li>
                 </ul>
             </li>
         </ul>
@@ -50,6 +59,10 @@ $request = service('request');
                         <a class="nav-link <?= $menu === 'peminjaman' ? 'active' : '' ?>"
                             href="<?= base_url('admin/peminjaman') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Bon Pinjam
+                        </a>
+                        <a class="nav-link <?= $menu === 'reservasi' ? 'active' : '' ?>"
+                            href="<?= base_url('admin/reservasi') ?>">
+                            <div class="sb-nav-link-icon"><i class="fas fa-file-invoice"></i></div>Reservasi List
                         </a>
                         <a class="nav-link <?= $menu === 'opname' ? 'active' : '' ?>"
                             href="<?= base_url('admin/opname') ?>">
@@ -74,6 +87,11 @@ $request = service('request');
                         <a class="nav-link <?= $menu === 'stockpredict' ? 'active' : '' ?>"
                             href="<?= base_url('admin/stock-predict-view') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Stock Predict
+                        </a>
+                        <a class="nav-link"
+                            href="<?= base_url('manual_book/Manual_Book_WHS_Polytron.pdf') ?>" download>
+                            <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
+                            Manual Book
                         </a>
                     </div>
                 </div>

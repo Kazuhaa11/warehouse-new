@@ -1,0 +1,615 @@
+ERROR - 2025-12-09 04:06:53 --> JWT validate failed: Expired token
+ERROR - 2025-12-09 04:06:58 --> JWT validate failed: Expired token
+ERROR - 2025-12-09 06:31:40 --> JWT validate failed: Expired token
+ERROR - 2025-12-09 08:25:28 --> mysqli_sql_exception: Unknown column 'b.status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,\n  ...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,\n  ...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,\n  ...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,\n  ...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-12-09 08:25:28 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 2 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:28 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 4 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:28 --> [Caused by] mysqli_sql_exception: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 5 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+ERROR - 2025-12-09 08:25:29 --> mysqli_sql_exception: Unknown column 'b.status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,\n  ...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,\n  ...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,\n  ...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,\n  ...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-12-09 08:25:29 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 2 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:29 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 4 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:29 --> [Caused by] mysqli_sql_exception: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 5 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+ERROR - 2025-12-09 08:25:30 --> mysqli_sql_exception: Unknown column 'b.status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,\n  ...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,\n  ...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,\n  ...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,\n  ...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-12-09 08:25:30 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 2 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:30 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 4 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:30 --> [Caused by] mysqli_sql_exception: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 5 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+ERROR - 2025-12-09 08:25:30 --> mysqli_sql_exception: Unknown column 'b.status' in 'where clause' in /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:306
+Stack trace:
+#0 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,\n  ...', 0)
+#1 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,\n  ...')
+#2 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,\n  ...')
+#3 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,\n  ...', Array, false)
+#4 /opt/lampp/htdocs/warehouse-new/app/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+#5 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+#6 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+#7 /opt/lampp/htdocs/warehouse-new/vendor/codeigniter4/framework/system/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/warehouse-new/public/index.php(82): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-12-09 08:25:30 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/BaseConnection.php on line 647.
+ 1 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 2 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 4 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 5 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:30 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 311.
+ 1 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 2 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 4 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2025-12-09 08:25:30 --> [Caused by] mysqli_sql_exception: Unknown column 'b.status' in 'where clause'
+in SYSTEMPATH/Database/MySQLi/Connection.php on line 306.
+ 1 SYSTEMPATH/Database/MySQLi/Connection.php(306): mysqli->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', 0)
+ 2 SYSTEMPATH/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 3 SYSTEMPATH/Database/BaseConnection.php(607): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL')
+ 4 SYSTEMPATH/Database/BaseBuilder.php(1616): CodeIgniter\Database\BaseConnection->query('SELECT p.id,
+                p.no_nota AS nomor,
+                DATE(p.borrow_date) AS tanggal,
+                p.status,
+                p.pic,
+                p.sub_bagian,
+                p.note,
+                p.peminjam_id,
+                u.username AS peminjam_username,
+                GROUP_CONCAT(DISTINCT b.plant ORDER BY b.plant SEPARATOR \',\') AS plants, COUNT(DISTINCT p.id) AS c
+FROM `peminjaman` `p`
+LEFT JOIN `users` `u` ON `u`.`id` = `p`.`peminjam_id`
+LEFT JOIN `peminjaman_items` `pi` ON `pi`.`peminjaman_id` = `p`.`id`
+LEFT JOIN `barang` `b` ON `b`.`id` = `pi`.`barang_id`
+WHERE `b`.`status` IS NULL', [], false)
+ 5 APPPATH/Controllers/Api/PeminjamanApi.php(83): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\Api\PeminjamanApi->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\PeminjamanApi))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
