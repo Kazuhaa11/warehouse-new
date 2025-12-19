@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Libraries;
 
 use CodeIgniter\Database\BaseConnection;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class BarangExcel
 {
@@ -19,6 +21,7 @@ class BarangExcel
         'Unrestricted' => 'qty_unrestricted',
         'Transit and Transfer' => 'qty_transit_and_transfer',
         'Blocked' => 'qty_blocked',
+        'Harga' => 'harga', 
         'Material Type' => 'material_type',
     ];
 
@@ -35,35 +38,51 @@ class BarangExcel
         $headerRow = 1;
         $header = [];
         $highestCol = $sheet->getHighestColumn();
+
         for ($c = 'A'; $c <= $highestCol; $c++) {
             $v = $sheet->getCell($c . $headerRow)->getValue();
-            if ($v === null)
-                break;
+            if ($v === null) break;
             $header[] = trim((string) $v);
         }
+
         $required = array_keys($this->excelMap);
         $missing = array_diff($required, $header);
-        if ($missing)
-            throw new \RuntimeException('Header Excel tidak sesuai. Kurang: ' . implode(', ', $missing));
+        if ($missing) {
+            throw new \RuntimeException(
+                'Header Excel tidak sesuai. Kurang: ' . implode(', ', $missing)
+            );
+        }
 
         $col = [];
         foreach ($this->excelMap as $excel => $dbField) {
             $idx = array_search($excel, $header, true);
-            $col[$dbField] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
+            $col[$dbField] = Coordinate::stringFromColumnIndex($idx + 1);
         }
 
         $importBatch = date('YmdHis');
         $maxRow = $sheet->getHighestRow();
 
         for ($r = $headerRow + 1; $r <= $maxRow; $r++) {
-            $mat = trim((string) $sheet->getCell($col['material'] . $r)->getValue());
-            if ($mat === '') {
+
+            $material = trim((string) $sheet->getCell($col['material'] . $r)->getValue());
+            if ($material === '') {
                 $skip++;
                 continue;
             }
 
+            $rawHarga = $sheet->getCell($col['harga'] . $r)->getValue();
+            $harga = null;
+
+            if ($rawHarga !== null && $rawHarga !== '') {
+                if (is_string($rawHarga)) {
+                    $rawHarga = preg_replace('/[^\d,]/', '', $rawHarga);
+                    $rawHarga = str_replace(',', '.', $rawHarga);
+                }
+                $harga = is_numeric($rawHarga) ? (float) $rawHarga : null;
+            }
+
             $d = [
-                'material' => $mat,
+                'material' => $material,
                 'material_description' => (string) $sheet->getCell($col['material_description'] . $r)->getValue(),
                 'plant' => (string) $sheet->getCell($col['plant'] . $r)->getValue(),
                 'material_group' => (string) $sheet->getCell($col['material_group'] . $r)->getValue(),
@@ -71,9 +90,16 @@ class BarangExcel
                 'storage_location_desc' => (string) $sheet->getCell($col['storage_location_desc'] . $r)->getValue(),
                 'df_stor_loc_level' => (string) $sheet->getCell($col['df_stor_loc_level'] . $r)->getValue(),
                 'base_unit_of_measure' => (string) $sheet->getCell($col['base_unit_of_measure'] . $r)->getValue(),
-                'qty_unrestricted' => $this->toDecimal($sheet->getCell($col['qty_unrestricted'] . $r)->getCalculatedValue()),
-                'qty_transit_and_transfer' => $this->toDecimal($sheet->getCell($col['qty_transit_and_transfer'] . $r)->getCalculatedValue()),
-                'qty_blocked' => $this->toDecimal($sheet->getCell($col['qty_blocked'] . $r)->getCalculatedValue()),
+                'qty_unrestricted' => $this->toDecimal(
+                    $sheet->getCell($col['qty_unrestricted'] . $r)->getCalculatedValue()
+                ),
+                'qty_transit_and_transfer' => $this->toDecimal(
+                    $sheet->getCell($col['qty_transit_and_transfer'] . $r)->getCalculatedValue()
+                ),
+                'qty_blocked' => $this->toDecimal(
+                    $sheet->getCell($col['qty_blocked'] . $r)->getCalculatedValue()
+                ),
+                'harga' => $harga,
                 'material_type' => (string) $sheet->getCell($col['material_type'] . $r)->getValue(),
                 'import_batch' => $importBatch,
             ];
@@ -86,7 +112,7 @@ class BarangExcel
                     $skip++;
                 }
             } catch (\Throwable $e) {
-                $errs[] = "Row $r [$mat] error: " . $e->getMessage();
+                $errs[] = "Row $r [$material] error: " . $e->getMessage();
             }
         }
 
@@ -110,6 +136,7 @@ class BarangExcel
             'Unrestricted',
             'Transit and Transfer',
             'Blocked',
+            'Harga',
             'Material Type'
         ];
 
@@ -127,9 +154,11 @@ class BarangExcel
                 $r['Unrestricted'],
                 $r['Transit and Transfer'],
                 $r['Blocked'],
+                $r['Harga'],
                 $r['Material Type'],
             ];
         }
+
         return [$headers, $data];
     }
 
@@ -137,20 +166,33 @@ class BarangExcel
     {
         $ss = new Spreadsheet();
         $s = $ss->getActiveSheet();
+
         $s->fromArray($headers, null, 'A1');
-        if ($rows)
+        if ($rows) {
             $s->fromArray($rows, null, 'A2');
-        for ($i = 1; $i <= count($headers); $i++)
+        }
+
+        for ($i = 1; $i <= count($headers); $i++) {
             $s->getColumnDimensionByColumn($i)->setAutoSize(true);
+        }
+
         return $ss;
     }
 
     protected function upsert(BaseConnection $db, array $d): array
     {
-        $db->query("INSERT INTO barang
-          (material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, material_type, import_batch)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-          ON DUPLICATE KEY UPDATE
+        $db->query("
+        INSERT INTO barang
+        (
+            material, material_description, plant, material_group,
+            storage_location, storage_location_desc,
+            df_stor_loc_level, base_unit_of_measure,
+            qty_unrestricted, qty_transit_and_transfer, qty_blocked,
+            harga,
+            material_type, import_batch
+        )
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE
             material_description=VALUES(material_description),
             plant=VALUES(plant),
             material_group=VALUES(material_group),
@@ -161,9 +203,11 @@ class BarangExcel
             qty_unrestricted=VALUES(qty_unrestricted),
             qty_transit_and_transfer=VALUES(qty_transit_and_transfer),
             qty_blocked=VALUES(qty_blocked),
+            harga=VALUES(harga),
             material_type=VALUES(material_type),
             import_batch=VALUES(import_batch),
-            updated_at=CURRENT_TIMESTAMP", [
+            updated_at=CURRENT_TIMESTAMP
+        ", [
             $d['material'],
             $d['material_description'],
             $d['plant'],
@@ -175,21 +219,29 @@ class BarangExcel
             $d['qty_unrestricted'],
             $d['qty_transit_and_transfer'],
             $d['qty_blocked'],
+            $d['harga'],
             $d['material_type'],
             $d['import_batch'],
         ]);
-        $existed = $db->table('barang')->select('id')->where('material', $d['material'])->get(1)->getRowArray();
+
+        $existed = $db->table('barang')
+            ->select('id')
+            ->where('material', $d['material'])
+            ->get(1)
+            ->getRowArray();
+
         return [true, (bool) $existed];
     }
 
     protected function toDecimal($v): float
     {
-        if ($v === null || $v === '')
-            return 0.0;
+        if ($v === null || $v === '') return 0.0;
+
         if (is_string($v)) {
             $v = str_replace([' ', '.'], '', $v);
             $v = str_replace(',', '.', $v);
         }
+
         return (float) $v;
     }
 }

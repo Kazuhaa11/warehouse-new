@@ -68,6 +68,8 @@ class BarangApi extends BaseApiController
             barang.import_batch,
             barang.created_at,
             barang.updated_at,
+            barang.harga,
+            barang.total_harga,
 
             s.zone AS stor_zone,
             s.rack AS stor_rack,
@@ -112,7 +114,7 @@ class BarangApi extends BaseApiController
             storage_location, storage_location_desc, df_stor_loc_level,
             base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer,
             qty_blocked, material_type, storage_id, import_batch,
-            created_at, updated_at
+            created_at, updated_at, harga, total_harga
         ')
             ->where('id', (int) $id)
             ->get()
@@ -150,24 +152,49 @@ class BarangApi extends BaseApiController
         $db = \Config\Database::connect();
         $id = (int) $id;
 
-        $exists = $db->table('barang')->select('id')->where('id', $id)->get()->getRowArray();
-        if (!$exists) {
+        $barang = $db->table('barang')
+            ->select('id, qty_unrestricted')
+            ->where('id', $id)
+            ->get()
+            ->getRowArray();
+
+        if (!$barang) {
             return $this->failMsg('Barang tidak ditemukan', 404);
         }
 
         $p = $this->request->getJSON(true) ?? $this->request->getRawInput();
+
+        $harga = null;
+        if (array_key_exists('harga', $p)) {
+            $clean = preg_replace('/[^\d]/', '', (string) $p['harga']);
+            $harga = $clean !== '' ? (float) $clean : null;
+        }
+
+        $qty = array_key_exists('qty_unrestricted', $p)
+            ? (float) $p['qty_unrestricted']
+            : (float) $barang['qty_unrestricted'];
+
+        $totalHarga = $harga !== null ? $harga * $qty : null;
 
         $allowed = [
             'base_unit_of_measure',
             'material_type',
             'material_group',
             'storage_id',
+            'harga',
+            'qty_unrestricted',
         ];
 
         $data = [];
-        foreach ($allowed as $k) {
-            if (array_key_exists($k, $p)) {
-                $data[$k] = $p[$k] === '' ? null : $p[$k];
+
+        foreach ($allowed as $field) {
+            if (!array_key_exists($field, $p)) continue;
+
+            if ($field === 'harga') {
+                $data['harga'] = $harga;
+                $data['total_harga'] = $totalHarga;
+            } else {
+                $data[$field] = $p[$field] === '' ? null : $p[$field];
             }
         }
 
@@ -175,23 +202,19 @@ class BarangApi extends BaseApiController
             return $this->failMsg('Tidak ada perubahan.', 400);
         }
 
-        try {
-            $ok = $db->table('barang')->where('id', $id)->update($data + ['updated_at' => date('Y-m-d H:i:s')]);
-            if (!$ok) {
-                return $this->failMsg('Gagal mengupdate barang', 422);
-            }
+        $data['updated_at'] = date('Y-m-d H:i:s');
 
-            $row = $db->table('barang')->select(
-                'id, material, material_description, plant, material_group, storage_location, storage_location_desc,
-                 df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
-                 material_type, storage_id, import_batch, created_at, updated_at'
-            )->where('id', $id)->get()->getRowArray();
+        $db->table('barang')->where('id', $id)->update($data);
 
-            return $this->ok($row);
-        } catch (\Throwable $e) {
-            return $this->failMsg('Gagal mengupdate barang', 500, $e->getMessage());
-        }
+        return $this->ok(
+            $db->table('barang')
+                ->select('id, material, harga, total_harga, qty_unrestricted, updated_at')
+                ->where('id', $id)
+                ->get()
+                ->getRowArray()
+        );
     }
+
 
     public function delete($id)
     {
@@ -218,6 +241,22 @@ class BarangApi extends BaseApiController
             $p = $this->request->getPost();
         }
 
+        $rawHarga = $p['harga'] ?? null;
+        $harga = null;
+
+        if ($rawHarga !== null && $rawHarga !== '') {
+            $harga = preg_replace('/[^\d,]/', '', $rawHarga);
+            $harga = str_replace(',', '.', $harga);
+            $harga = is_numeric($harga) ? (float) $harga : null;
+        }
+
+        $qty = (float) ($p['qty_unrestricted'] ?? 0);
+
+        $totalHarga = null;
+        if ($harga !== null && $qty > 0) {
+            $totalHarga = $harga * $qty;
+        }
+
         $data = [
             'material' => trim((string) ($p['material'] ?? '')),
             'material_description' => trim((string) ($p['material_description'] ?? '')),
@@ -233,6 +272,8 @@ class BarangApi extends BaseApiController
             'storage_id' => (int) ($p['storage_id'] ?? 0) ?: null,
             'material_type' => trim((string) ($p['material_type'] ?? '')),
             'import_batch' => date('Ymd_His'),
+            'harga' => $harga,
+            'total_harga' => $totalHarga,
         ];
 
         if ($data['material'] === '') {
@@ -249,29 +290,23 @@ class BarangApi extends BaseApiController
             $db = \Config\Database::connect();
 
             $sql = "
-            INSERT INTO barang
-            (material, material_description, plant, material_group, storage_location, storage_location_desc,
-             df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked,
-             storage_id, material_type, import_batch, created_at, updated_at)
-            VALUES
-            (:material:, :material_description:, :plant:, :material_group:, :storage_location:, :storage_location_desc:,
-             :df_stor_loc_level:, :base_unit_of_measure:, :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
-             :storage_id:, :material_type:, :import_batch:, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON DUPLICATE KEY UPDATE
-                material_description       = VALUES(material_description),
-                plant                      = VALUES(plant),
-                material_group             = VALUES(material_group),
-                storage_location           = VALUES(storage_location),
-                storage_location_desc      = VALUES(storage_location_desc),
-                df_stor_loc_level          = VALUES(df_stor_loc_level),
-                base_unit_of_measure       = VALUES(base_unit_of_measure),
-                qty_unrestricted           = VALUES(qty_unrestricted),
-                qty_transit_and_transfer   = VALUES(qty_transit_and_transfer),
-                qty_blocked                = VALUES(qty_blocked),
-                storage_id                 = VALUES(storage_id),
-                material_type              = VALUES(material_type),
-                import_batch               = VALUES(import_batch),
-                updated_at                 = CURRENT_TIMESTAMP
+            INSERT INTO barang (
+            material, material_description, plant, material_group,
+            storage_location, storage_location_desc,
+            harga, total_harga,
+            df_stor_loc_level, base_unit_of_measure,
+            qty_unrestricted, qty_transit_and_transfer, qty_blocked,
+            storage_id, material_type, import_batch, created_at, updated_at
+            )
+            VALUES (
+            :material:, :material_description:, :plant:, :material_group:,
+            :storage_location:, :storage_location_desc:,
+            :harga:, :total_harga:,
+            :df_stor_loc_level:, :base_unit_of_measure:,
+            :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
+            :storage_id:, :material_type:, :import_batch:,
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
         ";
 
             $db->query($sql, $data);
