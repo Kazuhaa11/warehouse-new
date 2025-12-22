@@ -25,6 +25,7 @@ class ReservasiApi extends BaseApiController
 
         $page = max(1, (int) ($this->request->getGet('page') ?? 1));
         $perPage = min(200, max(1, (int) ($this->request->getGet('per_page') ?? 50)));
+        $offset = ($page - 1) * $perPage;
 
         $b = $this->db->table('reservasi_list r')
             ->select("
@@ -61,15 +62,9 @@ class ReservasiApi extends BaseApiController
             $b->where('r.storage_location', $sloc);
         }
 
-        $count = clone $b;
-        $total = (int) ($count
-            ->select('COUNT(*) AS c', false)
-            ->get()
-            ->getRow('c') ?? 0);
-
         $rows = $b
             ->orderBy('r.posting_date', 'DESC')
-            ->limit($perPage, ($page - 1) * $perPage)
+            ->limit($perPage, $offset)
             ->get()
             ->getResultArray();
 
@@ -82,6 +77,28 @@ class ReservasiApi extends BaseApiController
                 $r['reference'] = '-';
             }
         }
+        unset($r);
+
+        $count = $this->db->table('reservasi_list r');
+
+        if ($q !== '') {
+            $count->groupStart()
+                ->like('r.material', $q)
+                ->orLike('r.material_description', $q)
+                ->orLike('r.purchase_order', $q)
+                ->orLike('r.reservation', $q)
+                ->groupEnd();
+        }
+
+        if ($plant !== '') {
+            $count->where('r.plant', $plant);
+        }
+
+        if ($sloc !== '') {
+            $count->where('r.storage_location', $sloc);
+        }
+
+        $total = (int) $count->countAllResults();
 
         return $this->ok($rows, [
             'page'        => $page,
@@ -90,7 +107,6 @@ class ReservasiApi extends BaseApiController
             'total_pages' => (int) ceil($total / ($perPage ?: 1)),
         ]);
     }
-
 
     public function show($id)
     {

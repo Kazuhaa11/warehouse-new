@@ -20,36 +20,40 @@ class BarangApi extends BaseApiController
         $db = \Config\Database::connect();
         $req = $this->request;
 
-        $q = trim((string) $req->getGet('q'));
+        $q   = trim((string) $req->getGet('q'));
         $plant = $req->getGet('plant');
-        $sl = $req->getGet('storage_location');
+        $sl  = $req->getGet('storage_location');
         $slp = $req->getGet('storage_loc_prefix');
-        $mg = $req->getGet('material_group');
-        $mt = $req->getGet('material_type');
+        $mg  = $req->getGet('material_group');
+        $mt  = $req->getGet('material_type');
+
         $page = max(1, (int) ($req->getGet('page') ?? 1));
-        $per = max(1, min(100, (int) ($req->getGet('per_page') ?? 20)));
+        $per  = max(1, min(100, (int) ($req->getGet('per_page') ?? 20)));
+        $offset = ($page - 1) * $per;
 
         $b = $db->table('barang');
 
         if ($q !== '') {
             $b->groupStart()
-                ->like('material', $q)
-                ->orLike('material_description', $q)
+                ->like('barang.material', $q)
+                ->orLike('barang.material_description', $q)
                 ->groupEnd();
         }
-        if ($plant)
-            $b->where('plant', $plant);
-        if ($sl)
-            $b->where('storage_location', $sl);
-        if ($slp !== null && $slp !== '')
-            $b->like('storage_location', $slp, 'after');
-        if ($mg)
-            $b->where('material_group', $mg);
-        if ($mt)
-            $b->where('material_type', $mt);
-
-        $count = clone $b;
-        $total = (int) $count->select('COUNT(*) AS c')->get()->getRow('c');
+        if ($plant) {
+            $b->where('barang.plant', $plant);
+        }
+        if ($sl) {
+            $b->where('barang.storage_location', $sl);
+        }
+        if ($slp !== null && $slp !== '') {
+            $b->like('barang.storage_location', $slp, 'after');
+        }
+        if ($mg) {
+            $b->where('barang.material_group', $mg);
+        }
+        if ($mt) {
+            $b->where('barang.material_type', $mt);
+        }
 
         $rows = $b->select("
             barang.id,
@@ -73,12 +77,12 @@ class BarangApi extends BaseApiController
 
             s.zone AS stor_zone,
             s.rack AS stor_rack,
-            s.bin AS stor_bin,
-            s.dak AS stor_dak
+            s.bin  AS stor_bin,
+            s.dak  AS stor_dak
         ")
             ->join('storages s', 's.id = barang.storage_id', 'left')
             ->orderBy('barang.material', 'ASC')
-            ->limit($per, ($page - 1) * $per)
+            ->limit($per, $offset)
             ->get()
             ->getResultArray();
 
@@ -95,13 +99,40 @@ class BarangApi extends BaseApiController
         }
         unset($r);
 
+        $count = $db->table('barang');
+
+        if ($q !== '') {
+            $count->groupStart()
+                ->like('barang.material', $q)
+                ->orLike('barang.material_description', $q)
+                ->groupEnd();
+        }
+        if ($plant) {
+            $count->where('barang.plant', $plant);
+        }
+        if ($sl) {
+            $count->where('barang.storage_location', $sl);
+        }
+        if ($slp !== null && $slp !== '') {
+            $count->like('barang.storage_location', $slp, 'after');
+        }
+        if ($mg) {
+            $count->where('barang.material_group', $mg);
+        }
+        if ($mt) {
+            $count->where('barang.material_type', $mt);
+        }
+
+        $total = (int) $count->countAllResults();
+
         return $this->ok($rows, [
-            'page' => $page,
-            'per_page' => $per,
-            'total' => $total,
+            'page'        => $page,
+            'per_page'   => $per,
+            'total'      => $total,
             'total_pages' => (int) ceil($total / $per),
         ]);
     }
+
 
 
     public function show($id)

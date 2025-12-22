@@ -88,9 +88,10 @@ $request = service('request');
                             href="<?= base_url('admin/stock-predict-view') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Stock Predict
                         </a>
-                        <a class="nav-link"
-                            href="<?= base_url('manual_book/Manual_Book_WHS_Polytron.pdf') ?>" download>
-                            <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
+                        <a class="nav-link" href="<?= base_url('admin/download/manual-book') ?>">
+                            <div class="sb-nav-link-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
                             Manual Book
                         </a>
                     </div>

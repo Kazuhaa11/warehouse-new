@@ -32,6 +32,7 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('change-password', 'ChangePasswordController::index');
     $routes->post('change-password', 'ChangePasswordController::process');
     $routes->get('reservasi', 'ReservasiController::index');
+    $routes->get('download/manual-book', 'DownloadManualController::manualBook');
 });
 
 
