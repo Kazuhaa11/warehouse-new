@@ -14,12 +14,14 @@ class JwtCookieBridge implements FilterInterface
     protected function isHtmlRequest(RequestInterface $request): bool
     {
         $path = trim($request->getUri()->getPath(), '/');
+
         if (strpos($path, 'api/') === 0) {
             return false;
         }
-        $accept = (string) ($request->getHeaderLine('Accept') ?: '');
-        return $accept === '' || stripos($accept, 'text/html') !== false;
+
+        return true;
     }
+
 
     public function before(RequestInterface $request, $arguments = null)
     {

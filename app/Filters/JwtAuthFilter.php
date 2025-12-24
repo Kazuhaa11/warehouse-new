@@ -4,7 +4,6 @@ namespace App\Filters;
 
 use App\Libraries\Auth as AuthCtx;
 use App\Libraries\JwtService;
-use App\Models\UserIdentityModel;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -20,51 +19,61 @@ class JwtAuthFilter implements FilterInterface
         }
 
         if ($authHeader === '') {
-            $cookieToken = method_exists($request, 'getCookie')
-                ? $request->getCookie('access_token')
-                : ($_COOKIE['access_token'] ?? null);
-            if (!empty($cookieToken)) {
+            $cookieToken = $request->getCookie('access_token');
+            if ($cookieToken) {
                 $authHeader = 'Bearer ' . $cookieToken;
             }
         }
 
         if (stripos($authHeader, 'Bearer ') !== 0) {
-            return service('response')->setJSON(['message' => 'Unauthorized'])->setStatusCode(401);
+            return service('response')
+                ->setJSON(['message' => 'Unauthorized'])
+                ->setStatusCode(401);
         }
 
         $token = trim(substr($authHeader, 7));
 
         try {
-            $jwt = new JwtService();
+            $jwt  = new JwtService();
             $data = $jwt->validate($token);
-            $sub = (int) ($data['sub'] ?? 0);
-            if ($sub <= 0) {
-                return service('response')->setJSON(['message' => 'Invalid token subject'])->setStatusCode(401);
+
+            $userId = (int) ($data['sub'] ?? 0);
+            if ($userId <= 0) {
+                return service('response')
+                    ->setJSON(['message' => 'Invalid token subject'])
+                    ->setStatusCode(401);
             }
 
-            $idModel = new UserIdentityModel();
-            $identity = $idModel->where('type', 'email_password')
-                ->where('user_id', $sub)
-                ->orderBy('id', 'DESC')
-                ->first();
+            $db = \Config\Database::connect();
+            $user = $db->table('users')
+                ->select('id, username, role, plant')
+                ->where('id', $userId)
+                ->get()
+                ->getRowArray();
 
-            if (!$identity) {
-                return service('response')->setJSON(['message' => 'User not found'])->setStatusCode(401);
+            if (!$user) {
+                return service('response')
+                    ->setJSON(['message' => 'User not found'])
+                    ->setStatusCode(401);
             }
 
-            $user = $idModel->buildUserFromIdentity($identity);
-            AuthCtx::setUser($user);
-
+            AuthCtx::setUser([
+                'id'       => (int) $user['id'],
+                'username' => $user['username'],
+                'role'     => strtolower((string) $user['role']),
+                'plant'    => $user['plant'],
+            ]);
         } catch (\Throwable $e) {
-            log_message('error', 'JWT validate failed: {msg}', ['msg' => $e->getMessage()]);
-            return service('response')->setJSON(['message' => 'Invalid/Expired token'])->setStatusCode(401);
-        }
+            log_message('error', 'JWT error: {msg}', ['msg' => $e->getMessage()]);
 
-        return;
+            return service('response')
+                ->setJSON(['message' => 'Invalid or expired token'])
+                ->setStatusCode(401);
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-
+        AuthCtx::clear();
     }
 }

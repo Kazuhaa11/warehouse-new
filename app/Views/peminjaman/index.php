@@ -8,16 +8,16 @@
         value="<?= esc(service('request')->getGet('q') ?? '') ?>" style="min-width:220px">
       <button class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
     </div>
-    <div class="row g-2">
-      <div class="col-6">
-        <select class="form-select form-select-sm" name="plant">
+    <div class="d-flex gap-2">
+      <?php if ($isSuperAdmin): ?>
+        <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
           <option value="">All Plant</option>
           <option value="1200">Plant 1200</option>
           <option value="1300">Plant 1300</option>
         </select>
-      </div>
+      <?php endif; ?>
 
-      <div class="col-6">
+      <div class="col-auto p-0">
         <select class="form-select form-select-sm" name="status" id="filterStatus">
           <option value="">All Status</option>
           <option value="draft">Draft</option>
@@ -35,7 +35,6 @@
   <button id="btnAdd" class="btn btn-primary btn-sm">
     <i class="fas fa-plus me-1"></i> Tambah Peminjaman
   </button>
-  <input type="file" id="excelInput" accept=".xlsx" class="d-none" />
 </div>
 
 <div class="card">
@@ -94,9 +93,11 @@
   'submitText' => 'Simpan',
   'size' => 'lg',
   'split' => 4,
-  'fields' => [
+  'fields' => array_values(array_filter([
+
     ['name' => 'tanggal', 'label' => 'Tanggal Peminjaman', 'type' => 'date', 'required' => true],
-    [
+
+    $isSuperAdmin ? [
       'name' => 'plant',
       'label' => 'Plant',
       'type' => 'select',
@@ -105,7 +106,8 @@
         ['value' => '1200', 'label' => 'Plant 1200'],
         ['value' => '1300', 'label' => 'Plant 1300'],
       ]
-    ],
+    ] : null,
+
     [
       'name' => 'pic',
       'label' => 'PIC',
@@ -113,32 +115,22 @@
       'placeholder' => 'Nama PIC...',
       'required' => true
     ],
+
     [
       'name' => 'sub_bagian',
       'label' => 'Sub Bagian',
       'type' => 'text',
-      'placeholder' => 'Sub bagian peminjam...',
-      'required' => false
+      'placeholder' => 'Sub bagian peminjam...'
     ],
+
     ['name' => 'due_date', 'label' => 'Tanggal Jatuh Tempo', 'type' => 'date'],
-    [
-      'name' => 'search_barang',
-      'label' => 'Cari Barang',
-      'type' => 'text',
-      'placeholder' => 'Ketik nama atau material barang...',
-      'required' => true
-    ],
-    [
-      'name' => 'qty',
-      'label' => 'Jumlah',
-      'type' => 'number',
-      'step' => '1',
-      'value' => '1',
-      'required' => true
-    ],
+    ['name' => 'search_barang', 'label' => 'Cari Barang', 'type' => 'text', 'required' => true],
+    ['name' => 'qty', 'label' => 'Jumlah', 'type' => 'number', 'value' => '1', 'required' => true],
     ['name' => 'note', 'label' => 'Catatan', 'type' => 'textarea'],
-  ],
+
+  ]))
 ]) ?>
+
 
 <?= $this->endSection() ?>
 
@@ -219,10 +211,11 @@
 
     btnReset.addEventListener('click', () => {
       qInput.value = '';
-      plantSel.value = '';
+      if (plantSel) plantSel.value = '';
       statusSel.value = '';
       load(1);
     });
+
 
     statusSel.addEventListener('change', () => {
       load(1);
@@ -235,7 +228,7 @@
       if (qInput.value.trim() !== "") {
         params.set("q", qInput.value.trim());
       }
-      if (plantSel.value && plantSel.value.trim() !== "") {
+      if (plantSel && plantSel.value.trim() !== "") {
         params.set("plant", plantSel.value);
       }
       if (statusSel.value && statusSel.value.trim() !== "") {
@@ -570,7 +563,6 @@
         const data = {
           tanggal: fd.get('tanggal'),
           due_date: fd.get('due_date'),
-          plant: fd.get('plant'),
           pic: fd.get('pic'),
           sub_bagian: fd.get('sub_bagian'),
           note: fd.get('note'),
@@ -579,6 +571,9 @@
             qty: qty
           }]
         };
+        if (plantSel) {
+          data.plant = fd.get('plant');
+        }
 
         const btn = formAdd.querySelector('button[type="submit"]');
         btn.disabled = true;
@@ -625,7 +620,7 @@
           const params = new URLSearchParams();
           params.set("dl", "1");
 
-          if (plantSel.value) {
+          if (plantSel && plantSel.value.trim() !== "") {
             params.set("plant", plantSel.value);
           }
           if (statusSel.value && statusSel.value.trim() !== "") {

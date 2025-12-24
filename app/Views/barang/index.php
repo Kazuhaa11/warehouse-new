@@ -11,11 +11,13 @@
         <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
       </div>
 
-      <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
-        <option value="">All Plant</option>
-        <option value="1200">Plant 1200</option>
-        <option value="1300">Plant 1300</option>
-      </select>
+      <?php if ($isSuperAdmin): ?>
+        <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
+          <option value="">All Plant</option>
+          <option value="1200">Plant 1200</option>
+          <option value="1300">Plant 1300</option>
+        </select>
+      <?php endif; ?>
 
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
     </form>
@@ -82,19 +84,38 @@
   'submitText' => 'Simpan',
   'size' => 'lg',
   'split' => 6,
-  'fields' => [
-    ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'placeholder' => 'Kode material unik', 'required' => true],
-    ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text', 'placeholder' => 'Nama/Deskripsi'],
+  'fields' => array_values(array_filter([
+
     [
+      'name' => 'material',
+      'label' => 'Material',
+      'type' => 'text',
+      'placeholder' => 'Kode material unik',
+      'required' => true
+    ],
+    [
+      'name' => 'material_description',
+      'label' => 'Deskripsi',
+      'type' => 'text',
+      'placeholder' => 'Nama/Deskripsi'
+    ],
+
+    $isSuperAdmin ? [
       'name' => 'plant',
       'label' => 'Plant',
       'type' => 'select',
       'options' => [
         ['value' => '1200', 'label' => 'Plant 1200'],
-        ['value' => '1300', 'label' => 'Plant 1300']
+        ['value' => '1300', 'label' => 'Plant 1300'],
       ]
+    ] : null,
+
+    [
+      'name' => 'material_group',
+      'label' => 'Material Group',
+      'type' => 'text',
+      'placeholder' => 'mis. MG01 / ELEC / PART'
     ],
-    ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text', 'placeholder' => 'mis. MG01 / ELEC / PART'],
     [
       'name' => 'storage_location',
       'label' => 'Stor. Loc',
@@ -121,14 +142,49 @@
         ['value' => 'PROD ENG INDUK', 'label' => 'PROD ENG INDUK'],
       ]
     ],
-    ['name' => 'storage_id', 'label' => 'Storage ID', 'type' => 'select', 'options' => []],
-    ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text', 'placeholder' => 'PCS / KG / L'],
-    ['name' => 'qty_unrestricted', 'label' => 'Unrestricted', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'qty_transit_and_transfer', 'label' => 'Transit', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'qty_blocked', 'label' => 'Blocked', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'material_type', 'label' => 'Tipe', 'type' => 'text', 'placeholder' => 'mis. FERT / HAWA'],
-  ],
+    [
+      'name' => 'storage_id',
+      'label' => 'Storage ID',
+      'type' => 'select',
+      'options' => []
+    ],
+    [
+      'name' => 'base_unit_of_measure',
+      'label' => 'UoM',
+      'type' => 'text',
+      'placeholder' => 'PCS / KG / L'
+    ],
+    [
+      'name' => 'qty_unrestricted',
+      'label' => 'Unrestricted',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'qty_transit_and_transfer',
+      'label' => 'Transit',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'qty_blocked',
+      'label' => 'Blocked',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'material_type',
+      'label' => 'Tipe',
+      'type' => 'text',
+      'placeholder' => 'mis. FERT / HAWA'
+    ],
+
+  ]))
 ]) ?>
+
 
 <div class="modal fade" id="modalBarangDetail" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered" style="height:80lvh;">
@@ -309,15 +365,16 @@
 
     btnReset.addEventListener('click', () => {
       qInput.value = '';
-      plantSel.value = '';
+      if (plantSel) plantSel.value = '';
       load(1);
     });
+
 
     async function load(page = 1) {
       const params = new URLSearchParams();
       const q = qInput.value.trim();
       if (q) params.set('q', q);
-      const plant = plantSel.value;
+      const plant = plantSel ? plantSel.value : '';
       if (plant) params.set('plant', plant);
       params.set('per_page', PER_PAGE);
       params.set('page', page);

@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Libraries\BarangExcel;
 use App\Models\BarangModel;
+use App\Libraries\Auth as AuthCtx;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class BarangApi extends BaseApiController
@@ -17,11 +18,17 @@ class BarangApi extends BaseApiController
 
     public function index()
     {
-        $db = \Config\Database::connect();
+        $db  = \Config\Database::connect();
         $req = $this->request;
 
+        $isSuperAdmin = AuthCtx::isSuperAdmin();
+        $plant = AuthCtx::plant();
+        $plant = AuthCtx::plant();
+        if (!$plant && !$isSuperAdmin) {
+            return $this->failMsg('Plant user tidak valid', 403);
+        }
+
         $q   = trim((string) $req->getGet('q'));
-        $plant = $req->getGet('plant');
         $sl  = $req->getGet('storage_location');
         $slp = $req->getGet('storage_loc_prefix');
         $mg  = $req->getGet('material_group');
@@ -32,15 +39,15 @@ class BarangApi extends BaseApiController
         $offset = ($page - 1) * $per;
 
         $b = $db->table('barang');
+        if (!$isSuperAdmin) {
+            $b->where('barang.plant', $plant);
+        }
 
         if ($q !== '') {
             $b->groupStart()
                 ->like('barang.material', $q)
                 ->orLike('barang.material_description', $q)
                 ->groupEnd();
-        }
-        if ($plant) {
-            $b->where('barang.plant', $plant);
         }
         if ($sl) {
             $b->where('barang.storage_location', $sl);
@@ -74,7 +81,6 @@ class BarangApi extends BaseApiController
             barang.updated_at,
             barang.harga,
             barang.total_harga,
-
             s.zone AS stor_zone,
             s.rack AS stor_rack,
             s.bin  AS stor_bin,
@@ -100,28 +106,20 @@ class BarangApi extends BaseApiController
         unset($r);
 
         $count = $db->table('barang');
+        if (!$isSuperAdmin) {
+            $count->where('plant', $plant);
+        }
 
         if ($q !== '') {
             $count->groupStart()
-                ->like('barang.material', $q)
-                ->orLike('barang.material_description', $q)
+                ->like('material', $q)
+                ->orLike('material_description', $q)
                 ->groupEnd();
         }
-        if ($plant) {
-            $count->where('barang.plant', $plant);
-        }
-        if ($sl) {
-            $count->where('barang.storage_location', $sl);
-        }
-        if ($slp !== null && $slp !== '') {
-            $count->like('barang.storage_location', $slp, 'after');
-        }
-        if ($mg) {
-            $count->where('barang.material_group', $mg);
-        }
-        if ($mt) {
-            $count->where('barang.material_type', $mt);
-        }
+        if ($sl)  $count->where('storage_location', $sl);
+        if ($slp !== null && $slp !== '') $count->like('storage_location', $slp, 'after');
+        if ($mg)  $count->where('material_group', $mg);
+        if ($mt)  $count->where('material_type', $mt);
 
         $total = (int) $count->countAllResults();
 
@@ -133,13 +131,13 @@ class BarangApi extends BaseApiController
         ]);
     }
 
-
-
     public function show($id)
     {
-        $db = \Config\Database::connect();
+        $db    = \Config\Database::connect();
+        $isSuperAdmin = AuthCtx::isSuperAdmin();
+        $plant = AuthCtx::plant();
 
-        $row = $db->table('barang')
+        $q = $db->table('barang')
             ->select('
             id, material, material_description, plant, material_group,
             storage_location, storage_location_desc, df_stor_loc_level,
@@ -147,9 +145,13 @@ class BarangApi extends BaseApiController
             qty_blocked, material_type, storage_id, import_batch,
             created_at, updated_at, harga, total_harga
         ')
-            ->where('id', (int) $id)
-            ->get()
-            ->getRowArray();
+            ->where('id', (int) $id);
+
+        if (!$isSuperAdmin) {
+            $q->where('plant', $plant);
+        }
+
+        $row = $q->get()->getRowArray();
 
         if (!$row) {
             return $this->failMsg('Barang tidak ditemukan', 404);
@@ -180,14 +182,23 @@ class BarangApi extends BaseApiController
 
     public function update($id)
     {
-        $db = \Config\Database::connect();
-        $id = (int) $id;
+        $db    = \Config\Database::connect();
+        $isSuperAdmin = AuthCtx::isSuperAdmin();
+        $plant = AuthCtx::plant();
+        $id    = (int) $id;
 
-        $barang = $db->table('barang')
-            ->select('id, qty_unrestricted')
-            ->where('id', $id)
-            ->get()
-            ->getRowArray();
+        $q = $db->table('barang')
+            ->select('id, plant, qty_unrestricted')
+            ->where('id', $id);
+
+        if (!$isSuperAdmin) {
+            if (!$plant) {
+                return $this->failMsg('Plant user tidak valid', 403);
+            }
+            $q->where('plant', $plant);
+        }
+
+        $barang = $q->get()->getRowArray();
 
         if (!$barang) {
             return $this->failMsg('Barang tidak ditemukan', 404);
@@ -246,23 +257,31 @@ class BarangApi extends BaseApiController
         );
     }
 
-
     public function delete($id)
     {
-        $db = \Config\Database::connect();
-        $id = (int) $id;
+        $db    = \Config\Database::connect();
+        $isSuperAdmin = AuthCtx::isSuperAdmin();
+        $plant = AuthCtx::plant();
+        $id    = (int) $id;
 
-        $row = $db->table('barang')->select('id')->where('id', $id)->get()->getRowArray();
+        $q = $db->table('barang')
+            ->where('id', $id);
+
+        if (!$isSuperAdmin) {
+            if (!$plant) {
+                return $this->failMsg('Plant user tidak valid', 403);
+            }
+            $q->where('plant', $plant);
+        }
+
+        $row = $q->get()->getRowArray();
+
         if (!$row) {
             return $this->failMsg('Barang tidak ditemukan', 404);
         }
 
-        try {
-            $db->table('barang')->where('id', $id)->delete();
-            return $this->ok(['deleted' => true]);
-        } catch (\Throwable $e) {
-            return $this->failMsg('Gagal menghapus barang', 500, $e->getMessage());
-        }
+        $db->table('barang')->where('id', $id)->delete();
+        return $this->ok(['deleted' => true]);
     }
 
     public function create()
@@ -270,6 +289,30 @@ class BarangApi extends BaseApiController
         $p = $this->request->getJSON(true);
         if (!$p) {
             $p = $this->request->getPost();
+        }
+
+        $user = AuthCtx::user();
+        if (!$user) {
+            return $this->failMsg('Unauthenticated', 401);
+        }
+
+        $role = strtolower((string) ($user['role'] ?? ''));
+        $plant = null;
+
+        if ($role === 'super_admin') {
+            $plant = trim((string) ($p['plant'] ?? ''));
+            if ($plant === '') {
+                return $this->failMsg('Plant wajib dipilih oleh Super Admin', 400);
+            }
+        } else {
+            $plant = AuthCtx::plant();
+            if (!$plant) {
+                return $this->failMsg('Plant user tidak valid', 403);
+            }
+        }
+
+        if (!in_array($plant, ['1200', '1300'], true)) {
+            return $this->failMsg('Plant hanya boleh 1200 atau 1300', 400);
         }
 
         $rawHarga = $p['harga'] ?? null;
@@ -282,16 +325,12 @@ class BarangApi extends BaseApiController
         }
 
         $qty = (float) ($p['qty_unrestricted'] ?? 0);
-
-        $totalHarga = null;
-        if ($harga !== null && $qty > 0) {
-            $totalHarga = $harga * $qty;
-        }
+        $totalHarga = ($harga !== null && $qty > 0) ? $harga * $qty : null;
 
         $data = [
             'material' => trim((string) ($p['material'] ?? '')),
             'material_description' => trim((string) ($p['material_description'] ?? '')),
-            'plant' => trim((string) ($p['plant'] ?? '')),
+            'plant' => $plant,
             'material_group' => trim((string) ($p['material_group'] ?? '')),
             'storage_location' => trim((string) ($p['storage_location'] ?? '')),
             'storage_location_desc' => trim((string) ($p['storage_location_desc'] ?? '')),
@@ -310,9 +349,7 @@ class BarangApi extends BaseApiController
         if ($data['material'] === '') {
             return $this->failMsg('Material wajib diisi', 400);
         }
-        if ($data['plant'] !== '' && !in_array($data['plant'], ['1200', '1300'], true)) {
-            return $this->failMsg('Plant hanya boleh 1200 atau 1300', 400);
-        }
+
         if ($data['material_group'] === '') {
             return $this->failMsg('Material Group wajib diisi', 400);
         }
@@ -322,37 +359,43 @@ class BarangApi extends BaseApiController
 
             $sql = "
             INSERT INTO barang (
-            material, material_description, plant, material_group,
-            storage_location, storage_location_desc,
-            harga, total_harga,
-            df_stor_loc_level, base_unit_of_measure,
-            qty_unrestricted, qty_transit_and_transfer, qty_blocked,
-            storage_id, material_type, import_batch, created_at, updated_at
-            )
-            VALUES (
-            :material:, :material_description:, :plant:, :material_group:,
-            :storage_location:, :storage_location_desc:,
-            :harga:, :total_harga:,
-            :df_stor_loc_level:, :base_unit_of_measure:,
-            :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
-            :storage_id:, :material_type:, :import_batch:,
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                material, material_description, plant, material_group,
+                storage_location, storage_location_desc,
+                harga, total_harga,
+                df_stor_loc_level, base_unit_of_measure,
+                qty_unrestricted, qty_transit_and_transfer, qty_blocked,
+                storage_id, material_type, import_batch,
+                created_at, updated_at
+            ) VALUES (
+                :material:, :material_description:, :plant:, :material_group:,
+                :storage_location:, :storage_location_desc:,
+                :harga:, :total_harga:,
+                :df_stor_loc_level:, :base_unit_of_measure:,
+                :qty_unrestricted:, :qty_transit_and_transfer:, :qty_blocked:,
+                :storage_id:, :material_type:, :import_batch:,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )
         ";
 
             $db->query($sql, $data);
 
             $row = $db->table('barang')
-                ->select('id, material, material_description, plant, material_group, storage_location, storage_location_desc, df_stor_loc_level, base_unit_of_measure, qty_unrestricted, qty_transit_and_transfer, qty_blocked, storage_id, material_type, import_batch, created_at, updated_at')
+                ->select('id, material, material_description, plant, material_group,
+                      storage_location, storage_location_desc, df_stor_loc_level,
+                      base_unit_of_measure, qty_unrestricted,
+                      qty_transit_and_transfer, qty_blocked,
+                      storage_id, material_type, import_batch,
+                      created_at, updated_at')
                 ->where('material', $data['material'])
-                ->get()->getRowArray();
+                ->orderBy('id', 'DESC')
+                ->get()
+                ->getRowArray();
 
             return $this->ok($row);
         } catch (\Throwable $e) {
             return $this->failMsg('Gagal menyimpan data barang', 400, $e->getMessage());
         }
     }
-
 
     public function import()
     {

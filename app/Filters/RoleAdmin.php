@@ -15,7 +15,7 @@ class RoleAdmin implements FilterInterface
             return service('response')->setJSON(['message' => 'Unauthenticated'])->setStatusCode(401);
         }
         $role = strtolower((string) ($user['role'] ?? ''));
-        if ($role !== 'admin') {
+        if ($role !== 'admin' && $role !== 'super_admin') {
             return service('response')->setJSON(['message' => 'Forbidden: role admin required'])->setStatusCode(403);
         }
     }

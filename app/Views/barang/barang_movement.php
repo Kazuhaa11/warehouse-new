@@ -18,20 +18,7 @@
             <select id="filterMonth" class="form-select form-select-sm" style="min-width:160px;">
                 <option value="">All Month</option>
                 <?php
-                $months = [
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec'
-                ];
+                $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 $year = date('Y');
                 foreach ($months as $m) {
                     echo "<option value='{$m} {$year}'>{$m} {$year}</option>";
@@ -57,7 +44,9 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="8" class="text-center text-muted">Pilih filter untuk menampilkan data...</td>
+                        <td colspan="7" class="text-center text-muted">
+                            Pilih filter untuk menampilkan data
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -82,12 +71,10 @@
         const API_URL = "<?= base_url('api/v1/barang/movement-list') ?>";
 
         function getRowClass(type) {
-            if (!type) return "";
-            type = type.toLowerCase();
-            if (type === "fast") return "table-success";
-            if (type === "slow") return "table-warning";
-            if (type === "dead") return "table-danger";
-            return "";
+            if (type === 'fast') return 'table-success';
+            if (type === 'slow') return 'table-warning';
+            if (type === 'dead') return 'table-danger';
+            return '';
         }
 
         async function loadMovement(page = 1) {
@@ -97,7 +84,7 @@
             if (!type && !month) {
                 tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center text-muted">
+                    <td colspan="7" class="text-center text-muted">
                         Silakan pilih filter terlebih dahulu
                     </td>
                 </tr>`;
@@ -107,7 +94,7 @@
 
             tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-muted">
+                <td colspan="7" class="text-center text-muted">
                     Memuat data...
                 </td>
             </tr>`;
@@ -116,62 +103,62 @@
             try {
                 const url = new URL(API_URL);
 
-                if (type) url.searchParams.append('type', type);
-                if (month) url.searchParams.append('month', month);
+                if (type) url.searchParams.set('type', type);
+                if (month) url.searchParams.set('month', month);
 
-                url.searchParams.append('page', page);
-                url.searchParams.append('per_page', 25);
+                url.searchParams.set('page', page);
+                url.searchParams.set('per_page', 25);
 
-                const res = await fetch(url);
-                const json = await res.json();
+                const json = await apiFetch(url);
 
-                if (!json.success) throw new Error("Response error");
+                if (!json || !json.success) {
+                    throw new Error(json?.message || 'Response error');
+                }
 
                 const rows = json.data || [];
                 const meta = json.meta || {
                     page: 1,
                     total_pages: 1,
-                    total: rows.length
+                    total: 0
                 };
 
                 if (rows.length === 0) {
                     tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center text-muted">Tidak ada data</td>
+                        <td colspan="7" class="text-center text-muted">
+                            Tidak ada data
+                        </td>
                     </tr>`;
                     pagination.innerHTML = '';
                     return;
                 }
 
-                tbody.innerHTML = rows.map((r) => {
-                    const className = getRowClass(typeSel.value);
-
-                    return `
-                    <tr class="${className}">
-                        <td>${r.material ?? '-'}</td>
-                        <td>${r.material_description ?? '-'}</td>
-                        <td>${r.plant ?? '-'}</td>
-                        <td>${r.storage_location ?? '-'}</td>
-                        <td>${r.storage_location_desc ?? '-'}</td>
-                        <td class="text-end">${Number(r.qty_unrestricted || 0).toLocaleString()}</td>
-                        <td class="text-end fw-bold">${Number(r.total_keluar || 0).toLocaleString()}</td>
-                    </tr>
-                `;
-                }).join('');
+                tbody.innerHTML = rows.map(r => `
+                <tr class="${getRowClass(type)}">
+                    <td>${r.material ?? '-'}</td>
+                    <td>${r.material_description ?? '-'}</td>
+                    <td>${r.plant ?? '-'}</td>
+                    <td>${r.storage_location ?? '-'}</td>
+                    <td>${r.storage_location_desc ?? '-'}</td>
+                    <td class="text-end">${Number(r.qty_unrestricted || 0).toLocaleString('id-ID')}</td>
+                    <td class="text-end fw-bold">${Number(r.total_keluar || 0).toLocaleString('id-ID')}</td>
+                </tr>
+            `).join('');
 
                 let pagHTML = `
                 <div>
-                    Halaman ${meta.page} / ${meta.total_pages}  
+                    Halaman ${meta.page} / ${meta.total_pages}
                     • Total ${meta.total} data
                 </div>
-                <nav><ul class="pagination pagination-sm mb-0">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
             `;
 
                 if (meta.page > 1) {
                     pagHTML += `
-                    <li class="page-item"><a class="page-link" href="#" data-page="${meta.page - 1}">
-                        &laquo;
-                    </a></li>`;
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="${meta.page - 1}">&laquo;</a>
+                    </li>`;
                 }
 
                 const start = Math.max(1, meta.page - 2);
@@ -186,27 +173,28 @@
 
                 if (meta.page < meta.total_pages) {
                     pagHTML += `
-                    <li class="page-item"><a class="page-link" href="#" data-page="${meta.page + 1}">
-                        &raquo;
-                    </a></li>`;
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="${meta.page + 1}">&raquo;</a>
+                    </li>`;
                 }
 
                 pagHTML += `</ul></nav>`;
-
                 pagination.innerHTML = pagHTML;
 
-                pagination.querySelectorAll("a.page-link").forEach(a => {
-                    a.addEventListener("click", e => {
+                pagination.querySelectorAll('a.page-link').forEach(a => {
+                    a.addEventListener('click', e => {
                         e.preventDefault();
-                        loadMovement(a.dataset.page);
+                        loadMovement(Number(a.dataset.page));
                     });
                 });
 
             } catch (err) {
-                console.error(err);
+                console.error('movement error:', err);
                 tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center text-danger">Gagal memuat data</td>
+                    <td colspan="7" class="text-center text-danger">
+                        Gagal memuat data
+                    </td>
                 </tr>`;
             }
         }

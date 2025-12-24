@@ -14,24 +14,27 @@
         </div>
 
         <div class="row g-2">
-            <div class="col-6">
-                <select name="plant" class="form-select form-select-sm">
-                    <option value="">All Plant</option>
-                    <option value="1200">1200</option>
-                    <option value="1300">1300</option>
-                </select>
-            </div>
+            <?php if ($isSuperAdmin): ?>
+                <div class="col-6">
+                    <select name="plant" class="form-select form-select-sm">
+                        <option value="">All Plant</option>
+                        <option value="1200">1200</option>
+                        <option value="1300">1300</option>
+                    </select>
+                </div>
 
-            <div class="col-6">
-                <select name="sloc" class="form-select form-select-sm">
-                    <option value="">All SLoc</option>
-                    <option value="2642">2642</option>
-                    <option value="2691">2691</option>
-                    <option value="3619">3619</option>
-                    <option value="3691">3691</option>
-                </select>
-            </div>
+                <div class="col-6">
+                    <select name="sloc" class="form-select form-select-sm">
+                        <option value="">All SLoc</option>
+                        <option value="2642">2642</option>
+                        <option value="2691">2691</option>
+                        <option value="3619">3619</option>
+                        <option value="3691">3691</option>
+                    </select>
+                </div>
+            <?php endif; ?>
         </div>
+
 
         <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
     </form>
@@ -149,8 +152,8 @@
 
         btnReset.addEventListener("click", () => {
             q.value = "";
-            plant.value = "";
-            sloc.value = "";
+            if (plant) plant.value = "";
+            if(sloc) sloc.value = "";
             load(1);
         });
 
@@ -161,9 +164,17 @@
                 per_page: 50
             });
 
-            if (q.value.trim()) params.set("q", q.value.trim());
-            if (plant.value) params.set("plant", plant.value);
-            if (sloc.value) params.set("sloc", sloc.value);
+            if (q.value.trim()) {
+                params.set("q", q.value.trim());
+            }
+
+            if (plant && plant.value) {
+                params.set("plant", plant.value);
+            }
+
+            if (sloc && sloc.value) {
+                params.set("sloc", sloc.value);
+            }
 
             tbody.innerHTML =
                 `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
