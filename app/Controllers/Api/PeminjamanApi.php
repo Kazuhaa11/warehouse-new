@@ -312,15 +312,22 @@ class PeminjamanApi extends BaseApiController
 
         if ($barangId && $barangId > 0) {
             $row = $builder->where('id', $barangId)->get()->getRowArray();
-            if ($row) {
+            if ($row)
                 return $row;
-            }
         }
 
         if (!empty($scan)) {
-            $row = $builder->where('material', $scan)->get()->getRowArray();
-            if ($row) {
-                return $row;
+            if ($scan[0] === '{') {
+                $decoded = json_decode($scan, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $scan = $decoded['material'] ?? null;
+                }
+            }
+
+            if ($scan) {
+                $row = $builder->where('material', $scan)->get()->getRowArray();
+                if ($row)
+                    return $row;
             }
         }
 
@@ -355,7 +362,7 @@ class PeminjamanApi extends BaseApiController
             $this->db->table('peminjaman')
                 ->where('id', $id)
                 ->update([
-                    'status'      => 'approved',
+                    'status' => 'approved',
                     'approved_at' => date('Y-m-d H:i:s')
                 ]);
 
@@ -420,7 +427,7 @@ class PeminjamanApi extends BaseApiController
             $this->db->table('peminjaman')
                 ->where('id', $id)
                 ->update([
-                    'status'      => 'returned',
+                    'status' => 'returned',
                     'returned_at' => date('Y-m-d H:i:s'),
                     'return_date' => date('Y-m-d H:i:s'),
                 ]);
@@ -473,7 +480,7 @@ class PeminjamanApi extends BaseApiController
             $this->db->table('peminjaman')
                 ->where('id', $id)
                 ->update([
-                    'status'     => 'reserved',
+                    'status' => 'reserved',
                     'success_at' => date('Y-m-d H:i:s'),
                 ]);
 
