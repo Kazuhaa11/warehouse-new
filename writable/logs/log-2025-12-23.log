@@ -1,0 +1,11 @@
+CRITICAL - 2025-12-23 03:21:55 --> ErrorException: Undefined variable $isSuperAdmin
+in APPPATH/Views/peminjaman/index.php on line 12.
+ 1 APPPATH/Views/peminjaman/index.php(12): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $isSuperAdmin', '/opt/lampp/htdocs/warehouse-new/app/Views/peminjaman/index.php', 12)
+ 2 SYSTEMPATH/View/View.php(228): include('/opt/lampp/htdocs/warehouse-new/app/Views/peminjaman/index.php')
+ 3 SYSTEMPATH/View/View.php(231): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('peminjaman/index', [], true)
+ 5 APPPATH/Controllers/PeminjamanController.php(12): view('peminjaman/index', [...])
+ 6 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\PeminjamanController->index()
+ 7 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\PeminjamanController))
+ 8 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()

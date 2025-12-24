@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Libraries;
 
 /**
@@ -21,16 +22,33 @@ class Auth
 
     public static function id(): ?int
     {
-        return self::$user['id'] ?? null;
+        return self::$user ? (int) (self::$user['id'] ?? null) : null;
     }
 
     public static function role(): ?string
     {
-        return self::$user['role'] ?? null;
+        return self::$user ? (string) (self::$user['role'] ?? null) : null;
     }
 
     public static function loggedIn(): bool
     {
         return self::$user !== null;
+    }
+
+    public static function plant(): ?string
+    {
+        $p = self::$user['plant'] ?? null;
+        if ($p === null || $p === '') return null;
+        return (string) $p;
+    }
+
+    public static function isSuperAdmin(): bool
+    {
+        return self::role() === 'super_admin';
+    }
+
+    public static function clear(): void
+    {
+        self::$user = null;
     }
 }

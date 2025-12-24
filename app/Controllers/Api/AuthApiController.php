@@ -92,7 +92,6 @@ class AuthApiController extends BaseController
                 'Lax'
             );
 
-            log_message('debug', 'JwtCookieBridge: injecting from cookie');
             return $this->respond([
                 'token_type' => 'Bearer',
                 'access_token' => $jwt,

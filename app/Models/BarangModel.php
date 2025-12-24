@@ -24,5 +24,6 @@ class BarangModel extends Model
         'qty_blocked',
         'material_type',
         'import_batch',
+        'harga',
     ];
 }

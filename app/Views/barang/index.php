@@ -11,18 +11,35 @@
         <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
       </div>
 
-      <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
-        <option value="">All Plant</option>
-        <option value="1200">Plant 1200</option>
-        <option value="1300">Plant 1300</option>
-      </select>
+      <?php if ($isSuperAdmin): ?>
+        <select class="form-select form-select-sm" name="plant" title="Plant" style="min-width:120px">
+          <option value="">All Plant</option>
+          <option value="1200">Plant 1200</option>
+          <option value="1300">Plant 1300</option>
+        </select>
+      <?php endif; ?>
 
       <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</button>
     </form>
 
-    <button type="button" class="btn btn-sm btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalSatuan">
-      <i class="fas fa-plus"></i> Tambah Satuan
-    </button>
+    <div class="d-flex flex-column align-items-end ms-auto">
+      <div class="text-end mb-1">
+        <div class="text-muted small">TOTAL ASET</div>
+        <div
+          id="totalAset"
+          class="fw-bold fs-5">
+          Rp 0
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-sm btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalSatuan">
+        <i class="fas fa-plus"></i> Tambah Satuan
+      </button>
+    </div>
   </div>
 
   <div class="card-body">
@@ -66,20 +83,39 @@
   'method' => 'POST',
   'submitText' => 'Simpan',
   'size' => 'lg',
-  'split' => 5,
-  'fields' => [
-    ['name' => 'material', 'label' => 'Material', 'type' => 'text', 'placeholder' => 'Kode material unik', 'required' => true],
-    ['name' => 'material_description', 'label' => 'Deskripsi', 'type' => 'text', 'placeholder' => 'Nama/Deskripsi'],
+  'split' => 6,
+  'fields' => array_values(array_filter([
+
     [
+      'name' => 'material',
+      'label' => 'Material',
+      'type' => 'text',
+      'placeholder' => 'Kode material unik',
+      'required' => true
+    ],
+    [
+      'name' => 'material_description',
+      'label' => 'Deskripsi',
+      'type' => 'text',
+      'placeholder' => 'Nama/Deskripsi'
+    ],
+
+    $isSuperAdmin ? [
       'name' => 'plant',
       'label' => 'Plant',
       'type' => 'select',
       'options' => [
         ['value' => '1200', 'label' => 'Plant 1200'],
-        ['value' => '1300', 'label' => 'Plant 1300']
+        ['value' => '1300', 'label' => 'Plant 1300'],
       ]
+    ] : null,
+
+    [
+      'name' => 'material_group',
+      'label' => 'Material Group',
+      'type' => 'text',
+      'placeholder' => 'mis. MG01 / ELEC / PART'
     ],
-    ['name' => 'material_group', 'label' => 'Material Group', 'type' => 'text', 'placeholder' => 'mis. MG01 / ELEC / PART'],
     [
       'name' => 'storage_location',
       'label' => 'Stor. Loc',
@@ -92,6 +128,12 @@
       ]
     ],
     [
+      'name' => 'harga',
+      'label' => 'Harga',
+      'type' => 'text',
+      'placeholder' => 'Rp 10.000',
+    ],
+    [
       'name' => 'storage_location_desc',
       'label' => 'Stor. Loc Desc',
       'type' => 'select',
@@ -100,14 +142,49 @@
         ['value' => 'PROD ENG INDUK', 'label' => 'PROD ENG INDUK'],
       ]
     ],
-    ['name' => 'storage_id', 'label' => 'Storage ID', 'type' => 'select', 'options' => []],
-    ['name' => 'base_unit_of_measure', 'label' => 'UoM', 'type' => 'text', 'placeholder' => 'PCS / KG / L'],
-    ['name' => 'qty_unrestricted', 'label' => 'Unrestricted', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'qty_transit_and_transfer', 'label' => 'Transit', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'qty_blocked', 'label' => 'Blocked', 'type' => 'number', 'step' => '0.001', 'value' => '0'],
-    ['name' => 'material_type', 'label' => 'Tipe', 'type' => 'text', 'placeholder' => 'mis. FERT / HAWA'],
-  ],
+    [
+      'name' => 'storage_id',
+      'label' => 'Storage ID',
+      'type' => 'select',
+      'options' => []
+    ],
+    [
+      'name' => 'base_unit_of_measure',
+      'label' => 'UoM',
+      'type' => 'text',
+      'placeholder' => 'PCS / KG / L'
+    ],
+    [
+      'name' => 'qty_unrestricted',
+      'label' => 'Unrestricted',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'qty_transit_and_transfer',
+      'label' => 'Transit',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'qty_blocked',
+      'label' => 'Blocked',
+      'type' => 'number',
+      'step' => '0.001',
+      'value' => '0'
+    ],
+    [
+      'name' => 'material_type',
+      'label' => 'Tipe',
+      'type' => 'text',
+      'placeholder' => 'mis. FERT / HAWA'
+    ],
+
+  ]))
 ]) ?>
+
 
 <div class="modal fade" id="modalBarangDetail" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered" style="height:80lvh;">
@@ -147,15 +224,42 @@
             </div>
 
             <div class="col-md-4">
-              <div class="d-flex flex-column">
-                <label class="form-label">Storage ID</label>
-                <select name="storage_id" id="modalBarangDetailForm_storage_id" class="form-select"></select>
-                <div>
-                  <label class="form-label">Info Storage</label>
-                  <textarea name="storage_info" id="modalBarangDetailForm_storage_info" class="form-control"
-                    readonly></textarea>
-                </div>
-              </div>
+              <label class="form-label">Storage ID</label>
+              <select
+                name="storage_id"
+                id="modalBarangDetailForm_storage_id"
+                class="form-select mb-2">
+              </select>
+
+              <label class="form-label">Info Storage</label>
+              <textarea
+                name="storage_info"
+                id="modalBarangDetailForm_storage_info"
+                class="form-control mb-2"
+                rows="3"
+                readonly>
+              </textarea>
+              <label class="form-label">Qty Unrestricted</label>
+              <input
+                type="number"
+                name="qty_unrestricted"
+                class="form-control mb-2"
+                readonly>
+
+              <input type="hidden" name="harga">
+              <label class="form-label">Harga Satuan</label>
+              <input
+                type="text"
+                name="harga_display"
+                class="form-control mb-2"
+                placeholder="Rp 10.000">
+
+              <label class="form-label">Total Nilai Stok</label>
+              <input
+                type="text"
+                name="total_harga_display"
+                class="form-control"
+                readonly>
             </div>
 
             <div class="mt-4 d-flex flex-column align-items-center justify-content-center col-md-8">
@@ -261,15 +365,16 @@
 
     btnReset.addEventListener('click', () => {
       qInput.value = '';
-      plantSel.value = '';
+      if (plantSel) plantSel.value = '';
       load(1);
     });
+
 
     async function load(page = 1) {
       const params = new URLSearchParams();
       const q = qInput.value.trim();
       if (q) params.set('q', q);
-      const plant = plantSel.value;
+      const plant = plantSel ? plantSel.value : '';
       if (plant) params.set('plant', plant);
       params.set('per_page', PER_PAGE);
       params.set('page', page);
@@ -297,6 +402,7 @@
 
         renderRows(rows);
         renderPager(meta);
+        hitungTotalAset(rows);
         metaText.textContent = `Halaman ${meta.page} / ${meta.total_pages} • ${rows.length} data ditampilkan • Total ${meta.total} data`;
       } catch (err) {
         tbody.innerHTML = `
@@ -545,6 +651,21 @@
         setValue('material_group', b.material_group);
         setValue('storage_id', b.storage_id || '');
         setValue('storage_info', 'Memuat info storage…');
+        setValue('qty_unrestricted', b.qty_unrestricted || 0);
+        const hargaDb = Number(b.harga || 0);
+        setValue('harga_display', hargaDb ? formatRupiah(hargaDb) : '');
+        setValue('harga', hargaDb || '');
+        setValue('qty_unrestricted', b.qty_unrestricted || 0);
+        if (hargaDb && b.qty_unrestricted) {
+          setValue(
+            'total_harga_display',
+            formatRupiah(hargaDb * Number(b.qty_unrestricted))
+          );
+        } else {
+          setValue('total_harga_display', formatRupiah(0));
+        }
+
+
 
         if (b.storage_id) {
           try {
@@ -661,8 +782,8 @@
     });
 
     window.addEventListener("modal:success", (ev) => {
-      if (ev.detail?.modalId === "modalBarangDetailForm") {
-        load(1); 
+      if (ev.detail?.modalId === "modalBarangDetail") {
+        load(1);
       }
     });
 
@@ -703,6 +824,61 @@
     function css(s) {
       return String(s).replace(/"/g, '\\"');
     }
+
+    function parseRupiah(v) {
+      if (!v) return 0;
+      return Number(v.replace(/[^\d]/g, '')) || 0;
+    }
+
+    function formatRupiah(n) {
+      return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+    }
+
+    function hitungTotalHarga() {
+      const hargaInput = detailForm.querySelector('[name="harga_display"]');
+      const totalInput = detailForm.querySelector('[name="total_harga_display"]');
+      const qtyInput = detailForm.querySelector('[name="qty_unrestricted"]');
+
+      if (!hargaInput || !totalInput || !qtyInput) return;
+
+      const harga = parseRupiah(hargaInput.value);
+      const qty = Number(qtyInput.value || 0);
+
+      totalInput.value = formatRupiah(harga * qty);
+    }
+
+    document.addEventListener('input', function(e) {
+      if (e.target.name === 'harga_display') {
+        const raw = e.target.value.replace(/[^\d]/g, '');
+        e.target.value = raw ? formatRupiah(raw) : '';
+
+        const hiddenHarga = detailForm.querySelector('[name="harga"]');
+        if (hiddenHarga) {
+          hiddenHarga.value = raw;
+        }
+
+        hitungTotalHarga();
+      }
+    });
+
+    function hitungTotalAset(rows) {
+      let total = 0;
+
+      rows.forEach(r => {
+        const harga = Number(r.harga || 0);
+        const qty = Number(r.qty_unrestricted || 0);
+
+        if (!isNaN(harga) && !isNaN(qty)) {
+          total += harga * qty;
+        }
+      });
+
+      const el = document.getElementById('totalAset');
+      if (el) {
+        el.textContent = formatRupiah(total);
+      }
+    }
+
 
     load(1);
   })();

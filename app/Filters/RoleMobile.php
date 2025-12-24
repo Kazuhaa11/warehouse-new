@@ -15,7 +15,7 @@ class RoleMobile implements FilterInterface
             return service('response')->setJSON(['message' => 'Unauthenticated'])->setStatusCode(401);
         }
         $role = strtolower((string) ($user['role'] ?? ''));
-        if ($role !== 'mobile') {
+        if ($role !== 'mobile' && $role !== 'admin' && $role !== 'super_admin') {
             return service('response')->setJSON(['message' => 'Forbidden: role mobile required'])->setStatusCode(403);
         }
     }

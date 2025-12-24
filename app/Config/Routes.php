@@ -32,6 +32,7 @@ $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {
     $routes->get('change-password', 'ChangePasswordController::index');
     $routes->post('change-password', 'ChangePasswordController::process');
     $routes->get('reservasi', 'ReservasiController::index');
+    $routes->get('download/manual-book', 'DownloadManualController::manualBook');
 });
 
 
@@ -105,7 +106,7 @@ $routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function
     $routes->delete('barang-foto/(:num)', 'BarangFotoApi::delete/$1');
 });
 
-$routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], static function ($routes) {
+$routes->group('api/v1', ['namespace' => 'App\Controllers\Api', 'filter' => 'authadmin'], static function ($routes) {
     $routes->get('barang/movement-list', 'BarangMovementApi::list');
     $routes->get('barang/movement-trend', 'BarangMovementApi::trend');
 });

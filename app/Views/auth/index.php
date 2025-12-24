@@ -107,10 +107,10 @@
                 try {
                     const me = await apiFetch("<?= base_url('api/v1/auth/me') ?>");
                     const role = (me?.role || data.user?.role || '').toLowerCase();
-                    window.location.href = role === 'admin' ? redirectAdminUrl : redirectMobileUrl;
+                    window.location.href = role === 'admin' || 'super_admin' ? redirectAdminUrl : redirectMobileUrl;
                 } catch (e) {
                     const role = (data.user?.role || '').toLowerCase();
-                    window.location.href = role === 'admin' ? redirectAdminUrl : redirectMobileUrl;
+                    window.location.href = role === 'admin' || 'super_admin' ? redirectAdminUrl : redirectMobileUrl;
                 }
             } catch (err) {
                 console.error(err);

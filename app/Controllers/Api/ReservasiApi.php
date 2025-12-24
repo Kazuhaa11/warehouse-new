@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Controllers\Api\BaseApiController;
 use App\Models\ReservasiListModel;
+use App\Libraries\Auth;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ReservasiApi extends BaseApiController
@@ -16,15 +17,35 @@ class ReservasiApi extends BaseApiController
         $this->model = new ReservasiListModel();
         $this->db = \Config\Database::connect();
     }
+    protected function resolvePlant(): ?string
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+
+        $role = strtolower((string) ($user['role'] ?? ''));
+        if ($role === 'super_admin') {
+            $plant = trim((string) $this->request->getGet('plant'));
+            return $plant !== '' ? $plant : null;
+        }
+        return $user['plant'] ?? null;
+    }
 
     public function index()
     {
-        $q     = trim((string) $this->request->getGet('q'));
-        $plant = trim((string) $this->request->getGet('plant'));
-        $sloc  = trim((string) $this->request->getGet('sloc'));
+        $q    = trim((string) $this->request->getGet('q'));
+        $sloc = trim((string) $this->request->getGet('sloc'));
 
-        $page = max(1, (int) ($this->request->getGet('page') ?? 1));
+        $page    = max(1, (int) ($this->request->getGet('page') ?? 1));
         $perPage = min(200, max(1, (int) ($this->request->getGet('per_page') ?? 50)));
+        $offset  = ($page - 1) * $perPage;
+
+        $plant = $this->resolvePlant();
+
+        if ($plant === null && strtolower(Auth::role() ?? '') !== 'super_admin') {
+            return $this->fail('Plant user tidak valid', 403);
+        }
 
         $b = $this->db->table('reservasi_list r')
             ->select("
@@ -53,7 +74,7 @@ class ReservasiApi extends BaseApiController
                 ->groupEnd();
         }
 
-        if ($plant !== '') {
+        if ($plant !== null) {
             $b->where('r.plant', $plant);
         }
 
@@ -61,15 +82,9 @@ class ReservasiApi extends BaseApiController
             $b->where('r.storage_location', $sloc);
         }
 
-        $count = clone $b;
-        $total = (int) ($count
-            ->select('COUNT(*) AS c', false)
-            ->get()
-            ->getRow('c') ?? 0);
-
         $rows = $b
             ->orderBy('r.posting_date', 'DESC')
-            ->limit($perPage, ($page - 1) * $perPage)
+            ->limit($perPage, $offset)
             ->get()
             ->getResultArray();
 
@@ -82,6 +97,28 @@ class ReservasiApi extends BaseApiController
                 $r['reference'] = '-';
             }
         }
+        unset($r);
+
+        $count = $this->db->table('reservasi_list r');
+
+        if ($q !== '') {
+            $count->groupStart()
+                ->like('r.material', $q)
+                ->orLike('r.material_description', $q)
+                ->orLike('r.purchase_order', $q)
+                ->orLike('r.reservation', $q)
+                ->groupEnd();
+        }
+
+        if ($plant !== null) {
+            $count->where('r.plant', $plant);
+        }
+
+        if ($sloc !== '') {
+            $count->where('r.storage_location', $sloc);
+        }
+
+        $total = (int) $count->countAllResults();
 
         return $this->ok($rows, [
             'page'        => $page,
@@ -91,9 +128,10 @@ class ReservasiApi extends BaseApiController
         ]);
     }
 
-
     public function show($id)
     {
+        $plant = $this->resolvePlant();
+
         $row = $this->db->table('reservasi_list')
             ->where('id', $id)
             ->get()
@@ -103,10 +141,11 @@ class ReservasiApi extends BaseApiController
             return $this->failNotFound("Data tidak ditemukan");
         }
 
-        return $this->respond([
-            'success' => true,
-            'data'    => $row
-        ]);
+        if ($plant !== null && $row['plant'] !== $plant) {
+            return $this->fail('Forbidden plant', 403);
+        }
+
+        return $this->ok($row);
     }
 
     public function update($id)
