@@ -13,42 +13,35 @@ class QrGeneratorController extends BaseController
         return <<<ZPL
             ^XA
             ^DFR:QR_LABEL.ZPL
+
             ^PW400
-            ^L    H0,0
+            ^LL160
+            ^LH0,0
             ^PR2
 
-            ^FO10,0
+            ^FO14,7
             ^BQN,2,3
             ^FN3^FS
 
-            ^FO180,5
-            ^A0N,24,28
-            ^FB220,2,0,L,0
+
+            ^FO130,18
+            ^A0N,18,22
+            ^FB260,3,4,L,0
             ^FN1^FS
 
-            ^FO181,5
-            ^A0N,24,28
-            ^FB220,2,0,L,0
+            ^FO131,18
+            ^A0N,18,22
+            ^FB260,3,4,L,0
             ^FN1^FS
 
-            ^FO180,6
-            ^A0N,24,28
-            ^FB220,2,0,L,0
-            ^FN1^FS
-
-            ^FO180,45
-            ^A0N,24,28
-            ^FB220,2,0,L,0
+            ^FO130,50
+            ^A0N,17,21
+            ^FB260,3,4,L,0
             ^FN2^FS
 
-            ^FO181,45
-            ^A0N,24,28
-            ^FB220,2,0,L,0
-            ^FN2^FS
-
-            ^FO180,46
-            ^A0N,24,28
-            ^FB220,2,0,L,0
+            ^FO131,50
+            ^A0N,17,21
+            ^FB260,3,4,L,0
             ^FN2^FS
 
             ^XZ
