@@ -95,7 +95,80 @@
             </div>
 
             <div class="modal-body">
-                <input type="file" name="file" accept=".xls,.xlsx" class="form-control" required>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Header Wajib Excel</label>
+                    <table class="table table-bordered table-sm small mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kolom</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>material</td>
+                                <td>Kode material</td>
+                            </tr>
+                            <tr>
+                                <td>material_description</td>
+                                <td>Deskripsi material</td>
+                            </tr>
+                            <tr>
+                                <td>plant</td>
+                                <td>Plant (contoh: 1200)</td>
+                            </tr>
+                            <tr>
+                                <td>storage_location</td>
+                                <td>SLoc (contoh: 2691)</td>
+                            </tr>
+                            <tr>
+                                <td>posting_date</td>
+                                <td>Tanggal (YYYY-MM-DD)</td>
+                            </tr>
+                            <tr>
+                                <td>qty_in_un_of_entry</td>
+                                <td>Qty (boleh negatif)</td>
+                            </tr>
+                            <tr>
+                                <td>purchase_order</td>
+                                <td>PO (opsional)</td>
+                            </tr>
+                            <tr>
+                                <td>reservation</td>
+                                <td>No reservasi (opsional)</td>
+                            </tr>
+                            <tr>
+                                <td>user_name</td>
+                                <td>User input</td>
+                            </tr>
+                            <tr>
+                                <td>batch</td>
+                                <td>Batch</td>
+                            </tr>
+                            <tr>
+                                <td>movement_type</td>
+                                <td>Movement type</td>
+                            </tr>
+                            <tr>
+                                <td>material_document</td>
+                                <td>No material document</td>
+                            </tr>
+                            <tr>
+                                <td>text</td>
+                                <td>Keterangan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Upload File</label>
+                    <input type="file"
+                        name="file"
+                        accept=".xls,.xlsx"
+                        class="form-control"
+                        required>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -153,7 +226,7 @@
         btnReset.addEventListener("click", () => {
             q.value = "";
             if (plant) plant.value = "";
-            if(sloc) sloc.value = "";
+            if (sloc) sloc.value = "";
             load(1);
         });
 
@@ -298,10 +371,13 @@
                     <tr>
                         <th>Qty</th>
                         <td>
-                            <input type="number" step="1" min="0"
+                            <input type="number" step="1"
                                 class="form-control form-control-sm"
                                 name="qty_in_un_of_entry"
                                 value="${qty}" required>
+                                <small class="text-muted">
+                                    Gunakan nilai negatif untuk pengurangan stok dan nilai positif untuk penambahan stok.
+                                </small>
                         </td>
                     </tr>
 

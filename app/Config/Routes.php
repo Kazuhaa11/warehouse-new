@@ -9,10 +9,21 @@ $routes->get('testsession', 'TestSession::index');
 $routes->get('/', 'Api\AuthApiController::loginPage');
 
 $routes->group('api/v1/auth', ['namespace' => 'App\Controllers\Api'], static function ($r) {
+    $r->options('login', static function () {
+        return service('response')->setStatusCode(204);
+    });
     $r->post('login', 'AuthApiController::login');
     $r->post('refresh', 'AuthApiController::refresh');
     $r->post('logout', 'AuthApiController::logout', ['filter' => 'auth']);
     $r->get('me', 'AuthApiController::me', ['filter' => 'auth']);
+});
+
+$routes->group('admin/users', ['filter' => 'authsuperadmin'], static function ($routes) {
+    $routes->get('/', 'UserController::index');
+    $routes->get('data', 'UserController::data');
+    $routes->post('/', 'UserController::store');
+    $routes->put('(:num)', 'UserController::update/$1');
+    $routes->delete('(:num)', 'UserController::delete/$1');
 });
 
 $routes->group('admin', ['filter' => 'authadmin'], static function ($routes) {

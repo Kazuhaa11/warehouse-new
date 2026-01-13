@@ -12,6 +12,10 @@ class JwtAuthFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
+        if ($request->getMethod() === 'options') {
+            return;
+        }
+
         $authHeader = $request->getHeaderLine('Authorization');
 
         if ($authHeader === '' && isset($_SERVER['HTTP_AUTHORIZATION'])) {

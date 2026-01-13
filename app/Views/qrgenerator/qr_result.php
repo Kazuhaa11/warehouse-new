@@ -65,5 +65,4 @@
         object-fit: contain;
     }
 </style>
-
 <?= $this->endSection() ?>

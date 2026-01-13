@@ -1,0 +1,55 @@
+CRITICAL - 2026-01-12 03:02:48 --> TypeError: CodeIgniter\Router\RouteCollection::getFilterForRoute(): Return value must be of type string, array returned
+in SYSTEMPATH/Router/RouteCollection.php on line 1257.
+ 1 SYSTEMPATH/Router/Router.php(209): CodeIgniter\Router\RouteCollection->getFilterForRoute('admin/users')
+ 2 SYSTEMPATH/CodeIgniter.php(825): CodeIgniter\Router\Router->handle('admin/users')
+ 3 SYSTEMPATH/CodeIgniter.php(450): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:03:07 --> TypeError: CodeIgniter\Router\RouteCollection::getFilterForRoute(): Return value must be of type string, array returned
+in SYSTEMPATH/Router/RouteCollection.php on line 1257.
+ 1 SYSTEMPATH/Router/Router.php(209): CodeIgniter\Router\RouteCollection->getFilterForRoute('admin/users')
+ 2 SYSTEMPATH/CodeIgniter.php(825): CodeIgniter\Router\Router->handle('admin/users')
+ 3 SYSTEMPATH/CodeIgniter.php(450): CodeIgniter\CodeIgniter->tryToRouteIt(Object(CodeIgniter\Router\RouteCollection))
+ 4 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 5 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:04:25 --> CodeIgniter\Filters\Exceptions\FilterException: "superadmin" filter must have a matching alias defined.
+in SYSTEMPATH/Filters/Filters.php on line 355.
+ 1 SYSTEMPATH/Filters/Filters.php(355): CodeIgniter\Filters\Exceptions\FilterException::forNoAlias('superadmin')
+ 2 SYSTEMPATH/CodeIgniter.php(468): CodeIgniter\Filters\Filters->enableFilter('superadmin', 'before')
+ 3 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 4 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:05:15 --> Error: Class "App\Filters\RoleSuperAdmin" not found
+in SYSTEMPATH/Filters/Filters.php on line 175.
+ 1 SYSTEMPATH/CodeIgniter.php(475): CodeIgniter\Filters\Filters->run('admin/users', 'before')
+ 2 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 3 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:10:12 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/users/index.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/users/index.php')
+ 2 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/users/index', [], true)
+ 3 APPPATH/Controllers/UserController.php(59): view('admin/users/index', [...])
+ 4 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\UserController->index()
+ 5 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 6 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:54:40 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layouts/admin.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layouts/admin.php')
+ 2 SYSTEMPATH/View/View.php(244): CodeIgniter\View\View->render('layouts/admin', [], true)
+ 3 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/users/index', [], true)
+ 4 APPPATH/Controllers/UserController.php(59): view('admin/users/index', [...])
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\UserController->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2026-01-12 03:54:43 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layouts/admin.php"
+in SYSTEMPATH/Exceptions/FrameworkException.php on line 39.
+ 1 SYSTEMPATH/View/View.php(216): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layouts/admin.php')
+ 2 SYSTEMPATH/View/View.php(244): CodeIgniter\View\View->render('layouts/admin', [], true)
+ 3 SYSTEMPATH/Common.php(1178): CodeIgniter\View\View->render('admin/users/index', [], true)
+ 4 APPPATH/Controllers/UserController.php(59): view('admin/users/index', [...])
+ 5 SYSTEMPATH/CodeIgniter.php(943): App\Controllers\UserController->index()
+ 6 SYSTEMPATH/CodeIgniter.php(503): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UserController))
+ 7 SYSTEMPATH/CodeIgniter.php(361): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 FCPATH/index.php(82): CodeIgniter\CodeIgniter->run()
+ERROR - 2026-01-12 04:01:38 --> JWT error: Expired token

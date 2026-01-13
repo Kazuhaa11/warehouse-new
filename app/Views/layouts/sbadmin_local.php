@@ -1,7 +1,14 @@
 <?php
+
+use App\Libraries\Auth as AuthCtx;
+
 $menu = $menu ?? '';
 $title = $title ?? 'Warehouse';
 $request = service('request');
+
+$user = AuthCtx::user();
+$role = strtolower((string)($user['role'] ?? ''));
+$isSuperAdmin = ($role === 'super_admin');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -88,6 +95,15 @@ $request = service('request');
                             href="<?= base_url('admin/stock-predict-view') ?>">
                             <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>Stock Predict
                         </a>
+                        <?php if ($isSuperAdmin): ?>
+                            <a class="nav-link <?= $menu === 'users' ? 'active' : '' ?>"
+                                href="<?= base_url('admin/users') ?>">
+                                <div class="sb-nav-link-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                Manajemen User
+                            </a>
+                        <?php endif; ?>
                         <a class="nav-link" href="<?= base_url('admin/download/manual-book') ?>">
                             <div class="sb-nav-link-icon">
                                 <i class="fas fa-question-circle"></i>
@@ -97,7 +113,8 @@ $request = service('request');
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as:</div> Admin
+                    <div class="small">Logged in as:</div>
+                    <?= esc(ucwords(str_replace('_', ' ', $role))) ?>
                 </div>
             </nav>
         </div>
